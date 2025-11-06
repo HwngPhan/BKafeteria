@@ -1,5 +1,5 @@
 server:
-  port: ${API_GATEWAY_PORT}
+  port: ${API_GATEWAY}
 
 spring:
 # JWT Configuration
@@ -15,45 +15,59 @@ spring:
           routes:
             # API Routes
             - id: iam-service
-              uri: ${IAM_SERVICE}
+              uri: http://localhost:${IAM_SERVICE}
               predicates:
                 - Path=/api/iam/**
               filters:
                 - StripPrefix=1
                 
-            - id: patient-service
-              uri: ${PATIENT_SERVICE}
+            - id: vendor-service
+              uri: http://localhost:${VENDOR_SERVICE}
               predicates:
-                - Path=/api/patient/**
+                - Path=/api/vendor/**
               filters:
                 - StripPrefix=1
-                
-            - id: test-order-service
-              uri: ${TEST_ORDER_SERVICE}
+
+            - id: menu-service
+              uri: http://localhost:${MENU_SERVICE}
               predicates:
-                - Path=/api/testorder/**
+                - Path=/api/menu/**
+              filters:
+                - StripPrefix=1
+
+            - id: order-service
+              uri: http://localhost:${ORDER_SERVICE}
+              predicates:
+                - Path=/api/order/**
               filters:
                 - StripPrefix=1 
 
             # API Documentation Routes  
             - id: iam-service-api-docs
-              uri: ${IAM_SERVICE}
+              uri: http://localhost:${IAM_SERVICE}
               predicates:
                 - Path=/iam/v3/api-docs
               filters:
                 - StripPrefix=1 
                 
-            - id: patient-service-api-docs
-              uri: ${PATIENT_SERVICE}
+            - id: vendor-service-api-docs
+              uri: http://localhost:${vendor_SERVICE}
               predicates:
-                - Path=/patient/v3/api-docs
+                - Path=/vendor/v3/api-docs
               filters:
                 - StripPrefix=1 
-                
-            - id: test-order-service-api-docs
-              uri: ${TEST_ORDER_SERVICE}
+
+            - id: menu-service-api-docs
+              uri: http://localhost:${MENU_SERVICE}
               predicates:
-                - Path=/testorder/v3/api-docs
+                - Path=/menu/v3/api-docs
+              filters:
+                - StripPrefix=1
+
+            - id: order-service-api-docs
+              uri: http://localhost:${ORDER_SERVICE}
+              predicates:
+                - Path=/order/v3/api-docs
               filters:
                 - StripPrefix=1 
 
@@ -66,10 +80,12 @@ springdoc:
     urls:
       - name: IAM Service
         url: /iam/v3/api-docs
-      - name: Patient Service
-        url: /patient/v3/api-docs
-      - name: Test Order Service
-        url: /testorder/v3/api-docs
+      - name: vendor Service
+        url: /vendor/v3/api-docs
+      - name: Order Service
+        url: /order/v3/api-docs
+      - name: Menu Service
+        url: /menu/v3/api-docs
     path: /swagger-ui.html
     display-request-duration: true
     operations-sorter: method
