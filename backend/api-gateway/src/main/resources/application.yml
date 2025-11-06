@@ -1,0 +1,88 @@
+server:
+  port: ${API_GATEWAY_PORT}
+
+spring:
+# JWT Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: ${JWT_SECRET}
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            # API Routes
+            - id: iam-service
+              uri: ${IAM_SERVICE}
+              predicates:
+                - Path=/api/iam/**
+              filters:
+                - StripPrefix=1
+                
+            - id: patient-service
+              uri: ${PATIENT_SERVICE}
+              predicates:
+                - Path=/api/patient/**
+              filters:
+                - StripPrefix=1
+                
+            - id: test-order-service
+              uri: ${TEST_ORDER_SERVICE}
+              predicates:
+                - Path=/api/testorder/**
+              filters:
+                - StripPrefix=1 
+
+            # API Documentation Routes  
+            - id: iam-service-api-docs
+              uri: ${IAM_SERVICE}
+              predicates:
+                - Path=/iam/v3/api-docs
+              filters:
+                - StripPrefix=1 
+                
+            - id: patient-service-api-docs
+              uri: ${PATIENT_SERVICE}
+              predicates:
+                - Path=/patient/v3/api-docs
+              filters:
+                - StripPrefix=1 
+                
+            - id: test-order-service-api-docs
+              uri: ${TEST_ORDER_SERVICE}
+              predicates:
+                - Path=/testorder/v3/api-docs
+              filters:
+                - StripPrefix=1 
+
+  application:
+    name: api-gateway
+
+# SpringDoc configuration
+springdoc:
+  swagger-ui:
+    urls:
+      - name: IAM Service
+        url: /iam/v3/api-docs
+      - name: Patient Service
+        url: /patient/v3/api-docs
+      - name: Test Order Service
+        url: /testorder/v3/api-docs
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method
+    disable-swagger-default-url: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  show-actuator: true
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: DEBUG
+    root: INFO

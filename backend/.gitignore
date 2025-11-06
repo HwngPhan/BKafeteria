@@ -1,0 +1,49 @@
+### Java ###
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.tar.gz
+*.rar
+
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### Spring Boot ###
+application-*.yml
+application-*.properties
+*.db
+*.sqlite
+
+# Don't commit environment files
+.env
+*.env
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+
+# SonarLint / local analysis
+.sonar/
+.sonarlint/
+
+### VS Code ###
+.vscode/
+
+### OS-specific ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Logs ###
+*.log
+logs/
