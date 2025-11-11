@@ -2,6 +2,11 @@ package com.example.iam_service.config;
 
 import java.util.List;
 
+import com.example.iam_service.config.jwt.JwtAuthenticationFilter;
+import com.example.iam_service.service.CustomUserDetailsService;
+import com.example.shared.config.CorsProperties;
+import com.example.shared.config.CustomAccessDeniedHandler;
+import com.example.shared.config.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +25,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final CustomUserDetailsService customUserDetailsService;
+	private final CorsProperties corsProperties;
+//	private final DiscoveryClient discoveryClient;
+
+	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+						  CustomAccessDeniedHandler customAccessDeniedHandler,
+						  CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+						  CustomUserDetailsService customUserDetailsService,
+						  CorsProperties corsProperties){
+//						  DiscoveryClient discoveryClient) {
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.customAccessDeniedHandler = customAccessDeniedHandler;
+		this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+		this.customUserDetailsService = customUserDetailsService;
+		this.corsProperties = corsProperties;
+//		this.discoveryClient = discoveryClient;
+	}
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();

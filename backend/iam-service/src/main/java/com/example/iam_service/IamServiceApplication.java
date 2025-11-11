@@ -7,8 +7,13 @@ import java.util.Properties;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.example.iam_service",
+		"com.example.shared"
+})
+@EnableAsync
 public class IamServiceApplication {
 
 	public static void main(String[] args) {

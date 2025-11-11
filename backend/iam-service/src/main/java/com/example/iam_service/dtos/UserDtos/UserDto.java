@@ -1,13 +1,13 @@
 package com.example.iam_service.dtos.UserDtos;
 
 
-import com.example.iam_service.model.enums.Gender;
+import com.example.shared.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record UserDto(
-        Long userId,
+        String userId,
         String fullName,
         String phoneNumber,
         String email,

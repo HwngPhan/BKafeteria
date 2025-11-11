@@ -4,7 +4,7 @@ package com.example.iam_service.dtos.UserDtos;
 import java.time.LocalDate;
 
 
-import com.example.iam_service.model.enums.Gender;
+import com.example.shared.enums.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

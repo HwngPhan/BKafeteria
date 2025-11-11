@@ -1,6 +1,6 @@
 package com.example.iam_service.controller;
 
-import com.example.iam_service.dtos.ApiResponse;
+import com.example.shared.dtos.ApiResponse;
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UserDto;
 import jakarta.validation.Valid;

@@ -2,12 +2,14 @@ package com.example.iam_service.model;
 
 import java.util.Set;
 
-import com.example.iam_service.model.enums.Gender;
+import com.example.shared.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.example.iam_service.model.enums.UserStatus;
+
+import com.example.shared.enums.UserStatus;
+import com.example.shared.hepler.CustomIdGenerator;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,8 +21,14 @@ import org.hibernate.annotations.ColumnDefault;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private String userId;
+
+    @PrePersist
+    public void assignIdIfMissing() {
+        if (userId == null || userId.isBlank()) {
+            this.userId = CustomIdGenerator.generateUserId();
+        }
+    }
 
     private String fullName;
     private String phoneNumber;

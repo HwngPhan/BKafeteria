@@ -3,10 +3,11 @@ package com.example.iam_service.service;
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.model.User;
 import com.example.iam_service.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.iam_service.model.enums.UserStatus;
+import com.example.shared.enums.UserStatus;
 
 import java.time.LocalDateTime;
 
@@ -41,7 +42,7 @@ public class UserService {
         user.setDateOfBirth(createUserRequest.getDateOfBirth());
         user.setStudentId(studentId);
 
-        user.setStatus(UserStatus.INACTIVE);
+        user.setStatus(UserStatus.ACTIVE);    //delete and implement a activation module
         user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -49,5 +50,10 @@ public class UserService {
         //Default
         user.setRoles("Customer");
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLogin(String email) {
+        userRepository.updateLastLogin(email, LocalDateTime.now());
     }
 }
