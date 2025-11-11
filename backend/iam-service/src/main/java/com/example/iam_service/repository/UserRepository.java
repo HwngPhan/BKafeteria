@@ -8,5 +8,5 @@ import com.example.iam_service.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 		// Define custom query methods if needed
-	
+
 }

@@ -7,8 +7,10 @@ import com.example.iam_service.model.enums.Gender;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.example.iam_service.model.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Data
@@ -24,13 +26,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
     private LocalDate dateOfBirth;
-    private String identityNumber;
-    private String address;
-    private String status;
+    private String studentId;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
     private String password;
-    private Integer age;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
     private String roles;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isDeleted = false;
 }
