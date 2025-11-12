@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.shared.config.CustomUserDetails;
-//import com.example.iam_service.service.RedisTokenService;
+import com.example.iam_service.service.RedisTokenService;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
-//    private final RedisTokenService redisTokenService;
+    private final RedisTokenService redisTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -43,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 // ✅ Blacklist check
-//                if (redisTokenService.isTokenBlacklisted(token)) {
-//                    throw new JwtException("Token is blacklisted");
-//                }
+                if (redisTokenService.isTokenBlacklisted(token)) {
+                    throw new JwtException("Token is blacklisted");
+                }
 
                 // ✅ Token validation
                 if (!jwtProvider.validateToken(token)) {

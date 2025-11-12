@@ -7,9 +7,17 @@ import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UserDto;
 import com.example.iam_service.dtos.UserDtos.UserDtoConverter;
 import com.example.iam_service.model.User;
+import com.example.iam_service.service.CustomUserDetailsService;
+import com.example.iam_service.service.RedisTokenService;
 import com.example.iam_service.service.UserService;
 import com.example.shared.dtos.ApiResponse;
 import com.example.shared.config.CustomUserDetails;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +27,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
 
+import com.example.iam_service.service.RedisTokenService;
+import com.example.iam_service.service.CustomUserDetailsService;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -35,13 +47,17 @@ public class AuthController {
     private final UserDtoConverter userDtoConverter;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final RedisTokenService redisTokenService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthController(UserService userService, UserDtoConverter userDtoConverter, AuthenticationManager authenticationManager,
-    JwtProvider jwtProvider){
+    JwtProvider jwtProvider,RedisTokenService redisTokenService, CustomUserDetailsService customUserDetailsService){
         this.userService=userService;
         this.userDtoConverter=userDtoConverter;
         this.authenticationManager= authenticationManager;
         this.jwtProvider=jwtProvider;
+        this.redisTokenService=redisTokenService;
+        this.customUserDetailsService=customUserDetailsService;
     }
 
     @PostMapping("/register")
@@ -81,6 +97,7 @@ public class AuthController {
             userService.updateLastLogin(user.getEmail());
             String jti = UUID.randomUUID().toString();
             String refreshToken = jwtProvider.generateRefreshToken(user.getId(), user.getEmail(), jti);
+            redisTokenService.storeRefreshToken(user.getEmail(), jti, refreshToken, Duration.ofDays(7));
 
             String cookieValue = "refresh_token=" + refreshToken
                     + "; HttpOnly; Secure; Path=/; Max-Age=" + Duration.ofDays(7).getSeconds()
@@ -97,6 +114,149 @@ public class AuthController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                             e.getMessage(),
                             null));
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        try {
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "Missing refresh token", null));
+            }
+
+            String refreshToken = Arrays.stream(cookies)
+                    .filter(c -> "refresh_token".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+
+            if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "Invalid refresh token", null));
+            }
+
+            Claims claims = jwtProvider.getClaims(refreshToken);
+
+            String email = claims.get("email", String.class);
+            String jti = claims.getId();
+            String userId = claims.getSubject();   // ✅ no need String.valueOf()
+
+            // ✅ Check refresh token validity from Redis
+            if (!redisTokenService.isValidRefreshToken(email, jti, refreshToken)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "Token reuse detected or revoked", null));
+            }
+
+            // ✅ Rotation: remove old token
+            redisTokenService.deleteRefreshToken(email, jti);
+
+            // ✅ Issue new refresh token
+            String newJti = UUID.randomUUID().toString();
+            String newRefreshToken = jwtProvider.generateRefreshToken(userId, email, newJti);
+
+            redisTokenService.storeRefreshToken(email, newJti, newRefreshToken, Duration.ofDays(7));
+
+            // ✅ Send refresh token via cookie
+            Cookie cookie = new Cookie("refresh_token", newRefreshToken);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge((int) Duration.ofDays(7).getSeconds());
+            response.addCookie(cookie);
+
+            // ✅ Load UserDetails to get role
+//            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+
+            // ✅ Extract ONE ROLE ONLY
+//            String role = userDetails.getAuthorities().stream()
+//                    .map(GrantedAuthority::getAuthority)     // e.g. "ROLE_ADMIN"
+//                    .map(auth -> auth.substring(5))          // remove "ROLE_"
+//                    .findFirst()
+//                    .orElseThrow();
+
+            CustomUserDetails userDetails =
+                    (CustomUserDetails) customUserDetailsService.loadUserByUsername(email);
+
+            String role = userDetails.getRole();   // ✅ extract role directly
+
+
+
+            // ✅ Generate new access token (no roles list, no privileges)
+            String accessToken = jwtProvider.generateAccessToken(
+                    userId,
+                    email,
+                    role
+            );
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(200, "Refresh success", new TokenResponse(accessToken))
+            );
+
+        } catch (ExpiredJwtException | MalformedJwtException | io.jsonwebtoken.security.SignatureException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(401, "Invalid or expired refresh token", null));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(401, "User not found", null));
+        }
+    }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader(value = "Authorization", required = false) String header,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        try {
+            // Blacklist access token nếu có
+            if (header != null && header.startsWith("Bearer ")) {
+                String token = header.substring(7);
+                if (jwtProvider.validateToken(token)) {
+                    Claims claims = jwtProvider.getClaims(token);
+                    long ttlSeconds = (claims.getExpiration().getTime()
+                            - System.currentTimeMillis()) / 1000;
+                    if (ttlSeconds > 0) {
+                        redisTokenService.blacklistToken(token, Duration.ofSeconds(ttlSeconds));
+                    }
+                }
+            }
+
+            // Xóa refresh token trong Redis nếu có cookie
+            String refreshToken = Arrays
+                    .stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                    .filter(c -> "refresh_token".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst().orElse(null);
+
+            if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
+                Claims claims = jwtProvider.getClaims(refreshToken);
+                String email = claims.get("email", String.class);
+                String jti = claims.getId();
+                redisTokenService.deleteRefreshToken(email, jti);
+            }
+
+            // Xóa cookie khỏi client
+            Cookie expiredCookie = new Cookie("refresh_token", null);
+            expiredCookie.setHttpOnly(true);
+            expiredCookie.setSecure(true);
+            expiredCookie.setPath("/");
+            expiredCookie.setMaxAge(0);
+            response.addCookie(expiredCookie);
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(200, "Logout successfully", null));
+
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, "Invalid token", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Logout failed", null));
         }
     }
 }
