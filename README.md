@@ -23,9 +23,7 @@ cd .\backend
 
 - Open terminal or Window PowerShell, run:
 ```sh
-  docker run --name redis \
-  -p 6379:6379 \
-  -d redis
+  docker run --name redis -p 6379:6379 -d redis
 ```
 - Check whether Redis is running or not:
 ```sh
