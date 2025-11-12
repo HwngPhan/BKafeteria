@@ -1,6 +1,7 @@
 package com.example.iam_service.service;
 
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
+import com.example.iam_service.dtos.UserDtos.UpdateUserRequest;
 import com.example.iam_service.model.User;
 import com.example.iam_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.shared.enums.UserStatus;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 @Service
 public class UserService {
@@ -55,5 +57,37 @@ public class UserService {
     @Transactional
     public void updateLastLogin(String email) {
         userRepository.updateLastLogin(email, LocalDateTime.now());
+    }
+
+    public User getUserById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
+
+    private <T> void copyIfPresent(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
+        }
+    }
+
+    @Transactional
+    public User updateUser(String userId, UpdateUserRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        copyIfPresent(req.getFullName(), user::setFullName);
+        copyIfPresent(req.getPhoneNumber(), user::setPhoneNumber);
+
+        if (req.getEmail() != null) {
+            if (!req.getEmail().equals(user.getEmail()) &&
+                    userRepository.existsByEmailAndUserIdNot(req.getEmail(), userId)) {
+                throw new IllegalArgumentException("Email is already in use");
+            }
+            user.setEmail(req.getEmail());
+        }
+        copyIfPresent(req.getGender(), user::setGender);
+        copyIfPresent(req.getDateOfBirth(), user::setDateOfBirth);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        return user;
     }
 }

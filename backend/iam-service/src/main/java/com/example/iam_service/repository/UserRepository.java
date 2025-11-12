@@ -12,10 +12,12 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
 	// Define custom query methods if needed
     @Modifying
     @Query("UPDATE User u SET u.lastLogin = :time WHERE u.email = :email")
     void updateLastLogin(@Param("email") String email, @Param("time") LocalDateTime time);
+
+    boolean existsByEmailAndUserIdNot(String email, String userId);
 }
