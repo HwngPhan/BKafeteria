@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Activate Your Account</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top left, #e4f1fd, #c7e0fa, #a0c9f4);
+    }
+
+    .email-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 20px;
+    }
+
+    .inner-table {
+      margin: 0 auto;
+      width: 100%;
+      max-width: 640px;
+      background-color: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 12px 45px rgba(0, 58, 138, 0.25);
+      overflow: hidden;
+      border: 1px solid #cce4ff;
+    }
+
+    .logo-section {
+      text-align: center;
+      padding: 36px 24px 20px;
+      background: #ffffff;
+      border-bottom: 2px solid #e0efff;
+    }
+
+    .logo {
+      max-width: 120px;
+      height: auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0077cc, #0054a4);
+      color: #ffffff;
+      text-align: center;
+      padding: 32px 20px;
+      border-top: 1px solid #459de8;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .secure-text {
+      color: #cfe6ff;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .content {
+      padding: 40px 50px;
+      background: #ffffff;
+    }
+
+    h2 {
+      font-size: 24px;
+      color: #003366;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.6;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .button-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    .activation-button {
+      background: linear-gradient(135deg, #0054a4, #003b80) !important;
+      color: #ffffff !important;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+      text-align: center;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #888;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .footer {
+      background-color: #004b99;
+      padding: 26px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #eaf0f9;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 28px 24px;
+      }
+
+      .activation-button {
+        padding: 12px 24px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <table class="inner-table" role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td class="header">
+          <h1>BKafeteria</h1>
+          <div class="secure-text">Account Verification Required</div>
+        </td>
+      </tr>
+      <tr>
+        <td class="content">
+          <h2>Activate Your Account</h2>
+          <h3>Hello {{name}},</h3>
+          <p>
+            Thank you for using our service! To complete creating and activating your account, please click the button below. This link is valid for <strong>15 minutes</strong>.
+          </p>
+          <div class="button-container">
+            <a href="{{activation_link}}" class="activation-button">Activate Account</a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="footer">
+          © 2025 BKafeteria. All rights reserved.<br />
+          Ho Chi Minh City, Vietnam
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

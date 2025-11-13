@@ -5,25 +5,38 @@ import com.example.iam_service.dtos.UserDtos.UpdateUserRequest;
 import com.example.iam_service.model.User;
 import com.example.iam_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.shared.enums.UserStatus;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ActivationService activateService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+
+    @Value("${jwt.account.expiration}")
+    private long expirationTime;
+
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,StringRedisTemplate stringRedisTemplate,
+    ActivationService activateService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.stringRedisTemplate=stringRedisTemplate;
+        this.activateService=activateService;
     }
 
-    public User createUser (CreateUserRequest createUserRequest){
+    public User createUser (CreateUserRequest createUserRequest,String token){
         String email = createUserRequest.getEmail();
         String phone = createUserRequest.getPhoneNumber();
         String studentId = createUserRequest.getStudentId();
@@ -44,13 +57,18 @@ public class UserService {
         user.setDateOfBirth(createUserRequest.getDateOfBirth());
         user.setStudentId(studentId);
 
-        user.setStatus(UserStatus.ACTIVE);    //delete and implement a activation module
+        user.setStatus(UserStatus.INACTIVE);    //delete and implement a activation module
         user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setLastLogin(null);
         //Default
-        user.setRoles("Customer");
+        user.setRole("CUSTOMER");
+
+        stringRedisTemplate.opsForValue().set("activate:" + token, user.getEmail(), java.time.Duration.ofMillis(expirationTime));
+
+        activateService.sendActivationEmail(createUserRequest, token, user);
+
         return userRepository.save(user);
     }
 
@@ -90,4 +108,20 @@ public class UserService {
 
         return user;
     }
+
+    @Transactional
+    public boolean resetPassword(String email, String newPassword) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (passwordEncoder.matches(newPassword, user.getPassword())) {
+                throw new IllegalArgumentException("This is the same as the old password!");
+            }
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -23,7 +23,7 @@ public class UserDtoConverter {
                 from.getUpdatedAt(),
                 from.getLastLogin(),
                 from.getIsDeleted(),
-                from.getRoles());
+                from.getRole());
     } // class User -> UserDto
 
     public List<UserDto> convert(List<User> fromList) {

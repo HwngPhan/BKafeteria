@@ -119,6 +119,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String email  = claims.get("email", String.class);
                     String role   = claims.get("role", String.class);  // ✅ now string
 
+                    System.out.println("JWT role = " + role);
+                    System.out.println("Authorities = ROLE_" + role);
+
+
                     CustomUserDetails userDetails = new CustomUserDetails(
                             userId,
                             email,
