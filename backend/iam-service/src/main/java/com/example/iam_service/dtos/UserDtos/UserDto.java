@@ -2,6 +2,7 @@ package com.example.iam_service.dtos.UserDtos;
 
 
 import com.example.shared.enums.Gender;
+import com.example.shared.enums.SystemRole;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

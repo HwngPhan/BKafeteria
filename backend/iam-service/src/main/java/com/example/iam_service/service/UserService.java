@@ -2,6 +2,7 @@ package com.example.iam_service.service;
 
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UpdateUserRequest;
+import com.example.iam_service.dtos.UserDtos.UserFilterRequest;
 import com.example.iam_service.model.User;
 import com.example.iam_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -57,7 +58,7 @@ public class UserService {
         user.setDateOfBirth(createUserRequest.getDateOfBirth());
         user.setStudentId(studentId);
 
-        user.setStatus(UserStatus.INACTIVE);    //delete and implement a activation module
+        user.setStatus(UserStatus.ACTIVE);    //delete and implement a activation module
         user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -107,6 +108,11 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
 
         return user;
+    }
+
+    public org.springframework.data.domain.Page<User> getAllUsers(UserFilterRequest userFilterRequest,
+                                                                  org.springframework.data.domain.Pageable pageable) {
+        return userRepository.findAll(userFilterRequest.toSpecification(), pageable);
     }
 
     @Transactional
