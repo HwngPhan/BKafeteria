@@ -29,7 +29,6 @@ public class UserController {
         this.userDtoConverter = userDtoConverter;
     }
 
-
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> getMe(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         try {

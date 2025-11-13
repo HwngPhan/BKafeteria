@@ -1,6 +1,7 @@
 server:
   port: ${IAM_SERVICE}
-
+  servlet:
+    context-path: /iam
 spring:
   application:
     name: iam-service
