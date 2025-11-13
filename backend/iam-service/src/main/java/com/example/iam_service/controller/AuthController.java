@@ -2,20 +2,23 @@ package com.example.iam_service.controller;
 
 import com.example.iam_service.config.jwt.JwtProvider;
 import com.example.iam_service.dtos.AuthDtos.Request.LoginRequest;
+import com.example.iam_service.dtos.AuthDtos.Request.OtpVerificationRequest;
+import com.example.iam_service.dtos.AuthDtos.Request.ResetPasswordRequest;
+import com.example.iam_service.dtos.AuthDtos.Request.SendOtpRequest;
+import com.example.iam_service.dtos.AuthDtos.Response.OtpVerificationResponse;
 import com.example.iam_service.dtos.AuthDtos.Response.TokenResponse;
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UserDto;
 import com.example.iam_service.dtos.UserDtos.UserDtoConverter;
 import com.example.iam_service.model.User;
-import com.example.iam_service.service.CustomUserDetailsService;
-import com.example.iam_service.service.RedisTokenService;
-import com.example.iam_service.service.UserService;
+import com.example.iam_service.service.*;
 import com.example.shared.dtos.ApiResponse;
 import com.example.shared.config.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,6 +31,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -49,21 +53,28 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final RedisTokenService redisTokenService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final OtpService otpService;
+    private final ActivationService activationService;
 
     public AuthController(UserService userService, UserDtoConverter userDtoConverter, AuthenticationManager authenticationManager,
-    JwtProvider jwtProvider,RedisTokenService redisTokenService, CustomUserDetailsService customUserDetailsService){
+    JwtProvider jwtProvider,RedisTokenService redisTokenService, CustomUserDetailsService customUserDetailsService,
+    OtpService otpService, ActivationService activationService){
         this.userService=userService;
         this.userDtoConverter=userDtoConverter;
         this.authenticationManager= authenticationManager;
         this.jwtProvider=jwtProvider;
         this.redisTokenService=redisTokenService;
         this.customUserDetailsService=customUserDetailsService;
+        this.otpService=otpService;
+        this.activationService=activationService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserDto>> register(@RequestBody @Valid CreateUserRequest createUserRequest) {
         try {
-            UserDto userDto = userDtoConverter.convert(userService.createUser(createUserRequest));
+            String accountActivationToken = jwtProvider.generateAccountVerificationToken(createUserRequest.getEmail());
+            UserDto userDto = userDtoConverter
+                    .convert(userService.createUser(createUserRequest, accountActivationToken));
 
             ApiResponse<UserDto> response = new ApiResponse<>(
                     HttpStatus.CREATED.value(),
@@ -257,6 +268,92 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, "Logout failed", null));
+        }
+    }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@RequestBody @Valid SendOtpRequest request) {
+        otpService.sendOtp(request.getEmail());
+
+        ApiResponse<Void> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "OTP sent successfully",
+                null);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<OtpVerificationResponse>> verifyOtp(
+            @RequestBody @Valid OtpVerificationRequest request) {
+        boolean isValid = otpService.verifyOtp(request.getEmail(), request.getOtp());
+        if (isValid) {
+            String otpToken = jwtProvider.generateOtpVerificationToken(request.getEmail());
+
+            OtpVerificationResponse otpVerificationResponse = new OtpVerificationResponse();
+            otpVerificationResponse.setOtpToken(otpToken);
+
+            ApiResponse<OtpVerificationResponse> response = new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "OTP verified successfully",
+                    otpVerificationResponse);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            ApiResponse<OtpVerificationResponse> response = new ApiResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Invalid OTP",
+                    null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+        @SecurityRequirement(name = "bearerAuth")
+        @PostMapping("/reset-password")
+        public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()
+                    || "anonymousUser".equals(authentication.getPrincipal())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized!", null));
+            }
+
+            String tokenEmail = authentication.getName();
+            if (!tokenEmail.equals(request.getEmail())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid OTP token",
+                                null));
+            }
+
+            boolean isReset = userService.resetPassword(request.getEmail(), request.getNewPassword());
+
+            if (isReset) {
+                ApiResponse<Void> response = new ApiResponse<>(
+                        HttpStatus.OK.value(),
+                        "Password reset successfully",
+                        null);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                ApiResponse<Void> response = new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Failed to reset password",
+                        null);
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+    }
+
+    @GetMapping("/account-activation")
+    public ResponseEntity<ApiResponse<Void>> verifyActivationLink(@RequestParam String token) {
+        if (!jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(),
+                            "Expired or invalid user activation token", null));
+        }
+        try {
+            activationService.activateUserValidate(token);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Account link verified successfully", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         }
     }
 }

@@ -31,19 +31,33 @@ public class User {
     }
 
     private String fullName;
+
     private String phoneNumber;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
     private LocalDate dateOfBirth;
+
+    @Column(nullable = false, unique = true)
     private String studentId;
+
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+
+    @Column(nullable = false)
     private String password;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
+
     private LocalDateTime lastLogin;
-    private String roles;
+
+    private String role;
 
     @Column(nullable = false)
     @ColumnDefault("false")
