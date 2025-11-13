@@ -32,9 +32,10 @@ public class User {
 
     private String fullName;
 
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -52,9 +53,7 @@ public class User {
     private String password;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
     private LocalDateTime lastLogin;
 
     private String role;

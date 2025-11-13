@@ -28,7 +28,7 @@ public class UpdateUserRequest {
     private String phoneNumber;
 
     @NotBlank
-    private String studentID;
+    private String studentId;
 
     @NotNull
     private Gender gender;
