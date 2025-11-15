@@ -170,22 +170,41 @@ public class UserService {
         }
 
         switch (callerRole) {
-            case "ADMIN":
-                if ("CUSTOMER".equals(targetRole) && "MANAGER".equals(requestedRole)) {
-                    return;
-                }
-                throw new IllegalArgumentException("ADMIN can only assign CUSTOMER -> MANAGER");
 
+            // ADMIN CAN ASSIGN ANY ROLE CHANGE
+            case "ADMIN":
+                return;
+
+            // MANAGER ROLE RULES
             case "MANAGER":
+
+                // MANAGER cannot modify ADMIN users at all
+                if ("ADMIN".equals(targetRole)) {
+                    throw new IllegalArgumentException("MANAGER cannot modify ADMIN accounts");
+                }
+
+                // MANAGER cannot assign ADMIN or MANAGER to anyone
+                if ("ADMIN".equals(requestedRole) || "MANAGER".equals(requestedRole)) {
+                    throw new IllegalArgumentException("MANAGER cannot assign ADMIN or MANAGER roles");
+                }
+
+                // CUSTOMER → STAFF
                 if ("CUSTOMER".equals(targetRole) && "STAFF".equals(requestedRole)) {
                     return;
                 }
-                throw new IllegalArgumentException("MANAGER can only assign CUSTOMER -> STAFF");
+
+                // STAFF → CUSTOMER
+                if ("STAFF".equals(targetRole) && "CUSTOMER".equals(requestedRole)) {
+                    return;
+                }
+
+                throw new IllegalArgumentException("MANAGER can only promote CUSTOMER→STAFF or demote STAFF→CUSTOMER");
 
             default:
                 throw new IllegalArgumentException("You do not have permission to assign roles");
         }
     }
+
 
     private Optional<String> getCallerHighestRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
