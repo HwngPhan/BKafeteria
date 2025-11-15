@@ -220,6 +220,20 @@ public class UserService {
                 .findFirst();
     }
 
+    @Transactional
+    public void deleteUser(String userId, Boolean softDelete) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (softDelete) {
+            user.setIsDeleted(true);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+        } else {
+            userRepository.delete(user);
+        }
+    }
+
     public org.springframework.data.domain.Page<User> getAllUsers(UserFilterRequest userFilterRequest,
                                                                   org.springframework.data.domain.Pageable pageable) {
         return userRepository.findAll(userFilterRequest.toSpecification(), pageable);
