@@ -13,9 +13,13 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -86,6 +90,64 @@ public class UserController {
         } catch (Exception e) {
             ApiResponse<PageDto<UserDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to retrieve users", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> getUserById(@PathVariable String id) {
+        try {
+            UserDto userDto = userDtoConverter.convert(userService.getUserById(id));
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "User retrieved successfully", userDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to retrieve user", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> updateUser(
+            @PathVariable String id,
+            @RequestBody @Valid UpdateUserRequestAdmin updateUserRequest,
+            Authentication authentication) {
+        try {
+            // Extract caller role (first non-null role)
+            String callerRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Caller has no role"));
+
+            UserDto userDto = userDtoConverter.convert(userService.updateUserAdmin(id, updateUserRequest, callerRole));
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", userDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to update user", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> deleteUser(@PathVariable String id,
+                                                           @RequestParam(required = false, defaultValue = "true", name = "soft-delete") Boolean softDelete) {
+        try {
+            userService.deleteUser(id, softDelete);
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "User deleted successfully", null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to delete user", null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
