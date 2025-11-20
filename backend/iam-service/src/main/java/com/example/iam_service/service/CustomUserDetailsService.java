@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getEmail(),
                 user.getPassword(),
                 user.getStatus().toString().equals("ACTIVE"),
-                user.getRoles()
+                user.getRole()
         );
     }
 }

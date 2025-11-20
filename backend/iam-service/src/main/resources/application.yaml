@@ -1,6 +1,7 @@
 server:
   port: ${IAM_SERVICE}
-
+  servlet:
+    context-path: /iam
 spring:
   application:
     name: iam-service
@@ -21,6 +22,21 @@ spring:
       timeout: 60000
       lettuce:
         shutdown-timeout: 100
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -36,3 +52,25 @@ jwt:
     expiration: 300000 # 5 minutes
   account:
     expiration: 900000 # 15 minutes
+
+frontend:
+  url: ${FRONTEND_URL}
+
+api-gateway:
+  url: "http://localhost:${API_GATEWAY}"
+
+vendor-service:
+  url: "http://localhost:${VENDOR_SERVICE}"
+
+menu-service:
+  url: "http://localhost:${MENU_SERVICE}"
+
+order-service:
+  url: "http://localhost:${ORDER_SERVICE}"
+
+cors:
+  allowed-origins:
+    - ${api-gateway.url}
+    - ${vendor-service.url}
+    - ${menu-service.url}
+    - ${order-service.url}

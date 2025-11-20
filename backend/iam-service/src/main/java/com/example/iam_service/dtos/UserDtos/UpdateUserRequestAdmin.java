@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateUserRequest {
+public class UpdateUserRequestAdmin {
     @NotBlank
     private String fullName;
 
@@ -35,4 +35,8 @@ public class UpdateUserRequest {
     @NotNull
     @PastOrPresent
     private LocalDate dateOfBirth;
+
+    // Assign role
+    @NotNull
+    private String role;
 }
