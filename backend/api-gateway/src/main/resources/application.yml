@@ -79,13 +79,13 @@ springdoc:
   swagger-ui:
     urls:
       - name: IAM Service
-        url: /iam/v3/api-docs
+        url: http://localhost:${IAM_SERVICE}/iam/v3/api-docs
       - name: vendor Service
-        url: /vendor/v3/api-docs
+        url: http://localhost:${VENDOR_SERVICE}/vendor/v3/api-docs
       - name: Order Service
-        url: /order/v3/api-docs
+        url: http://localhost:${ORDER_SERVICE}/order/v3/api-docs
       - name: Menu Service
-        url: /menu/v3/api-docs
+        url: http://localhost:${MENU_SERVICE}/menu/v3/api-docs
     path: /swagger-ui.html
     display-request-duration: true
     operations-sorter: method

@@ -63,7 +63,7 @@ public class UserService {
         user.setDateOfBirth(createUserRequest.getDateOfBirth());
         user.setStudentId(studentId);
 
-        user.setStatus(UserStatus.ACTIVE);    //delete and implement a activation module
+        user.setStatus(UserStatus.INACTIVE);
         user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());

@@ -11,7 +11,7 @@ public class OpenApiConfig {
 	public GroupedOpenApi userServiceApi() {
 		return GroupedOpenApi.builder()
 					.group("iam-service")
-					.pathsToMatch("/api/iam/**")
+					.pathsToMatch("/iam/**")
 					.addOpenApiCustomizer(openApi -> {
 							openApi.setInfo(new io.swagger.v3.oas.models.info.Info()
 											.title("IAM Service API")
@@ -23,13 +23,13 @@ public class OpenApiConfig {
 	}
 
 	@Bean
-	public GroupedOpenApi orderServiceApi() {
+	public GroupedOpenApi vendorServiceApi() {
 		return GroupedOpenApi.builder()
-						.group("patient-service")
-						.pathsToMatch("/api/patient/**")
+						.group("vendor-service")
+						.pathsToMatch("/api/vendor/**")
 						.addOpenApiCustomizer(openApi -> {
 								openApi.setInfo(new io.swagger.v3.oas.models.info.Info()
-												.title("Patient Service API")
+												.title("Vendor Service API")
 												.version("1.0.0"));
 								openApi.getServers().clear();
 								openApi.addServersItem(new io.swagger.v3.oas.models.servers.Server().url("/"));
@@ -38,17 +38,31 @@ public class OpenApiConfig {
 	}
 
 	@Bean
-	public GroupedOpenApi productServiceApi() {
+	public GroupedOpenApi orderServiceApi() {
 		return GroupedOpenApi.builder()
-						.group("test-order-service")
-						.pathsToMatch("/api/testorder/**")
+						.group("order-service")
+						.pathsToMatch("/api/order/**")
 						.addOpenApiCustomizer(openApi -> {
 								openApi.setInfo(new io.swagger.v3.oas.models.info.Info()
-												.title("Test Order Service API")
+												.title("Order Service API")
 												.version("1.0.0"));
 								openApi.getServers().clear();
 								openApi.addServersItem(new io.swagger.v3.oas.models.servers.Server().url("/"));
 						})
 						.build();
+	}
+	@Bean
+	public GroupedOpenApi menuServiceApi() {
+		return GroupedOpenApi.builder()
+					.group("menu-service")
+					.pathsToMatch("/api/menu/**")
+					.addOpenApiCustomizer(openApi -> {
+								openApi.setInfo(new io.swagger.v3.oas.models.info.Info()
+										.title("Menu Service API")
+										.version("1.0.0"));
+								openApi.getServers().clear();
+								openApi.addServersItem(new io.swagger.v3.oas.models.servers.Server().url("/"));
+					})
+					.build();
 	}
 }
