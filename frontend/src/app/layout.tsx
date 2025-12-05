@@ -1,6 +1,7 @@
 import QueryProvider from "@/providers/QueryProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner"; // ⬅️ thêm dòng này
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,6 +30,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
+          {/* Global toast handler */}
+          <Toaster richColors position="top-right" />   {/* ⬅️ đặt ở đây */}
           {children}
         </QueryProvider>
       </body>

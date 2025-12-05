@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { ArrowLeft, MailCheck } from "lucide-react";
 import Image from "next/image";
 
-export default function LoginPage() {
+export default function VerifyPage() {
 
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-2">

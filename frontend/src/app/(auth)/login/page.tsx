@@ -1,19 +1,24 @@
-// Updated Login Page with basic form validation
-
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLogin } from "@/features/auth/data-access/auth.queries";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
+  const Login = useLogin();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // 🔥 thêm loading state
 
   const validate = () => {
     const newErrors: any = {};
@@ -28,12 +33,21 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+      setLoading(true);
+      await Login.mutateAsync({ email, password });
+
+      toast.success("Login successful");
+      router.replace("/dashboard");
+    } catch (error: any) {
+      toast.error(error?.message || "Login failed! Please check your username or password.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,6 +65,7 @@ export default function LoginPage() {
 
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -65,6 +80,7 @@ export default function LoginPage() {
                 )}
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -89,18 +105,21 @@ export default function LoginPage() {
               </div>
 
               <div className="text-right">
-                <a href="#" className="text-sm text-primary hover:underline">
+                <a href="/forgot-password" className="text-sm text-primary hover:underline">
                   Forgot password?
                 </a>
               </div>
 
-              <Button className="w-full" type="submit">Login</Button>
+              {/* 🔥 LOGIN BUTTON WITH LOADING */}
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
+              </Button>
             </form>
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4">
             <p className="text-sm text-center text-muted-foreground">
-              Don't have an account? {" "}
+              Don't have an account?{" "}
               <a href="/register" className="text-primary font-medium hover:underline">
                 Register
               </a>
