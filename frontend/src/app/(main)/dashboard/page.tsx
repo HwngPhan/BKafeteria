@@ -1,3 +1,11 @@
+'use client'
+
+
 export default function DashboardPage() {
-    return <div>Dashboard Page</div>;
+
+    return (
+        <div className="space-y-4">
+            Dashboard Page
+        </div>
+    )
 }

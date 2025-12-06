@@ -6,13 +6,11 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/features/auth/data-access/auth.queries";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const Login = useLogin();
-  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +40,6 @@ export default function LoginPage() {
       await Login.mutateAsync({ email, password });
 
       toast.success("Login successful");
-      router.replace("/dashboard");
     } catch (error: any) {
       toast.error(error?.message || "Login failed! Please check your username or password.");
     } finally {

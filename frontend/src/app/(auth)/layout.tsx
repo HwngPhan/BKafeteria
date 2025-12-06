@@ -1,28 +1,26 @@
 "use client";
 
+import { PageLoading } from "@/components/loading";
+import { useAuth } from "@/providers/AuthProvider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-//   const router = useRouter();
-//   const [isChecking, setIsChecking] = useState(true);
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-//   useEffect(() => {
-//     const authToken = localStorage.getItem("authToken");
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated])
 
-//     if (authToken) {
-//       router.replace("/dashboard");
-//     } else {
-//       setIsChecking(false); // cho phép render children
-//     }
-//   }, [router]);
+  if (isLoading) {
+    return (
+      <PageLoading/>
+    )
+  }
 
-//   if (isChecking) {
-//     return (
-//       <div className="flex items-center justify-center h-screen w-full">
-//         {/* Spinner */}
-//         <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-black" />
-//       </div>
-//     );
-//   }
-
-  return <>{children}</>;
+  return children;
 }

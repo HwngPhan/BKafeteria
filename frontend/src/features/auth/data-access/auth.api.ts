@@ -91,7 +91,7 @@ export const LogoutApi = async () => {
         },
     });
     if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error('Logout failed');
     }
     const responseDTO = await handleResponse<{message: string; data: string}>(response);
     return responseDTO.data;

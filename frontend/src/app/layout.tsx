@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/providers/AuthProvider";
 import QueryProvider from "@/providers/QueryProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -29,10 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Toaster richColors position="top-right" />   {/* ⬅️ đặt ở đây */}
         <QueryProvider>
           {/* Global toast handler */}
-          <Toaster richColors position="top-right" />   {/* ⬅️ đặt ở đây */}
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>
