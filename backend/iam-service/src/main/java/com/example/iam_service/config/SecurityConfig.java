@@ -1,9 +1,10 @@
 package com.example.iam_service.config;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import com.example.shared.config.CustomAccessDeniedHandler;
-import com.example.shared.config.CustomAuthenticationEntryPoint;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,9 @@ import org.springframework.web.filter.CorsFilter;
 import com.example.iam_service.config.jwt.JwtAuthenticationFilter;
 import com.example.iam_service.service.CustomUserDetailsService;
 import com.example.shared.config.CorsProperties;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import com.example.shared.config.CustomAccessDeniedHandler;
+import com.example.shared.config.CustomAuthenticationEntryPoint;
 
 @Configuration
 @EnableWebSecurity
@@ -33,24 +37,34 @@ public class SecurityConfig {
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomUserDetailsService customUserDetailsService;
 	private final CorsProperties corsProperties;
+	private final DiscoveryClient discoveryClient;
 
 	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
 						  CustomAccessDeniedHandler customAccessDeniedHandler,
 						  CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
 						  CustomUserDetailsService customUserDetailsService,
-						  CorsProperties corsProperties) {
+						  CorsProperties corsProperties,
+						  DiscoveryClient discoveryClient) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.customAccessDeniedHandler = customAccessDeniedHandler;
 		this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
 		this.customUserDetailsService = customUserDetailsService;
 		this.corsProperties = corsProperties;
+		this.discoveryClient = discoveryClient;
 	}
 
 	@Bean
 	public CorsFilter corsFilter() {
 		return new CorsFilter(request -> {
 			String origin = request.getHeader("Origin");
-			List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+			Set<String> allowedOrigins = new HashSet<>(corsProperties.getAllowedOrigins());
+
+			for (String serviceName : discoveryClient.getServices()) {
+				List<ServiceInstance> instances = discoveryClient.getInstances(serviceName);
+				for (ServiceInstance instance : instances) {
+					allowedOrigins.add(instance.getUri().toString());
+				}
+			}
 
 			if (origin != null && allowedOrigins.contains(origin)) {
 				CorsConfiguration config = new CorsConfiguration();

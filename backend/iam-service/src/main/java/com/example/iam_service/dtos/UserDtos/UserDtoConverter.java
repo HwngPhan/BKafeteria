@@ -18,7 +18,6 @@ public class UserDtoConverter {
                 from.getDateOfBirth(),
                 from.getStudentId(),
                 from.getStatus().name(),
-                from.getPassword(),
                 from.getCreatedAt(),
                 from.getUpdatedAt(),
                 from.getLastLogin(),

@@ -16,7 +16,6 @@ public record UserDto(
         LocalDate dateOfBirth,
         String studentId,
         String status,
-        String password,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime lastLogin,
