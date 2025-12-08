@@ -36,7 +36,7 @@ public class VendorService {
         UserInfoDto manager = iamClient.getUserInfo(managerId);
 
         if (manager == null || !manager.getRole().equals("MANAGER")) {
-            throw new IllegalArgumentException("managerId is incorrect");
+            throw new IllegalArgumentException("Invalid managerId");
         }
 
 
@@ -61,6 +61,9 @@ public class VendorService {
         vendor.setStatus(VendorStatus.ACCEPTED);
         vendor.setUpdatedAt(LocalDateTime.now());
         vendor.setApprovedBy(adminId);
+
+        UserInfoDto manager = iamClient.getUserInfo(vendor.getManagerId());
+        iamClient.assignVendor(vendorId, manager.getEmail());
         return vendorRepository.save(vendor);
     }
 }

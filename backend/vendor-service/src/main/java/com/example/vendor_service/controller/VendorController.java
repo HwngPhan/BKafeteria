@@ -9,6 +9,7 @@ import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
 import com.example.vendor_service.helper.IamClient;
 
+import com.example.vendor_service.repository.VendorRepository;
 import com.example.vendor_service.service.VendorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -32,10 +33,11 @@ public class VendorController {
     private final VendorService vendorService;
     private final VendorDtoConverter vendorDtoConverter;
     private final IamClient iamClient;
+    private final VendorRepository vendorRepository;
 
 
     @PostMapping("/register")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('MANAGER')")
     public ResponseEntity<ApiResponse<VendorDto>> register(@RequestBody @Valid CreateVendorRequest createVendorRequest,
                                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -48,7 +50,7 @@ public class VendorController {
                     "Vendor registered successfully",
                     vendorDto);
 
-            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail());
+//            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e) {
