@@ -43,15 +43,24 @@ public class VendorService {
         Vendor vendor = new Vendor();
         vendor.setCreatedAt(LocalDateTime.now());
         vendor.setUpdatedAt(LocalDateTime.now());
-        vendor.setStatus(VendorStatus.INACTIVE);
+        vendor.setStatus(VendorStatus.PENDING);
         vendor.setName(request.getName());
         vendor.setDescription(request.getDescription());
         vendor.setManagerId(managerId);
         vendor.setWorkingHourFrom(request.getWorkingHourFrom());
         vendor.setWorkingHourTo(request.getWorkingHourTo());
-
+        vendor.setApprovedBy(null);
         return vendorRepository.save(vendor);
     }
 
+    @Transactional
+    public Vendor approveVendorRequest(String vendorId,String adminId){
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with ID: " + vendorId));
 
+        vendor.setStatus(VendorStatus.ACCEPTED);
+        vendor.setUpdatedAt(LocalDateTime.now());
+        vendor.setApprovedBy(adminId);
+        return vendorRepository.save(vendor);
+    }
 }

@@ -13,8 +13,8 @@ public record VendorDto (
         VendorStatus status,
         LocalTime workingHourFrom,
         LocalTime workingHourTo,
-//        String managerId,
+        String managerId,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
-//        String approvedBy
+        LocalDateTime updatedAt,
+        String approvedBy
 ){}

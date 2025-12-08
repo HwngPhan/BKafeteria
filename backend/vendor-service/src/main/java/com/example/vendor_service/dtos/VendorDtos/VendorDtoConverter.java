@@ -18,10 +18,10 @@ public class VendorDtoConverter {
                 from.getStatus(),
                 from.getWorkingHourFrom(),
                 from.getWorkingHourTo(),
-//                from.getManagerId(),
+                from.getManagerId(),
                 from.getCreatedAt(),
-                from.getUpdatedAt());
-//                from.getApprovedBy());
+                from.getUpdatedAt(),
+                from.getApprovedBy());
     }
 
     public List<VendorDto> convert(List<Vendor> fromList) {

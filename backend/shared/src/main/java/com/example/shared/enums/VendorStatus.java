@@ -1,6 +1,8 @@
 package com.example.shared.enums;
 
 public enum VendorStatus {
-    INACTIVE,
-    ACTIVE,
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    CLOSED
 }

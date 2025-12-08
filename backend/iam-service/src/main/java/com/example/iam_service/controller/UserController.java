@@ -151,6 +151,34 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    @PreAuthorize("hasAnyRole('INTERNAL_SERVICE','MANAGER')")
+    @PutMapping("/assign-vendor/{vendorId}")
+    public ResponseEntity<ApiResponse<UserDto>> assignVendor(
+            @PathVariable String vendorId,
+            @RequestBody @Valid AssignVendorRequest assignVendorRequest,
+            Authentication authentication) {
+        try {
+            // Extract caller role (first non-null role)
+            String callerRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Caller has no role"));
+
+            UserDto userDto = userDtoConverter.convert(userService.assignVendor(vendorId, assignVendorRequest));
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "Assign vendor successfully", userDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign vendor", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 

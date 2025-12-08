@@ -39,6 +39,5 @@ public class Vendor {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-//    @Column(nullable = false)
-//    private String approvedBy;
+    private String approvedBy;
 }

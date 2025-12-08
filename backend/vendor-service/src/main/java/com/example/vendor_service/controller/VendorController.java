@@ -17,11 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/vendors")
@@ -36,9 +34,9 @@ public class VendorController {
     private final IamClient iamClient;
 
 
-    @PostMapping("/create")
-//    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<VendorDto>> create(@RequestBody @Valid CreateVendorRequest createVendorRequest,
+    @PostMapping("/register")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<VendorDto>> register(@RequestBody @Valid CreateVendorRequest createVendorRequest,
                                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
 
@@ -49,6 +47,8 @@ public class VendorController {
                     HttpStatus.CREATED.value(),
                     "Vendor registered successfully",
                     vendorDto);
+
+            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e) {
@@ -58,6 +58,26 @@ public class VendorController {
             ApiResponse<VendorDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to create vendor", null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @PutMapping("/approve/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ApiResponse<VendorDto>> approveRequest(@PathVariable String id,@AuthenticationPrincipal CustomUserDetails userDetails){
+        try{
+            vendorService.approveVendorRequest(id,userDetails.getId());
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor request approved successfully", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (RuntimeException e){
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to approve vendor request", null));
         }
 
     }

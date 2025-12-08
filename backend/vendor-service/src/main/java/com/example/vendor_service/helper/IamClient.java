@@ -1,21 +1,14 @@
 package com.example.vendor_service.helper;
 
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -99,5 +92,27 @@ public class IamClient {
     }
 
 
+    public void assignVendor(String vendorId, String email){
+        Map<String, String> body = new HashMap<>();
+        body.put("email", email);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(tokenProvider.getToken());
+
+        HttpEntity<Map<String, String>> entity =
+                new HttpEntity<>(body, headers);
+
+        ParameterizedTypeReference<ApiResponse<UserInfoDto>> typeRef = new ParameterizedTypeReference<>() {
+        };
+
+        ResponseEntity<ApiResponse<UserInfoDto>> response = restTemplate.exchange(
+                getIAMServiceBaseUrl() + "/iam/users/assign-vendor/" + vendorId,
+                HttpMethod.PUT,
+                entity,
+                typeRef
+        );
+
+    }
 
 }

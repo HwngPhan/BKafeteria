@@ -1,9 +1,6 @@
 package com.example.iam_service.service;
 
-import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
-import com.example.iam_service.dtos.UserDtos.UpdateUserRequest;
-import com.example.iam_service.dtos.UserDtos.UpdateUserRequestAdmin;
-import com.example.iam_service.dtos.UserDtos.UserFilterRequest;
+import com.example.iam_service.dtos.UserDtos.*;
 import com.example.iam_service.model.User;
 import com.example.iam_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -64,6 +61,7 @@ public class UserService {
         user.setStudentId(studentId);
 
         user.setStatus(UserStatus.INACTIVE);
+        user.setVendorId(null);
         user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -254,4 +252,19 @@ public class UserService {
         return false;
     }
 
+    @Transactional
+    public User assignVendor(String vendorId, AssignVendorRequest req) {
+        String email = req.getEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        copyIfPresent(vendorId, user::setVendorId);
+
+        if (!user.getRole().equals("MANAGER")){
+            user.setRole("STAFF");
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return user;
+    }
 }
