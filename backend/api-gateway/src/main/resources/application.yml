@@ -51,7 +51,7 @@ spring:
                 - StripPrefix=1 
                 
             - id: vendor-service-api-docs
-              uri: http://localhost:${vendor_SERVICE}
+              uri: http://localhost:${VENDOR_SERVICE}
               predicates:
                 - Path=/vendor/v3/api-docs
               filters:
@@ -80,7 +80,7 @@ springdoc:
     urls:
       - name: IAM Service
         url: http://localhost:${IAM_SERVICE}/iam/v3/api-docs
-      - name: vendor Service
+      - name: Vendor Service
         url: http://localhost:${VENDOR_SERVICE}/vendor/v3/api-docs
       - name: Order Service
         url: http://localhost:${ORDER_SERVICE}/order/v3/api-docs
