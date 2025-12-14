@@ -8,7 +8,7 @@ import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
 import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
 import com.example.vendor_service.helper.IamClient;
-
+import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.repository.VendorRepository;
 import com.example.vendor_service.service.VendorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -80,6 +80,27 @@ public class VendorController {
         catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(new ApiResponse<>(500, "Failed to approve vendor request", null));
+        }
+
+    }
+
+    @GetMapping("/get-my-vendor")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    public ResponseEntity<ApiResponse<VendorDto>> getMyVendor(@AuthenticationPrincipal CustomUserDetails userDetails){
+        try{
+            Vendor vendor = vendorService.getVendorByManagerId(userDetails.getId());
+            if (vendor == null) {
+                throw new RuntimeException("Vendor not found for manager ID: " + userDetails.getId());
+            }
+            VendorDto vendorDto = vendorDtoConverter.convert(vendor);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor retrieved successfully", vendorDto));
+        } catch (RuntimeException e){
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to retrieve vendor", null));
         }
 
     }

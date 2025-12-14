@@ -26,8 +26,16 @@ public class VendorService {
         this.iamClient=iamClient;
     }
 
-    public List<Vendor> getPatientsByIds(List<String> ids) {
+    public List<Vendor> getVendorsByIds(List<String> ids) {
         return vendorRepository.findAllById(ids);
+    }
+
+    public Vendor getVendorById(String id){
+        return vendorRepository.findById(id).orElse(null);
+    }
+
+    public Vendor getVendorByManagerId(String managerId){
+        return vendorRepository.findByManagerId(managerId).orElse(null);
     }
 
     @Transactional
