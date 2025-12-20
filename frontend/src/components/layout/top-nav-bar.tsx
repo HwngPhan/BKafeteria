@@ -55,7 +55,7 @@ export default function TopNavBar() {
 
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link href="/settings">User Settings</Link>
+              <Link href="/dashboard/user-settings">User Settings</Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem
