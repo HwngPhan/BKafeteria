@@ -58,6 +58,8 @@ public class User {
 
     private String role;
 
+    private String vendorId;
+
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted = false;

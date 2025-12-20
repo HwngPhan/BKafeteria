@@ -1,3 +1,67 @@
+server:
+  port: ${VENDOR_SERVICE}
+  servlet:
+    context-path: /vendor
 spring:
   application:
     name: vendor-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: kafka:9092
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
+      lettuce:
+        shutdown-timeout: 100
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+jwt:
+  secret: ${JWT_SECRET}
+  access:
+    expiration: 86400000 # 1 day
+  refresh:
+    expiration: 604800000 # 1 week
+  otp:
+    expiration: 300000 # 5 minutes
+  account:
+    expiration: 900000 # 15 minutes
+
+internal-token:
+  service-name: vendor-service
+  api-key: ${JWT_SECRET}
+  auth-url: http://localhost:${IAM_SERVICE:}/iam/internal/auth/token
+
+frontend:
+  url: ${FRONTEND_URL}
+
+api-gateway:
+  url: "http://localhost:${API_GATEWAY}"
+
+iam-service:
+  url: "http://localhost:${IAM_SERVICE}"
+
+menu-service:
+  url: "http://localhost:${MENU_SERVICE}"
+
+order-service:
+  url: "http://localhost:${ORDER_SERVICE}"
+
+cors:
+  allowed-origins:
+    - ${api-gateway.url}
+    - ${iam-service.url}
+    - ${menu-service.url}
+    - ${order-service.url}
