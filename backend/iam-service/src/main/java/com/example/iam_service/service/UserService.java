@@ -259,7 +259,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         copyIfPresent(vendorId, user::setVendorId);
 
-        if (!user.getRole().equals("MANAGER")){
+        if (user.getRole().equals("CUSTOMER")){
             user.setRole("STAFF");
         }
 
