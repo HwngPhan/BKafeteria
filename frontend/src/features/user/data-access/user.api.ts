@@ -21,3 +21,20 @@ export const GetMeApi = async () => {
     const responseDTO = await handleResponse<{ message: string, data: User }>(response);
     return responseDTO.data;
 }
+
+export const UpdateMeApi = async (userData: Partial<User>) => {
+    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/me`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+    })
+
+    if (!response.ok) {
+        throw new Error('Updating user info failed');
+    }
+
+    const responseDTO = await handleResponse<{ message: string, data: User }>(response);
+    return responseDTO.data;
+}

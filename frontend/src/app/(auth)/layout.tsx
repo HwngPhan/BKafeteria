@@ -11,12 +11,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isLoading && isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, isLoading, router])
 
-  if (isLoading) {
+  if (isLoading || isAuthenticated) {
     return (
       <PageLoading/>
     )
