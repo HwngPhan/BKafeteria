@@ -45,13 +45,13 @@ public class UserService {
         String studentId = createUserRequest.getStudentId();
 
         //Unique
-//        if (userRepository.existsByEmail(email)) {
-//            throw new IllegalArgumentException("Email is already in use");
-//        } else if (userRepository.existsByPhoneNumber(phone)) {
-//            throw new IllegalArgumentException("Phone number is already in use");
-//        } else if (userRepository.existsByIdentityNumber(identity)) {
-//            throw new IllegalArgumentException("Identity number is already in use");
-//        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already in use");
+       } else if (userRepository.existsByPhoneNumber(phone)) {
+           throw new IllegalArgumentException("Phone number is already in use");
+       } else if (userRepository.existsByStudentId(studentId)) {
+           throw new IllegalArgumentException("Identity number is already in use");
+       }
         User user = new User();
         user.setFullName(createUserRequest.getFullName());
         user.setPhoneNumber(phone);

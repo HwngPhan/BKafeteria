@@ -85,7 +85,11 @@ public class AuthController {
         catch (IllegalArgumentException e) {
             ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
+        } catch (RuntimeException e){
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+        catch (Exception e) {
             ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to create user", null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
