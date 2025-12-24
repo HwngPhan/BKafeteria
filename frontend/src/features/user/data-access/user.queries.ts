@@ -28,7 +28,7 @@ export const useUpdateMe = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: UpdateMeApi,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.me() });
     },
     onError: (error: any) => {

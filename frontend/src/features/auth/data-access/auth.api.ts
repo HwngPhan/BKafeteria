@@ -1,6 +1,7 @@
 import { API_GATEWAY_BASE_URL, TokenType } from "@/lib/constants";
 import { fetchWithToken } from "@/lib/fetchWithToken";
 import { handleResponse } from "@/lib/handle-response";
+import { throwApiError } from "@/lib/throwApiError";
 import { LoginObject, LoginResponse, RegisterObject, RegisterResponse } from "../config/auth.config";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/iam/auth`;
@@ -14,7 +15,7 @@ export const SendOtpApi = async (email: string) => {
         body: JSON.stringify({ email }),
     });
     if (!response.ok) {
-        throw new Error('Sending OTP failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<{ message: string, data: string }>(response);
     return responseDTO.data;
@@ -29,7 +30,7 @@ export const VerifyOtpApi = async (payload: {email: string, otp: string}) => {
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
-        throw new Error('OTP verification failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<{ message: string, data: {
         otpToken: string
@@ -46,7 +47,7 @@ export const ResetPasswordApi = async (payload: {email: string, newPassword: str
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
-        throw new Error('Password reset failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<{ message: string, data: string }>(response);
     return responseDTO.data;
@@ -60,7 +61,7 @@ export const AccountActivationApi = async (token: string) => {
         },
     });
     if (!response.ok) {
-        throw new Error('Account activation failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<{ message: string, data: string }>(response);
     return responseDTO.data;
@@ -76,7 +77,7 @@ export const LoginApi = async (payload: LoginObject) => {
         body: JSON.stringify(payload),
     });
     if (!response.ok) {
-        throw new Error('Login failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<LoginResponse>(response);
     return responseDTO.data;
@@ -91,7 +92,7 @@ export const LogoutApi = async () => {
         },
     });
     if (!response.ok) {
-        throw new Error('Logout failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<{message: string; data: string}>(response);
     return responseDTO.data;
@@ -108,7 +109,7 @@ export const RegisterApi = async (payload: RegisterObject) => {
     });
 
     if (!response.ok) {
-        throw new Error('Registration failed');
+        await throwApiError(response);
     }
     const responseDTO = await handleResponse<RegisterResponse>(response);
     return responseDTO;

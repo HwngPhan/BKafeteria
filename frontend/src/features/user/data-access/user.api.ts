@@ -1,6 +1,7 @@
 import { API_GATEWAY_BASE_URL, TokenType } from "@/lib/constants";
 import { fetchWithToken } from "@/lib/fetchWithToken";
 import { handleResponse } from "@/lib/handle-response";
+import { throwApiError } from "@/lib/throwApiError";
 import { User } from "../config/user.config";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/iam/users`;
@@ -15,7 +16,7 @@ export const GetMeApi = async () => {
     })
 
     if (!response.ok) {
-        throw new Error('Fetching user info failed');
+        await throwApiError(response);
     }
 
     const responseDTO = await handleResponse<{ message: string, data: User }>(response);
@@ -32,7 +33,7 @@ export const UpdateMeApi = async (userData: Partial<User>) => {
     })
 
     if (!response.ok) {
-        throw new Error('Updating user info failed');
+        await throwApiError(response);
     }
 
     const responseDTO = await handleResponse<{ message: string, data: User }>(response);
