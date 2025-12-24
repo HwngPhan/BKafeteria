@@ -21,4 +21,8 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     void updateLastLogin(@Param("email") String email, @Param("time") LocalDateTime time);
 
     boolean existsByEmailAndUserIdNot(String email, String userId);
+
+    boolean existsByEmail(String email);
+    boolean existsByPhoneNumber(String phoneNumber);
+    boolean existsByStudentId(String studentId);
 }
