@@ -43,8 +43,8 @@ jwt:
 internal-token:
   service-name: vendor-service
   api-key: ${JWT_SECRET}
-  auth-url: http://iam-service:${IAM_SERVICE:}/iam/internal/auth/token
-#  auth-url: http://localhost:${IAM_SERVICE:}/iam/internal/auth/token
+#  auth-url: http://iam-service:${IAM_SERVICE:}/iam/internal/auth/token
+  auth-url: http://localhost:${IAM_SERVICE:}/iam/internal/auth/token
 
 frontend:
   url: ${FRONTEND_URL}
