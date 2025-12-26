@@ -4,7 +4,7 @@ import { handleResponse } from "@/lib/handle-response";
 import { throwApiError } from "@/lib/throwApiError";
 import { VendorDto, VendorEntity } from "../config/vendor.config";
 
-const BASE_URL = `${API_GATEWAY_BASE_URL}/vendors`;
+const BASE_URL = `${API_GATEWAY_BASE_URL}/vendor/vendors`;
 
 export const GetMyVendorApi = async () => {
     const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-vendor`, {
