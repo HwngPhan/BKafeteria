@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { GetMeApi } from "./user.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GetMeApi, UpdateMeApi } from "./user.api";
 
 export const userKeys = {
     all: ['user'] as const,
@@ -24,4 +24,16 @@ export const useGetMe = () => {
     });
   };
   
+export const useUpdateMe = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UpdateMeApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.me() });
+    },
+    onError: (error: any) => {
+      console.error('Update user info failed:', error?.message || error);
+    }
+  })
+};
   

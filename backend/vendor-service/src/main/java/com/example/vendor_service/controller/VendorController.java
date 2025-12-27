@@ -1,28 +1,33 @@
 package com.example.vendor_service.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
-
-import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
-
 import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
+import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.repository.VendorRepository;
 import com.example.vendor_service.service.VendorService;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/vendors")
@@ -108,7 +113,7 @@ public class VendorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<VendorDto>>> getAllVendors() {
         List<VendorDto> vendors = vendorService.getAllVendors()
                 .stream()
