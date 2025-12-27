@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "${API_GATEWAY}:${API_GATEWAY}"
+    environment:
+      - API_GATEWAY=${API_GATEWAY}
+      - IAM_SERVICE_URI=http://iam-service:${IAM_SERVICE}
+      - VENDOR_SERVICE_URI=http://vendor-service:${VENDOR_SERVICE}
+#      - MENU_SERVICE_URI=http://menu-service:${MENU_SERVICE}
+#      - ORDER_SERVICE_URI=http://order-service:${ORDER_SERVICE}
+    depends_on:
+      - iam-service
+      - vendor-service
+#      - menu-service
+#      - order-service
+      - kafka
+    networks:
+      - app-network
+
+  iam-service:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: iam-service/Dockerfile
+    container_name: iam-service
+    restart: unless-stopped
+    ports:
+      - "${IAM_SERVICE}:${IAM_SERVICE}"
+    environment:
+      - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
+      - IAM_SERVICE=${IAM_SERVICE}
+      - VENDOR_SERVICE_URI=http://vendor-service:${VENDOR_SERVICE}
+#      - MENU_SERVICE_URI=http://menu-service:${MENU_SERVICE}
+#      - ORDER_SERVICE_URI=http://order-service:${ORDER_SERVICE}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  vendor-service:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: vendor-service/Dockerfile
+    container_name: vendor-service
+    restart: unless-stopped
+    ports:
+      - "${VENDOR_SERVICE}:${VENDOR_SERVICE}"
+    environment:
+      - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
+      - IAM_SERVICE_URI=http://iam-service:${IAM_SERVICE}
+      - VENDOR_SERVICE=${VENDOR_SERVICE}
+#      - MENU_SERVICE_URI=http://menu-service:${MENU_SERVICE}
+#      - ORDER_SERVICE_URI=http://order-service:${ORDER_SERVICE}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    networks:
+      - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    restart: always
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: "Mk3OEYBSD34fcwNTJENDM2Qk"
+    volumes:
+      - data:/var/lib/kafka/data
+    networks:
+      - app-network
+
+volumes:
+  data:
+
+networks:
+  app-network:
+    driver: bridge

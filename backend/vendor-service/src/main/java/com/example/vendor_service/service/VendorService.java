@@ -74,4 +74,12 @@ public class VendorService {
         iamClient.assignVendor(vendorId, manager.getEmail());
         return vendorRepository.save(vendor);
     }
+
+    public List<Vendor> getAllVendors() {
+        return vendorRepository.findAll();
+    }
+
+    public List<Vendor> getAllActiveVendors() {
+        return vendorRepository.findAllByStatus(VendorStatus.ACCEPTED);
+    }
 }

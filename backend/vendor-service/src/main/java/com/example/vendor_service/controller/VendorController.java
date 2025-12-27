@@ -22,6 +22,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/vendors")
 @Slf4j
@@ -104,4 +106,31 @@ public class VendorController {
         }
 
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<VendorDto>>> getAllVendors() {
+        List<VendorDto> vendors = vendorService.getAllVendors()
+                .stream()
+                .map(vendorDtoConverter::convert)
+                .toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(200, "All vendors retrieved successfully", vendors)
+        );
+    }
+
+    @GetMapping("/active")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<List<VendorDto>>> getActiveVendors() {
+        List<VendorDto> vendors = vendorService.getAllActiveVendors()
+                .stream()
+                .map(vendorDtoConverter::convert)
+                .toList();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(200, "Active vendors retrieved successfully", vendors)
+        );
+    }
+
 }
