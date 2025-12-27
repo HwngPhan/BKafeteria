@@ -23,10 +23,11 @@ export function VendorCard({ vendor, role = "user" }: VendorCardProps) {
       {/* Image */}
       <div className="relative h-40 w-full">
         <Image
-          src="/placeholder-food.jpg" // bạn để tạm trong /public
+          src="https://placehold.co/400" // bạn để tạm trong /public
           alt={vendor.name}
           fill
           className="object-cover"
+          unoptimized
         />
 
         {showStatus && (

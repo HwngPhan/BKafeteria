@@ -1,61 +1,40 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-import { VendorDtoSchema } from "@/features/vendor/config/vendor.config";
-import { CreateVendorApi } from "../data-access/vendor.api";
-
-type CreateVendorInput = z.infer<typeof VendorDtoSchema>;
+import { VendorDto } from "@/features/vendor/config/vendor.config";
+import { useState } from "react";
 
 interface CreateVendorDialogProps {
   open: boolean;
+  isCreating: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: () => void;
+  onSubmit: (payload: VendorDto) => void;
 }
 
 export function CreateVendorDialog({
   open,
   onOpenChange,
-  onCreated,
+  isCreating,
+  onSubmit,
 }: CreateVendorDialogProps) {
-  const form = useForm<CreateVendorInput>({
-    resolver: zodResolver(VendorDtoSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      workingHourFrom: "",
-      workingHourTo: "",
-    },
+
+  const [formData, setFormData] = useState<VendorDto>({
+    name: "",
+    description: "",
+    workingHourFrom: "",
+    workingHourTo: "",
   });
-
-  const onSubmit = async (values: CreateVendorInput) => {
-    await CreateVendorApi(values);
-
-    onOpenChange(false);
-    form.reset();
-    onCreated?.();
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,74 +43,83 @@ export function CreateVendorDialog({
           <DialogTitle>Create Vendor</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Vendor name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Canteen A" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(formData);
+          }}
+        >
+          {/* Vendor name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Vendor name</label>
+            <Input
+              placeholder="Canteen A"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  name: e.target.value,
+                }))
+              }
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Best noodles in campus"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          {/* Description */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Description</label>
+            <Textarea
+              placeholder="Best noodles in campus"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
             />
+          </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="workingHourFrom"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Open</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="workingHourTo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Close</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          {/* Working hours */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Open</label>
+              <Input
+                type="time"
+                value={formData.workingHourFrom}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    workingHourFrom: e.target.value,
+                  }))
+                }
               />
             </div>
 
-            <DialogFooter>
-              <Button type="submit">Create</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Close</label>
+              <Input
+                type="time"
+                value={formData.workingHourTo}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    workingHourTo: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              type="submit"
+              disabled={isCreating || !formData.name || !formData.workingHourFrom || !formData.workingHourTo}
+            >
+              Create
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

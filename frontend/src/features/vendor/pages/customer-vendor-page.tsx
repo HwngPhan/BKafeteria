@@ -1,24 +1,19 @@
 "use client";
 
 import { VendorCard } from "@/features/vendor/components/vendor-card";
-import { VendorEntity } from "@/features/vendor/config/vendor.config";
 import { useAuth } from "@/providers/AuthProvider";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useGetActiveVendors } from "../data-access/vendor.queries";
 
 export default function CustomerVendorPage() {
-  const [vendors, setVendors] = useState<VendorEntity[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const { user } = useAuth();
+  const { data: vendorsData, isLoading: isLoadingVendor, refetch, isRefetching: isRefetchingVendor } = useGetActiveVendors();
 
-  useEffect(() => {
-    fetch("/api/vendors")
-      .then((res) => res.json())
-      .then(setVendors)
-      .finally(() => setLoading(false));
-  }, []);
+  const vendors = useMemo(() => vendorsData || [], [vendorsData]);
+  
+  const { user, isLoading: isLoadingUser } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (isLoadingUser || isLoadingVendor || isRefetchingVendor) return <p>Loading...</p>;
 
   return (
     <div className="space-y-6">

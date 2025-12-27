@@ -2,34 +2,41 @@
 
 import { Button } from "@/components/ui/button";
 import { VendorCard } from "@/features/vendor/components/vendor-card";
-import { VendorEntity } from "@/features/vendor/config/vendor.config";
 import { useAuth } from "@/providers/AuthProvider";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { CreateVendorDialog } from "../components/create-vendor-dialog";
-import { GetMyVendorApi } from "../data-access/vendor.api";
+import { VendorDto } from "../config/vendor.config";
+import { useGetMyVendor, useRegisterVendor } from "../data-access/vendor.queries";
 
 export default function ManagerVendorPage() {
-  const [vendor, setVendor] = useState<VendorEntity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isLoading: isLoadingUser } = useAuth();
   const [openCreate, setOpenCreate] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const fetchVendor = () => {
-    setLoading(true);
-    GetMyVendorApi()
-      .then((data) => setVendor(data ?? null))
-      .finally(() => setLoading(false));
-  }
+  const {data: vendor, isLoading: isLoadingVendor, refetch, isRefetching: isRefetchingVendor} = useGetMyVendor();
 
-  useEffect(() => {
-    fetchVendor();
-  }, []);
+  const { mutateAsync: registerVendorMutate } = useRegisterVendor();
 
-  if (loading) return <p>Loading...</p>;
+  if (isLoadingUser || isLoadingVendor || isRefetchingVendor) return <p>Loading...</p>;
 
   if (user?.role !== "MANAGER") {
     return <p>You do not have permission to view this page.</p>;
+  }
+
+  const handleVendorConfirm = async (data: VendorDto) => {
+    setIsCreating(true);
+    try {
+      await registerVendorMutate(data);
+      toast.success("Vendor created successfully");
+      refetch();
+      setOpenCreate(false);
+    } catch (error: any) {
+      toast.error("Error creating vendor:", error);
+    } finally {
+      setIsCreating(false);
+    }
   }
 
   return (
@@ -53,7 +60,8 @@ export default function ManagerVendorPage() {
       <CreateVendorDialog
         open={openCreate}
         onOpenChange={setOpenCreate}
-        onCreated={fetchVendor}
+        isCreating={isCreating}
+        onSubmit={handleVendorConfirm}
       />
     </div>
   );

@@ -2,47 +2,36 @@
 
 import { Button } from "@/components/ui/button";
 import { VendorCard } from "@/features/vendor/components/vendor-card";
-import { VendorEntity } from "@/features/vendor/config/vendor.config";
 import { useAuth } from "@/providers/AuthProvider";
-import { useEffect, useState } from "react";
-import { approveVendorApi } from "../data-access/vendor.api";
+import { useMemo } from "react";
+import { toast } from "sonner";
+import { useApproveVendor, useGetAllVendors } from "../data-access/vendor.queries";
 
 export default function AdminVendorPage() {
-  const [vendors, setVendors] = useState<VendorEntity[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const { user } = useAuth();
+  const { user, isLoading: isLoadingUser } = useAuth();
 
-  useEffect(() => {
-    fetch("/api/vendors")
-      .then((res) => res.json())
-      .then(setVendors)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: vendorsData, isLoading: isLoadingVendor, refetch, isRefetching: isRefetchingVendor } = useGetAllVendors();
 
-  const approveVendor = async (id: string) => {
-    await approveVendorApi(id);
-    setVendors((prev) =>
-      prev.map((v) =>
-        v.vendorId === id ? { ...v, status: "ACCEPTED" } : v
-      )
-    );
-  };
+  const vendors = useMemo(() => vendorsData || [], [vendorsData]);
 
-  const rejectVendor = async (id: string) => {
-    await fetch(`/api/vendors/${id}/reject`, { method: "PATCH" });
-    setVendors((prev) =>
-      prev.map((v) =>
-        v.vendorId === id ? { ...v, status: "REJECTED" } : v
-      )
-    );
-  };
+  const { mutateAsync: approveVendorMutate } = useApproveVendor();
 
-  if (loading) return <p>Loading...</p>;
-
-    if (user?.role !== "ADMIN") {
-        return <p>You do not have permission to view this page.</p>;
+  const approveVendor = async (vendorId: string) => {
+    try {
+      await approveVendorMutate(vendorId);
+      refetch();
+      toast.success("Vendor approved successfully");
+    } catch (error: any) {
+      toast.error("Error approving vendor:", error);
     }
+  };
+
+  if (isLoadingUser || isLoadingVendor || isRefetchingVendor) return <p>Loading...</p>;
+
+  if (user?.role !== "ADMIN") {
+    return <p>You do not have permission to view this page.</p>;
+  }
 
   return (
     <div className="space-y-6">
@@ -64,7 +53,7 @@ export default function AdminVendorPage() {
                 <Button
                   variant="destructive"
                   className="flex-1"
-                  onClick={() => rejectVendor(vendor.vendorId)}
+                  onClick={() => toast.success("Reject vendor " + vendor.name)}
                 >
                   Reject
                 </Button>

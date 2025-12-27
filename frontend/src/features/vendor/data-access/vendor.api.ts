@@ -6,7 +6,39 @@ import { VendorDto, VendorEntity } from "../config/vendor.config";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/vendor/vendors`;
 
-export const GetMyVendorApi = async () => {
+export const getAllVendorsApi = async () => {
+    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    if (!response.ok) {
+        await throwApiError(response);
+    }
+
+    const responseDTO = await handleResponse<{ message: string, data: VendorEntity[] }>(response);
+    return responseDTO.data;
+}
+
+export const getActiveVendorsApi = async () => {
+    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/active`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    if (!response.ok) {
+        await throwApiError(response);
+    }
+
+    const responseDTO = await handleResponse<{ message: string, data: VendorEntity[] }>(response);
+    return responseDTO.data;
+}
+
+export const getMyVendorApi = async () => {
     const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-vendor`, {
         method: 'GET',
         headers: {
@@ -22,7 +54,7 @@ export const GetMyVendorApi = async () => {
     return responseDTO.data;
 }
 
-export const CreateVendorApi = async (vendorData: VendorDto) => {
+export const registerVendorApi = async (vendorData: VendorDto) => {
     const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/register`, {
         method: 'POST',
         headers: {
@@ -41,7 +73,7 @@ export const CreateVendorApi = async (vendorData: VendorDto) => {
 
 export const approveVendorApi = async (vendorId: string) => {
     const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/approve/${vendorId}`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
