@@ -12,12 +12,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
+    if (!isLoading && !isAuthenticated) {
+      router.push("/");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !isAuthenticated) {
     return <PageLoading />;
   }
 
