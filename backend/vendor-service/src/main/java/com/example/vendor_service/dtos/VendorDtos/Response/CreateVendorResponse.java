@@ -13,6 +13,7 @@ public class CreateVendorResponse {
 
     private LocalTime workingHourFrom;
     private LocalTime workingHourTo;
+    private String certification;
 
 
     private LocalDateTime createdAt;

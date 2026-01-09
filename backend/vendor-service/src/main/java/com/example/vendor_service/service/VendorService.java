@@ -57,6 +57,7 @@ public class VendorService {
         vendor.setManagerId(managerId);
         vendor.setWorkingHourFrom(request.getWorkingHourFrom());
         vendor.setWorkingHourTo(request.getWorkingHourTo());
+        vendor.setCertification(request.getCertification());
         vendor.setApprovedBy(null);
         return vendorRepository.save(vendor);
     }

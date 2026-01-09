@@ -33,6 +33,8 @@ public class Vendor {
     private LocalTime workingHourFrom;
     private LocalTime workingHourTo;
 
+    private String certification;
+
     @Column(nullable = false)
     private String managerId;
 

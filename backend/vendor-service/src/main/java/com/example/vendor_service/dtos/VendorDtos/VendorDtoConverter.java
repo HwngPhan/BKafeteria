@@ -18,6 +18,7 @@ public class VendorDtoConverter {
                 from.getStatus(),
                 from.getWorkingHourFrom(),
                 from.getWorkingHourTo(),
+                from.getCertification(),
                 from.getManagerId(),
                 from.getCreatedAt(),
                 from.getUpdatedAt(),

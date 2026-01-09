@@ -108,7 +108,7 @@ public class VendorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<VendorDto>>> getAllVendors() {
         List<VendorDto> vendors = vendorService.getAllVendors()
                 .stream()
