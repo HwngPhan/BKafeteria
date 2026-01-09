@@ -13,6 +13,7 @@ public record VendorDto (
         VendorStatus status,
         LocalTime workingHourFrom,
         LocalTime workingHourTo,
+        String certification,
         String managerId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
