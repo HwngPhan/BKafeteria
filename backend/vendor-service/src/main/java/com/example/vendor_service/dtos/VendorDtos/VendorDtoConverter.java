@@ -1,6 +1,5 @@
 package com.example.vendor_service.dtos.VendorDtos;
 
-import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.model.Vendor;
 import org.springframework.stereotype.Component;
 

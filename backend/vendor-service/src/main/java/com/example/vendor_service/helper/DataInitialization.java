@@ -30,7 +30,16 @@ public class DataInitialization implements CommandLineRunner {
         logger.info("Data initialization completed successfully!");
     }
 
-    private void createVendorIfNotExist(){
+    private void createVendorIfNotExist() {
+        if (vendorRepository.count() == 0) {
+            logger.info("Initializing admin user...");
+            createVendor();
+            logger.info("Users initialized successfully!");
+        } else {
+            logger.info("Vendors already exists, skipping initialization.");
+        }
+    }
+    private void createVendor(){
         Vendor vendor=new Vendor();
         vendor.setVendorId("V-21420247");
         vendor.setName("Test");
@@ -44,6 +53,5 @@ public class DataInitialization implements CommandLineRunner {
         vendor.setWorkingHourTo(LocalTime.of(17,0));
         vendor.setCertification("ISO 9001");
         vendorRepository.save(vendor);
-
     }
 }
