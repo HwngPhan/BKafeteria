@@ -2,11 +2,17 @@ package com.example.menu_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.example.menu_service",
+		"com.example.shared"
+})
+@EnableAsync
 public class MenuServiceApplication {
 
 	public static void main(String[] args) {
