@@ -15,32 +15,32 @@ spring:
           routes:
             # API Routes
             - id: iam-service
-              uri: http://localhost:${IAM_SERVICE}
-#              uri: http://iam-service:${IAM_SERVICE}
+#              uri: http://localhost:${IAM_SERVICE}
+              uri: http://iam-service:${IAM_SERVICE}
               predicates:
                 - Path=/api/iam/**
               filters:
                 - StripPrefix=1
                 
             - id: vendor-service
-              uri: http://localhost:${VENDOR_SERVICE}
-#              uri: http://vendor-service:${VENDOR_SERVICE}
+#              uri: http://localhost:${VENDOR_SERVICE}
+              uri: http://vendor-service:${VENDOR_SERVICE}
               predicates:
                 - Path=/api/vendor/**
               filters:
                 - StripPrefix=1
 
             - id: menu-service
-              uri: http://localhost:${MENU_SERVICE}
-#              uri: http://menu-service:${MENU_SERVICE}
+#              uri: http://localhost:${MENU_SERVICE}
+              uri: http://menu-service:${MENU_SERVICE}
               predicates:
                 - Path=/api/menu/**
               filters:
                 - StripPrefix=1
 
             - id: order-service
-              uri: http://localhost:${ORDER_SERVICE}
-#              uri: http://order-service:${ORDER_SERVICE}
+#              uri: http://localhost:${ORDER_SERVICE}
+              uri: http://order-service:${ORDER_SERVICE}
               predicates:
                 - Path=/api/order/**
               filters:
