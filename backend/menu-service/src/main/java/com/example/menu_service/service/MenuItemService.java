@@ -1,5 +1,7 @@
 package com.example.menu_service.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.menu_service.helper.IamClient;
@@ -109,4 +111,24 @@ public class MenuItemService {
     // Delete the MenuItem
     menuItemRepository.delete(menuItem);
   }
+
+  public Page<MenuItem> searchMenuItems(String name, String category, Pageable pageable) {
+    if (name != null && category != null) {
+      return menuItemRepository
+              .findByNameContainingIgnoreCaseAndCategory(name, category, pageable);
+    }
+
+    if (name != null) {
+      return menuItemRepository
+              .findByNameContainingIgnoreCase(name, pageable);
+    }
+
+    if (category != null) {
+      return menuItemRepository
+              .findByCategory(category, pageable);
+    }
+
+    return menuItemRepository.findAll(pageable);
+  }
+
 }
