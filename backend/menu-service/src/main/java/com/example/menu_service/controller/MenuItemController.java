@@ -98,7 +98,7 @@ public class MenuItemController {
   }
 
   @GetMapping("/{id}") 
-  public ResponseEntity<ApiResponse<MenuItemDto>> getMenuItemById(String id){
+  public ResponseEntity<ApiResponse<MenuItemDto>> getMenuItemById(@PathVariable String id){
     try{
       MenuItemDto menuItemDto = menuItemDtoConverter.convert(menuItemService.getMenuItemById(id));
 

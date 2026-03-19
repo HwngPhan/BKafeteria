@@ -1,3 +1,72 @@
+server:
+  port: ${ORDER_SERVICE}
+  servlet:
+    context-path: /order
 spring:
   application:
     name: order-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: kafka:9092
+  data:
+    redis:
+#      host: localhost
+      host: redis
+      port: 6379
+      timeout: 60000
+      lettuce:
+        shutdown-timeout: 100
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+jwt:
+  secret: ${JWT_SECRET}
+  access:
+    expiration: 86400000 # 1 day
+  refresh:
+    expiration: 604800000 # 1 week
+  otp:
+    expiration: 300000 # 5 minutes
+  account:
+    expiration: 900000 # 15 minutes
+
+internal-token:
+  service-name: order-service
+  api-key: ${JWT_SECRET}
+  auth-url: http://iam-service:${IAM_SERVICE:}/iam/internal/auth/token
+
+frontend:
+  url: ${FRONTEND_URL}
+
+api-gateway:
+#  url: "http://localhost:${API_GATEWAY}"
+  url: http://api-gateway:${API_GATEWAY}
+
+iam-service:
+#  url: "http://localhost:${IAM_SERVICE}"
+  url: "http://iam-service:${IAM_SERVICE}"
+
+menu-service:
+#  url: "http://localhost:${MENU_SERVICE}"
+  url: "http://menu-service:${MENU_SERVICE}"
+
+order-service:
+#  url: "http://localhost:${ORDER_SERVICE}"
+  url: "http://order-service:${ORDER_SERVICE}"
+
+cors:
+  allowed-origins:
+    - ${api-gateway.url}
+    - ${iam-service.url}
+    - ${menu-service.url}
+    - ${order-service.url}
