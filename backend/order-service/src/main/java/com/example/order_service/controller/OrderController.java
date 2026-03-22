@@ -3,6 +3,7 @@ package com.example.order_service.controller;
 
 import com.example.order_service.dtos.OrderDto;
 import com.example.order_service.dtos.OrderDtoConverter;
+import com.example.order_service.dtos.Request.OrderRequest;
 import com.example.order_service.model.Order;
 import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.service.OrderService;
@@ -58,4 +59,20 @@ public class OrderController {
     //         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     //     }
     // }
+
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest) {
+        try{
+            Order order = orderService.createOrder(orderRequest);
+            OrderDto orderDto = orderDtoConverter.convert(order);
+            return ResponseEntity.ok(
+                new ApiResponse<>(200, "Order created successfully", orderDto)
+            );
+        }catch(Exception e){
+            log.error("Error creating order: {}", e.getMessage());
+            ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create order: " + e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
