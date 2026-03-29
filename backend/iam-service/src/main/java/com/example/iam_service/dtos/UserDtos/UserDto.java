@@ -20,5 +20,6 @@ public record UserDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime lastLogin,
+        Double balance,
         Boolean isDeleted,
         String role){}

@@ -12,5 +12,6 @@ public record OrderDto(
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     Double totalPrice,
+    String customerId,
     Boolean isDeleted        
 ) {}

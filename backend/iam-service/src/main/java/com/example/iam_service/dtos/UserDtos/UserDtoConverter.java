@@ -22,6 +22,7 @@ public class UserDtoConverter {
                 from.getCreatedAt(),
                 from.getUpdatedAt(),
                 from.getLastLogin(),
+                from.getBalance(),
                 from.getIsDeleted(),
                 from.getRole());
     } // class User -> UserDto

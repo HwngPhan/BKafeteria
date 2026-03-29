@@ -26,7 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
-@RequestMapping("/menu/items")
+@RequestMapping("/items")
 @Slf4j
 @SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor

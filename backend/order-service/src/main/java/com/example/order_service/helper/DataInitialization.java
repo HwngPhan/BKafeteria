@@ -44,7 +44,7 @@ public class DataInitialization implements CommandLineRunner {
 
     private void createOrder(){
         List<MenuItem> menuItems = List.of(
-                new MenuItem("M-12345678", "test", 1, 10000.0)
+                new MenuItem("I-12345678", "test", 1, 10000.0)
         );
 
         List<OrderItem> orderItems = List.of(
@@ -58,6 +58,7 @@ public class DataInitialization implements CommandLineRunner {
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         order.setTotalPrice(10000.0);
+        order.setCustomerId("U-32345678");
         orderRepository.save(order);
     }
 

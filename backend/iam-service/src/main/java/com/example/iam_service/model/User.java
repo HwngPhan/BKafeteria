@@ -1,6 +1,5 @@
 package com.example.iam_service.model;
 
-import java.util.Set;
 
 import com.example.shared.enums.Gender;
 
@@ -63,4 +62,6 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted = false;
+
+    private Double balance;
 }
