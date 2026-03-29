@@ -41,4 +41,6 @@ public class Order {
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isDeleted = false;
+
+    private String customerId;
 }

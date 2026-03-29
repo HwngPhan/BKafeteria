@@ -13,6 +13,7 @@ public class OrderDtoConverter {
             order.getCreatedAt(),
             order.getUpdatedAt(),
             order.getTotalPrice(),
+            order.getCustomerId(),
             order.getIsDeleted()
         );
     }

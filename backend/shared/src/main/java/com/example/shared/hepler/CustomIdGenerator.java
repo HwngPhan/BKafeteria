@@ -5,7 +5,7 @@ import java.util.UUID;
 public class CustomIdGenerator {
 
     public static String generateOrderId() {
-        return "ORD-" + randomShortUUID();
+        return "O-" + randomShortUUID();
     }
 
     public static String generateItemId() {

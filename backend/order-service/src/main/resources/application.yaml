@@ -60,6 +60,9 @@ menu-service:
 #  url: "http://localhost:${MENU_SERVICE}"
   url: "http://menu-service:${MENU_SERVICE}"
 
+vendor-service:
+  url: "http://vendor-service:${VENDOR_SERVICE}"
+
 order-service:
 #  url: "http://localhost:${ORDER_SERVICE}"
   url: "http://order-service:${ORDER_SERVICE}"

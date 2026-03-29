@@ -138,4 +138,23 @@ public class VendorController {
         );
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<VendorDto>> getVendorById(@PathVariable String id) {
+        try{
+            Vendor vendor = vendorService.getVendorById(id);
+            if (vendor == null) {
+                throw new RuntimeException("Vendor not found for ID: " + id);
+            }
+            VendorDto vendorDto = vendorDtoConverter.convert(vendor);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor retrieved successfully", vendorDto));
+        } catch (RuntimeException e){
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to retrieve vendor", null));
+        }
+    }
 }

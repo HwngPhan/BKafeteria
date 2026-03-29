@@ -19,12 +19,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "menuitems")
 public class MenuItem {
     @Id
-    private String menuItemid;
+    private String menuItemId;
 
     @PrePersist
     public void assignIdIfMissing() {
-        if (menuItemid == null || menuItemid.isBlank()) {
-            this.menuItemid = CustomIdGenerator.generateItemId();
+        if (menuItemId == null || menuItemId.isBlank()) {
+            this.menuItemId = CustomIdGenerator.generateItemId();
         }
     }
     @Column(nullable = false)

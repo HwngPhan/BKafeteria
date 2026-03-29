@@ -8,6 +8,7 @@ import com.example.shared.dtos.PageDtos.PageDto;
 import com.example.shared.dtos.PageDtos.PageDtoConverter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.apache.kafka.shaded.com.google.protobuf.Api;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -176,6 +177,29 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign vendor", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PreAuthorize("hasAnyRole('INTERNAL_SERVICE')")
+    @PutMapping("/set-balance")
+    public ResponseEntity<ApiResponse<UserDto>> setBalance(
+        @RequestBody @Valid SetBalanceRequest setBalanceRequest,
+        Authentication authentication){
+        try {
+            String callerRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Caller has no role"));
+            UserDto userDto = userDtoConverter.convert(userService.setBalance(setBalanceRequest.getUserId(), setBalanceRequest.getBalance()));
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "Set balance successfully", userDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to set balance", null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

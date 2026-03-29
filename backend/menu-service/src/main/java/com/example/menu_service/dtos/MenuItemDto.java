@@ -3,7 +3,7 @@ package com.example.menu_service.dtos;
 import java.time.LocalDateTime;
 
 public record MenuItemDto (
-  String menuItemid,
+  String menuItemId,
   String name,
   String description,
   double price,
@@ -11,6 +11,7 @@ public record MenuItemDto (
   String category,
   double rating,
   LocalDateTime createdAt,
-  LocalDateTime updatedAt
+  LocalDateTime updatedAt,
+  String vendorId
   // String imageUrl;
 ){}

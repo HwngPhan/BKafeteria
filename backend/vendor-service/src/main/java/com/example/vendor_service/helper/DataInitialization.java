@@ -34,7 +34,7 @@ public class DataInitialization implements CommandLineRunner {
         if (vendorRepository.count() == 0) {
             logger.info("Initializing admin user...");
             createVendor();
-            logger.info("Users initialized successfully!");
+            logger.info("Vendors initialized successfully!");
         } else {
             logger.info("Vendors already exists, skipping initialization.");
         }
