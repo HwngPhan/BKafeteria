@@ -8,7 +8,7 @@ import java.util.List;
 public class MenuItemDtoConverter {
   public MenuItemDto convert(MenuItem from){
     return new MenuItemDto(
-      from.getMenuItemid(),
+      from.getMenuItemId(),
       from.getName(),
       from.getDescription(),
       from.getPrice(),
@@ -16,7 +16,8 @@ public class MenuItemDtoConverter {
       from.getCategory(),
       from.getRating(),
       from.getCreatedAt(),
-      from.getUpdatedAt()
+      from.getUpdatedAt(),
+      from.getVendorId()
       // from.getImageUrl()
     );
   }

@@ -67,6 +67,7 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
         user.setLastLogin(null);
         //Default
+        user.setBalance(100000.0);
         user.setRole("CUSTOMER");
 
         stringRedisTemplate.opsForValue().set("activate:" + token, user.getEmail(), java.time.Duration.ofMillis(expirationTime));
@@ -264,6 +265,15 @@ public class UserService {
         }
 
         user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return user;
+    }
+
+    @Transactional
+    public User setBalance(String userId, Double balance){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        user.setBalance(balance);
         userRepository.save(user);
         return user;
     }

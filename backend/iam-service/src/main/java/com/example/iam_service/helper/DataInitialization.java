@@ -60,7 +60,7 @@ public class DataInitialization implements CommandLineRunner {
         adminUser.setStatus(UserStatus.ACTIVE);
         adminUser.setCreatedAt(LocalDateTime.now());
         adminUser.setUpdatedAt(LocalDateTime.now());
-
+        adminUser.setBalance(100000.0);
         userRepository.save(adminUser);
     }
 
@@ -79,11 +79,13 @@ public class DataInitialization implements CommandLineRunner {
         managerUser.setVendorId("V-21420247");
         managerUser.setCreatedAt(LocalDateTime.now());
         managerUser.setUpdatedAt(LocalDateTime.now());
+        managerUser.setBalance(100000.0);
         userRepository.save(managerUser);
     }
 
     private void createCustomer() {
         User customerUser = new User();
+        customerUser.setUserId("U-32345678");
         customerUser.setFullName("customer");
         customerUser.setRole("CUSTOMER");
         customerUser.setGender(Gender.MALE);
@@ -95,6 +97,7 @@ public class DataInitialization implements CommandLineRunner {
         customerUser.setStatus(UserStatus.ACTIVE);
         customerUser.setCreatedAt(LocalDateTime.now());
         customerUser.setUpdatedAt(LocalDateTime.now());
+        customerUser.setBalance(1000000.0);
         userRepository.save(customerUser);
     }
 }
