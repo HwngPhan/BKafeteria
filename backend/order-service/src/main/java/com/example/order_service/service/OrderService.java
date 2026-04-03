@@ -63,7 +63,7 @@ public class OrderService {
                 MenuItem menuItem = new MenuItem();
                 menuItem.setItemId(itemReq.getItemId());
                 menuItem.setQuantity(itemReq.getQuantity());
-
+                if (itemInfoDto.getRemaining() < itemReq.getQuantity()) throw new RuntimeException("Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining() + " remaining");
                 menuItem.setItemName(itemInfoDto.getName());
                 menuItem.setPrice(itemInfoDto.getPrice());
 
@@ -94,9 +94,15 @@ public class OrderService {
         UserInfoDto customer = iamClient.getUserInfo(customerId);
         iamClient.setBalance(customerId, customer.getBalance() - order.getTotalPrice());    
         for (OrderItem orderItem : order.getOrderItems()) {
+            //calculate new balance
             VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(orderItem.getVendorId());
             UserInfoDto manager = iamClient.getUserInfo(vendorInfoDto.getManagerId());
             iamClient.setBalance(vendorInfoDto.getManagerId(), manager.getBalance() + orderItem.getVendorPrice());
+            //Update remaining
+            for (MenuItem menuItem : orderItem.getMenuItems()) {
+                MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(menuItem.getItemId());
+                menuClient.updateRemaining(menuItem.getItemId(), itemInfoDto.getRemaining() - menuItem.getQuantity());
+            }
         }
         order.setStatus(OrderStatus.PURCHASED);
         order.setUpdatedAt(LocalDateTime.now());

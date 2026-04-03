@@ -17,8 +17,8 @@ public class MenuItemDtoConverter {
       from.getRating(),
       from.getCreatedAt(),
       from.getUpdatedAt(),
-      from.getVendorId()
-      // from.getImageUrl()
+      from.getVendorId(),
+      from.getImageUrl()
     );
   }
 

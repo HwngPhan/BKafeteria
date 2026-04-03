@@ -12,6 +12,6 @@ public record MenuItemDto (
   double rating,
   LocalDateTime createdAt,
   LocalDateTime updatedAt,
-  String vendorId
-  // String imageUrl;
+  String vendorId,
+  String imageUrl 
 ){}

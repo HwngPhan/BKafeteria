@@ -55,6 +55,7 @@ public class MenuItemService {
     menuItem.setRating(0.0);
     menuItem.setCreatedAt(LocalDateTime.now());
     menuItem.setUpdatedAt(LocalDateTime.now());
+    menuItem.setImageUrl("");
 
     // Save and return the new MenuItem
     return menuItemRepository.save(menuItem);
@@ -131,4 +132,42 @@ public class MenuItemService {
     return menuItemRepository.findAll(pageable);
   }
 
+  @Transactional
+  public MenuItem updateMenuItemImage(String itemId, String userId, String imageUrl) {
+    // Validate token and get user info
+    UserInfoDto userInfo = iamClient.getUserInfo(userId);
+
+    // Fetch existing MenuItem
+    MenuItem menuItem = menuItemRepository.findById(itemId).orElse(null);
+    if (menuItem == null) {
+      return null; // Or throw an exception if preferred
+    }
+
+    // Check if the user has access to update this menu item
+    if (!menuItem.getVendorId().equals(userInfo.getVendorId())) {
+      throw new RuntimeException("You do not have access to update this menu item.");
+    }
+
+    // Update MenuItem fields
+    menuItem.setImageUrl(imageUrl);
+    menuItem.setUpdatedAt(LocalDateTime.now());
+
+    // Save and return the updated MenuItem
+    return menuItemRepository.save(menuItem);
+  }
+
+  @Transactional
+  public MenuItem updateMenuItemRemaining(String itemId,  Integer remaining) {
+    // Fetch existing MenuItem
+    MenuItem menuItem = menuItemRepository.findById(itemId).orElse(null);
+    if (menuItem == null) {
+      return null; // Or throw an exception if preferred
+    }
+    // Update MenuItem fields
+    menuItem.setRemaining(remaining);
+    menuItem.setUpdatedAt(LocalDateTime.now());
+
+    // Save and return the updated MenuItem
+    return menuItemRepository.save(menuItem);
+  }
 }

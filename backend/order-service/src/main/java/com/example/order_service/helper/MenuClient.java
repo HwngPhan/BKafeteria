@@ -8,13 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -56,6 +55,28 @@ public class MenuClient {
         return Optional.ofNullable(response.getBody())
                 .map(ApiResponse::getData)
                 .orElse(null);
+
+    }
+    public void updateRemaining(String menuItemId, Integer remaining){
+        Map<String, String> body = new HashMap<>();
+        body.put("remain", remaining.toString());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(tokenProvider.getToken());
+
+        HttpEntity<Map<String, String>> entity =
+                new HttpEntity<>(body, headers);
+
+        ParameterizedTypeReference<ApiResponse<MenuItemInfoDto>> typeRef = new ParameterizedTypeReference<>() {
+        };
+
+        ResponseEntity<ApiResponse<MenuItemInfoDto>> response = restTemplate.exchange(
+                getMenuServiceBaseUrl() + "/menu/items/update-remaining/" + menuItemId,
+                HttpMethod.PUT,
+                entity,
+                typeRef
+        );
 
     }
 }

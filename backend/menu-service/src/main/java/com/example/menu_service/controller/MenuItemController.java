@@ -2,6 +2,8 @@ package com.example.menu_service.controller;
 
 import com.example.menu_service.dtos.MenuItemDto;
 import com.example.menu_service.dtos.Request.CreateMenuItemRequest;
+import com.example.menu_service.dtos.Request.UpdateImageRequest;
+import com.example.menu_service.dtos.Request.UpdateRemainingRequest;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -214,4 +216,57 @@ public class MenuItemController {
     }
   }
 
+  @PutMapping("/img/{id}")
+  @PreAuthorize("hasAnyRole('MANAGER')")
+  public ResponseEntity<ApiResponse<MenuItemDto>> updateMenuItemImage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String id, @RequestBody UpdateImageRequest updateImageRequest){
+    try{
+      MenuItemDto menuItemDto = menuItemDtoConverter.convert(menuItemService.updateMenuItemImage(id,userDetails.getId(),updateImageRequest.getImageUrl()));
+      return ResponseEntity.ok(
+                new ApiResponse<>(200, "Menu item image updated successfully", menuItemDto)
+        );
+    }
+    catch (RuntimeException e){
+      log.error("Error updating menu item image: {}", e.getMessage());
+      ApiResponse<MenuItemDto> response = new ApiResponse<>(
+              HttpStatus.INTERNAL_SERVER_ERROR.value(),
+              "Failed to update menu item image: " + e.getMessage(),
+              null);
+      return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    catch (Exception e) {
+      log.error("Unexpected error updating menu item image: {}", e.getMessage());
+      ApiResponse<MenuItemDto> response = new ApiResponse<>(
+              HttpStatus.INTERNAL_SERVER_ERROR.value(),
+              "Unexpected error occurred",
+              null);
+      return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PutMapping("/update-remaining/{id}")
+  @PreAuthorize("hasAnyRole('INTERNAL_SERVICE')")
+  public ResponseEntity<ApiResponse<MenuItemDto>> updateMenuItemRemaining(@PathVariable String id, @RequestBody UpdateRemainingRequest updateRemainingRequest){
+    try{
+      MenuItemDto menuItemDto = menuItemDtoConverter.convert(menuItemService.updateMenuItemRemaining(id,updateRemainingRequest.getRemain()));
+      return ResponseEntity.ok(
+                new ApiResponse<>(200, "Menu item remaining updated successfully", menuItemDto)
+        );
+    }
+    catch (RuntimeException e){
+      log.error("Error updating menu item remaining: {}", e.getMessage());
+      ApiResponse<MenuItemDto> response = new ApiResponse<>
+              (HttpStatus.INTERNAL_SERVER_ERROR.value(),
+              "Failed to update menu item remaining: " + e.getMessage(),
+              null);
+      return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    catch (Exception e) {
+      log.error("Unexpected error updating menu item remaining: {}", e.getMessage());
+      ApiResponse<MenuItemDto> response = new ApiResponse<>
+              (HttpStatus.INTERNAL_SERVER_ERROR.value(),
+              "Unexpected error occurred",
+              null);
+      return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

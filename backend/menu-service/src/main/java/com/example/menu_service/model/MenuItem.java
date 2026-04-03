@@ -39,7 +39,7 @@ public class MenuItem {
     private Integer remaining;
     private String category;
     private double rating;
-    // private String imageUrl;
+    private String imageUrl;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
