@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster richColors position="top-right" />   {/* ⬅️ đặt ở đây */}
+        <Toaster richColors position="bottom-right" />   {/* ⬅️ đặt ở đây */}
         <QueryProvider>
           {/* Global toast handler */}
           <AuthProvider>

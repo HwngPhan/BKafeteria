@@ -46,34 +46,26 @@ spring:
               filters:
                 - StripPrefix=1
 
-            # API Documentation Routes
+            # API Documentation Routes (no StripPrefix — services use context-path)
             - id: iam-service-api-docs
-              uri: http://localhost:${IAM_SERVICE}
+              uri: http://iam-service:${IAM_SERVICE}
               predicates:
                 - Path=/iam/v3/api-docs
-              filters:
-                - StripPrefix=1
 
             - id: vendor-service-api-docs
-              uri: http://localhost:${VENDOR_SERVICE}
+              uri: http://vendor-service:${VENDOR_SERVICE}
               predicates:
                 - Path=/vendor/v3/api-docs
-              filters:
-                - StripPrefix=1
 
             - id: menu-service-api-docs
-              uri: http://localhost:${MENU_SERVICE}
+              uri: http://menu-service:${MENU_SERVICE}
               predicates:
                 - Path=/menu/v3/api-docs
-              filters:
-                - StripPrefix=1
 
             - id: order-service-api-docs
-              uri: http://localhost:${ORDER_SERVICE}
+              uri: http://order-service:${ORDER_SERVICE}
               predicates:
                 - Path=/order/v3/api-docs
-              filters:
-                - StripPrefix=1
 
   application:
     name: api-gateway
@@ -83,13 +75,13 @@ springdoc:
   swagger-ui:
     urls:
       - name: IAM Service
-        url: http://localhost:${IAM_SERVICE}/iam/v3/api-docs
+        url: /iam/v3/api-docs
       - name: Vendor Service
-        url: http://localhost:${VENDOR_SERVICE}/vendor/v3/api-docs
+        url: /vendor/v3/api-docs
       - name: Order Service
-        url: http://localhost:${ORDER_SERVICE}/order/v3/api-docs
+        url: /order/v3/api-docs
       - name: Menu Service
-        url: http://localhost:${MENU_SERVICE}/menu/v3/api-docs
+        url: /menu/v3/api-docs
     path: /swagger-ui.html
     display-request-duration: true
     operations-sorter: method

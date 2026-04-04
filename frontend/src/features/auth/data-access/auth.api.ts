@@ -21,7 +21,7 @@ export const SendOtpApi = async (email: string) => {
     return responseDTO.data;
 }
 
-export const VerifyOtpApi = async (payload: {email: string, otp: string}) => {
+export const VerifyOtpApi = async (payload: { email: string, otp: string }) => {
     const response = await fetch(`${BASE_URL}/verify-otp`, {
         method: 'POST',
         headers: {
@@ -32,13 +32,15 @@ export const VerifyOtpApi = async (payload: {email: string, otp: string}) => {
     if (!response.ok) {
         await throwApiError(response);
     }
-    const responseDTO = await handleResponse<{ message: string, data: {
-        otpToken: string
-    } }>(response);
+    const responseDTO = await handleResponse<{
+        message: string, data: {
+            otpToken: string
+        }
+    }>(response);
     return responseDTO.data;
 }
 
-export const ResetPasswordApi = async (payload: {email: string, newPassword: string}) => {
+export const ResetPasswordApi = async (payload: { email: string, newPassword: string }) => {
     const response = await fetchWithToken(TokenType.otpToken, `${BASE_URL}/reset-password`, {
         method: 'POST',
         headers: {
@@ -81,7 +83,7 @@ export const LoginApi = async (payload: LoginObject) => {
     }
     const responseDTO = await handleResponse<LoginResponse>(response);
     return responseDTO.data;
-    
+
 };
 
 export const LogoutApi = async () => {
@@ -94,9 +96,9 @@ export const LogoutApi = async () => {
     if (!response.ok) {
         await throwApiError(response);
     }
-    const responseDTO = await handleResponse<{message: string; data: string}>(response);
+    const responseDTO = await handleResponse<{ message: string; data: string }>(response);
     return responseDTO.data;
-    
+
 };
 
 export const RegisterApi = async (payload: RegisterObject) => {
