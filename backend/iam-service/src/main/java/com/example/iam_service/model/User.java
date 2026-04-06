@@ -1,11 +1,9 @@
 package com.example.iam_service.model;
 
-
 import com.example.shared.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 
 import com.example.shared.enums.UserStatus;
 import com.example.shared.hepler.CustomIdGenerator;
@@ -64,4 +62,6 @@ public class User {
     private Boolean isDeleted = false;
 
     private Double balance;
+
+    // Membership
 }

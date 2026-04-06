@@ -7,7 +7,9 @@ import com.example.order_service.helper.IamClient;
 import com.example.order_service.helper.MenuClient;
 import com.example.order_service.helper.VendorClient;
 import com.example.order_service.model.Order;
+import com.example.order_service.model.VendorOrder;
 import com.example.order_service.repository.OrderRepository;
+import com.example.order_service.repository.VendorOrderRepository;
 import org.springframework.stereotype.Service;
 
 import com.example.order_service.dtos.Request.ItemRequest;
@@ -28,15 +30,18 @@ public class OrderService {
     private final MenuClient menuClient;
     private final IamClient iamClient;
     private final VendorClient vendorClient;
+    private final VendorOrderRepository vendorOrderRepository;
 
-    public OrderService(OrderRepository orderRepository, MenuClient menuClient, IamClient iamClient, VendorClient vendorClient){
+    public OrderService(OrderRepository orderRepository, MenuClient menuClient, IamClient iamClient,
+            VendorClient vendorClient, VendorOrderRepository vendorOrderRepository) {
         this.orderRepository = orderRepository;
         this.menuClient = menuClient;
         this.iamClient = iamClient;
         this.vendorClient = vendorClient;
+        this.vendorOrderRepository = vendorOrderRepository;
     }
 
-    public Order getOrderById(String id){
+    public Order getOrderById(String id) {
         return orderRepository.findById(id).orElse(null);
     }
 
@@ -44,10 +49,10 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
-    public Order createOrder(OrderRequest orderRequest, String customerId) throws RuntimeException{
+    public Order createOrder(OrderRequest orderRequest, String customerId) throws RuntimeException {
         Order order = new Order();
         List<OrderItem> orderItems = new ArrayList<>();
-        
+
         Double totalOrderPrice = 0.0;
 
         for (VendorOrderRequest vendorReq : orderRequest.getVendorOrders()) {
@@ -59,50 +64,68 @@ public class OrderService {
 
             for (ItemRequest itemReq : vendorReq.getItems()) {
                 MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(itemReq.getItemId());
-                if (itemInfoDto.getRemaining()<=0) throw new RuntimeException("Item unavailable");
+                if (itemInfoDto.getRemaining() <= 0)
+                    throw new RuntimeException("Item unavailable");
                 MenuItem menuItem = new MenuItem();
                 menuItem.setItemId(itemReq.getItemId());
                 menuItem.setQuantity(itemReq.getQuantity());
-                if (itemInfoDto.getRemaining() < itemReq.getQuantity()) throw new RuntimeException("Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining() + " remaining");
+                if (itemInfoDto.getRemaining() < itemReq.getQuantity())
+                    throw new RuntimeException(
+                            "Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining() + " remaining");
                 menuItem.setItemName(itemInfoDto.getName());
                 menuItem.setPrice(itemInfoDto.getPrice());
-
 
                 vendorItemPrice += menuItem.getPrice() * menuItem.getQuantity();
                 menuItems.add(menuItem);
             }
-            
+
             orderItem.setMenuItems(menuItems);
             orderItem.setVendorPrice(vendorItemPrice);
             orderItems.add(orderItem);
-            
+
             totalOrderPrice += vendorItemPrice;
         }
-        
+
         order.setOrderItems(orderItems);
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
+
+        // Membership
         order.setTotalPrice(totalOrderPrice);
         order.setCustomerId(customerId);
         return orderRepository.save(order);
     }
 
-    public void makePayment(String orderId, String customerId) throws RuntimeException{
+    public void makePayment(String orderId, String customerId) throws RuntimeException {
         Order order = getOrderById(orderId);
-        if (!customerId.equals(order.getCustomerId())) throw new RuntimeException("Invalid customerId");
+        if (!customerId.equals(order.getCustomerId()))
+            throw new RuntimeException("Invalid customerId");
         UserInfoDto customer = iamClient.getUserInfo(customerId);
-        iamClient.setBalance(customerId, customer.getBalance() - order.getTotalPrice());    
+        iamClient.setBalance(customerId, customer.getBalance() - order.getTotalPrice());
         for (OrderItem orderItem : order.getOrderItems()) {
-            //calculate new balance
+            // calculate new balance
             VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(orderItem.getVendorId());
             UserInfoDto manager = iamClient.getUserInfo(vendorInfoDto.getManagerId());
             iamClient.setBalance(vendorInfoDto.getManagerId(), manager.getBalance() + orderItem.getVendorPrice());
-            //Update remaining
+            // Update remaining
             for (MenuItem menuItem : orderItem.getMenuItems()) {
                 MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(menuItem.getItemId());
                 menuClient.updateRemaining(menuItem.getItemId(), itemInfoDto.getRemaining() - menuItem.getQuantity());
             }
+            // Create vendorOrders for each vendor
+
+            VendorOrder vendorOrder = new VendorOrder();
+            vendorOrder.setVendorId(orderItem.getVendorId());
+            vendorOrder.setMenuItems(orderItem.getMenuItems());
+            vendorOrder.setVendorPrice(orderItem.getVendorPrice());
+            vendorOrder.setOrderId(orderId);
+            vendorOrder.setStatus(OrderStatus.PURCHASED);
+
+            // Info vendor /orders/topic/{id}
+            // Create topic
+            vendorOrderRepository.save(vendorOrder);
+
         }
         order.setStatus(OrderStatus.PURCHASED);
         order.setUpdatedAt(LocalDateTime.now());
