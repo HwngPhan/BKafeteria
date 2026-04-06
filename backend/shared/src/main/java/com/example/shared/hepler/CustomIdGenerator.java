@@ -7,7 +7,9 @@ public class CustomIdGenerator {
     public static String generateOrderId() {
         return "O-" + randomShortUUID();
     }
-
+    public static String generateVendorOrderId() {
+        return "VO-" + randomShortUUID();
+    }
     public static String generateItemId() {
         return "I-" + randomShortUUID();
     }
