@@ -6,39 +6,48 @@ import com.example.order_service.dtos.VendorInfoDto;
 import com.example.order_service.helper.IamClient;
 import com.example.order_service.helper.MenuClient;
 import com.example.order_service.helper.VendorClient;
+import com.example.order_service.helper.producer.KafkaProducerService;
 import com.example.order_service.model.Order;
 import com.example.order_service.model.VendorOrder;
 import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.repository.VendorOrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.order_service.dtos.Request.ItemRequest;
 import com.example.order_service.dtos.Request.OrderRequest;
 import com.example.order_service.dtos.Request.VendorOrderRequest;
+import com.example.order_service.dtos.KafkaMessage.VendorNotificationMessage;
 import com.example.order_service.model.MenuItem;
 import com.example.order_service.model.OrderItem;
 import com.example.shared.enums.OrderStatus;
+import com.example.shared.enums.VendorStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class OrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository orderRepository;
     private final MenuClient menuClient;
     private final IamClient iamClient;
     private final VendorClient vendorClient;
     private final VendorOrderRepository vendorOrderRepository;
+    private final KafkaProducerService kafkaProducerService;
+
 
     public OrderService(OrderRepository orderRepository, MenuClient menuClient, IamClient iamClient,
-            VendorClient vendorClient, VendorOrderRepository vendorOrderRepository) {
+            VendorClient vendorClient, VendorOrderRepository vendorOrderRepository, KafkaProducerService kafkaProducerService) {
         this.orderRepository = orderRepository;
         this.menuClient = menuClient;
         this.iamClient = iamClient;
         this.vendorClient = vendorClient;
         this.vendorOrderRepository = vendorOrderRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     public Order getOrderById(String id) {
@@ -124,7 +133,26 @@ public class OrderService {
 
             // Info vendor /orders/topic/{id}
             // Create topic
-            vendorOrderRepository.save(vendorOrder);
+            VendorOrder savedVendorOrder = vendorOrderRepository.save(vendorOrder);
+
+            // Send Kafka notification to vendor
+            VendorNotificationMessage notification = new VendorNotificationMessage();
+            notification.setOrderId(orderId);
+            notification.setVendorOrderId(savedVendorOrder.getVendorOrderId());
+            notification.setVendorId(orderItem.getVendorId());
+            notification.setCustomerId(customerId);
+            notification.setStatus(OrderStatus.PURCHASED);
+            notification.setMessage("New order received");
+            notification.setMenuItems(orderItem.getMenuItems());
+            
+            try {
+                kafkaProducerService.send("vendor-orders", notification);
+                logger.info("Successfully sent Kafka notification to vendor: {} for order: {}", 
+                           orderItem.getVendorId(), orderId);
+            } catch (Exception e) {
+                logger.error("Failed to send Kafka notification to vendor: {} for order: {}", 
+                            orderItem.getVendorId(), orderId, e);
+            }
 
         }
         order.setStatus(OrderStatus.PURCHASED);

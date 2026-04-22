@@ -13,5 +13,6 @@ import java.util.Optional;
 public interface VendorRepository extends JpaRepository<Vendor,String> , JpaSpecificationExecutor<Vendor> {
     Optional<Vendor> findByName(String name);
     Optional<Vendor> findByManagerId(String managerId);
+    List<Vendor> findAllByManagerId(String managerId);
     List<Vendor> findAllByStatus(VendorStatus status);
 }
