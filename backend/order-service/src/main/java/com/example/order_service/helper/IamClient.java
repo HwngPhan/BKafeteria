@@ -135,4 +135,26 @@ public class IamClient {
         );
     }
 
+    public void addPoints(String userId, Integer points){
+        Map<String, String> body = new HashMap<>();
+        body.put("userId", userId);
+        body.put("points", points.toString());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(tokenProvider.getToken());
+
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
+
+        ParameterizedTypeReference<ApiResponse<UserInfoDto>> typeRef = new ParameterizedTypeReference<>() {
+        };
+
+        ResponseEntity<ApiResponse<UserInfoDto>> response = restTemplate.exchange(
+                getIAMServiceBaseUrl() + "/iam/users/add-points",
+                HttpMethod.PUT,
+                entity,
+                typeRef
+        );
+    }
+
 }

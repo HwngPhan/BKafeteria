@@ -20,5 +20,7 @@ public class AssignVendorRequest {
     @Email
     @NotBlank
     private String email;
+    @NotBlank
+    private String role;
 
 }

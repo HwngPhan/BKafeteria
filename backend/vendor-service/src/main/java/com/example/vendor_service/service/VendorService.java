@@ -38,6 +38,10 @@ public class VendorService {
         return vendorRepository.findByManagerId(managerId).orElse(null);
     }
 
+    public List<Vendor> getVendorsByManagerId(String managerId){
+        return vendorRepository.findAllByManagerId(managerId);
+    }
+
     @Transactional
     public Vendor createVendor(CreateVendorRequest request, String managerId){
 
@@ -72,7 +76,7 @@ public class VendorService {
         vendor.setApprovedBy(adminId);
 
         UserInfoDto manager = iamClient.getUserInfo(vendor.getManagerId());
-        iamClient.assignVendor(vendorId, manager.getEmail());
+        iamClient.assignVendor(vendorId, manager.getEmail(), "MANAGER");
         return vendorRepository.save(vendor);
     }
 

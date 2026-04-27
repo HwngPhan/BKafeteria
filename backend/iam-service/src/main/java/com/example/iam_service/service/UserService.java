@@ -68,6 +68,7 @@ public class UserService {
         user.setLastLogin(null);
         //Default
         user.setBalance(100000.0);
+        user.setPoints(0);
         user.setRole("CUSTOMER");
 
         stringRedisTemplate.opsForValue().set("activate:" + token, user.getEmail(), java.time.Duration.ofMillis(expirationTime));
@@ -260,9 +261,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         copyIfPresent(vendorId, user::setVendorId);
 
-        if (user.getRole().equals("CUSTOMER")){
-            user.setRole("STAFF");
-        }
+        user.setRole(req.getRole());
 
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
@@ -274,6 +273,18 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
         user.setBalance(balance);
+        userRepository.save(user);
+        return user;
+    }
+
+    @Transactional
+    public User addPoints(String userId, Integer points){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        if (user.getPoints() == null) {
+            user.setPoints(0);
+        }
+        user.setPoints(user.getPoints() + points);
         userRepository.save(user);
         return user;
     }
