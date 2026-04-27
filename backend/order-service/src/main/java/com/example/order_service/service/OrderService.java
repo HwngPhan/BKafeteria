@@ -39,9 +39,9 @@ public class OrderService {
     private final VendorOrderRepository vendorOrderRepository;
     private final KafkaProducerService kafkaProducerService;
 
-
     public OrderService(OrderRepository orderRepository, MenuClient menuClient, IamClient iamClient,
-            VendorClient vendorClient, VendorOrderRepository vendorOrderRepository, KafkaProducerService kafkaProducerService) {
+            VendorClient vendorClient, VendorOrderRepository vendorOrderRepository,
+            KafkaProducerService kafkaProducerService) {
         this.orderRepository = orderRepository;
         this.menuClient = menuClient;
         this.iamClient = iamClient;
@@ -111,7 +111,28 @@ public class OrderService {
         if (!customerId.equals(order.getCustomerId()))
             throw new RuntimeException("Invalid customerId");
         UserInfoDto customer = iamClient.getUserInfo(customerId);
-        iamClient.setBalance(customerId, customer.getBalance() - order.getTotalPrice());
+
+        Integer points = customer.getPoints() != null ? customer.getPoints() : 0;
+        double discountPercentage = 0.0;
+        if (points >= 2000) {
+            discountPercentage = 0.20;
+        } else if (points >= 500) {
+            discountPercentage = 0.15;
+        } else if (points >= 100) {
+            discountPercentage = 0.10;
+        } else if (points >= 50) {
+            discountPercentage = 0.05;
+        }
+
+        double actualPrice = order.getTotalPrice() * (1.0 - discountPercentage);
+
+        iamClient.setBalance(customerId, customer.getBalance() - actualPrice);
+        order.setTotalPrice(actualPrice);
+        int pointsToAdd = (int) (order.getTotalPrice() / 10000);
+        if (pointsToAdd > 0) {
+            iamClient.addPoints(customerId, pointsToAdd);
+        }
+
         for (OrderItem orderItem : order.getOrderItems()) {
             // calculate new balance
             VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(orderItem.getVendorId());
@@ -144,14 +165,14 @@ public class OrderService {
             notification.setStatus(OrderStatus.PURCHASED);
             notification.setMessage("New order received");
             notification.setMenuItems(orderItem.getMenuItems());
-            
+
             try {
                 kafkaProducerService.send("vendor-orders", notification);
-                logger.info("Successfully sent Kafka notification to vendor: {} for order: {}", 
-                           orderItem.getVendorId(), orderId);
+                logger.info("Successfully sent Kafka notification to vendor: {} for order: {}",
+                        orderItem.getVendorId(), orderId);
             } catch (Exception e) {
-                logger.error("Failed to send Kafka notification to vendor: {} for order: {}", 
-                            orderItem.getVendorId(), orderId, e);
+                logger.error("Failed to send Kafka notification to vendor: {} for order: {}",
+                        orderItem.getVendorId(), orderId, e);
             }
 
         }

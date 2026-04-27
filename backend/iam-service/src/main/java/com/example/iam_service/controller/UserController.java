@@ -203,6 +203,30 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PreAuthorize("hasAnyRole('INTERNAL_SERVICE')")
+    @PutMapping("/add-points")
+    public ResponseEntity<ApiResponse<UserDto>> addPoints(
+        @RequestBody @Valid AddPointsRequest addPointsRequest,
+        Authentication authentication){
+        try {
+            String callerRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Caller has no role"));
+            UserDto userDto = userDtoConverter.convert(userService.addPoints(addPointsRequest.getUserId(), addPointsRequest.getPoints()));
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.OK.value(), "Added points successfully", userDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            ApiResponse<UserDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to add points", null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 

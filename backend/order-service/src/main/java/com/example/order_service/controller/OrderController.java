@@ -121,20 +121,24 @@ public class OrderController {
     }
 
     // get order theo vendor
-    @GetMapping("/get-vendor-order")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<VendorOrderDto>>> getVendorOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        try {
-            List<VendorOrder> vendorOrders = vendorOrderService.getVendorOrdersByVendorId(userDetails.getId());
-            List<VendorOrderDto> vendorOrderDtos = vendorOrderDtoConverter.convert(vendorOrders);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(200, "Vendor orders retrieved successfully", vendorOrderDtos));
-        } catch (Exception e) {
-            log.error("Error retrieving vendor orders: {}", e.getMessage());
-            ApiResponse<List<VendorOrderDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Failed to retrieve vendor orders: " + e.getMessage(), null);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    // @GetMapping("/get-vendor-order")
+    // @PreAuthorize("isAuthenticated()")
+    // public ResponseEntity<ApiResponse<List<VendorOrderDto>>> getVendorOrders(
+    // @AuthenticationPrincipal CustomUserDetails userDetails) {
+    // try {
+    // List<VendorOrder> vendorOrders =
+    // vendorOrderService.getVendorOrdersByVendorId(userDetails.getId());
+    // List<VendorOrderDto> vendorOrderDtos =
+    // vendorOrderDtoConverter.convert(vendorOrders);
+    // return ResponseEntity.ok(
+    // new ApiResponse<>(200, "Vendor orders retrieved successfully",
+    // vendorOrderDtos));
+    // } catch (Exception e) {
+    // log.error("Error retrieving vendor orders: {}", e.getMessage());
+    // ApiResponse<List<VendorOrderDto>> response = new
+    // ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+    // "Failed to retrieve vendor orders: " + e.getMessage(), null);
+    // return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
+    // }
 }

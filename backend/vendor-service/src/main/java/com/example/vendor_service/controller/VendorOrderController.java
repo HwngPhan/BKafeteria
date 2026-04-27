@@ -40,7 +40,8 @@ public class VendorOrderController {
         try {
             List<Vendor> vendors = vendorService.getVendorsByManagerId(userDetails.getId());
             if (vendors.isEmpty()) {
-                return ResponseEntity.ok(new ApiResponse<>(404, "No vendor associated with this manager", Collections.emptyList()));
+                return ResponseEntity
+                        .ok(new ApiResponse<>(404, "No vendor associated with this manager", Collections.emptyList()));
             }
             List<VendorOrderNotification> notifications = vendors.stream()
                     .flatMap(v -> notificationRepository.findByVendorId(v.getVendorId()).stream())
@@ -73,7 +74,27 @@ public class VendorOrderController {
         return ResponseEntity.ok(new ApiResponse<>(
                 200,
                 "Vendor order service is healthy and listening to Kafka topic 'vendor-orders'",
-                null
-        ));
+                null));
+    }
+
+    @GetMapping("/get-vendor-order")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getVendorOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            List<Vendor> vendors = vendorService.getVendorsByManagerId(userDetails.getId());
+            if (vendors.isEmpty()) {
+                return ResponseEntity
+                        .ok(new ApiResponse<>(404, "No vendor associated with this manager", Collections.emptyList()));
+            }
+            List<VendorOrderNotification> vendorOrders = vendors.stream()
+                    .flatMap(v -> notificationRepository.findByVendorId(v.getVendorId()).stream())
+                    .toList();
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor orders retrieved successfully", vendorOrders));
+        } catch (Exception e) {
+            log.error("Error retrieving vendor orders for manager: {}", userDetails.getId(), e);
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to retrieve vendor orders", null));
+        }
     }
 }

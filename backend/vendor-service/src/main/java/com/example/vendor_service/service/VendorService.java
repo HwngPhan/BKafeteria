@@ -76,7 +76,7 @@ public class VendorService {
         vendor.setApprovedBy(adminId);
 
         UserInfoDto manager = iamClient.getUserInfo(vendor.getManagerId());
-        iamClient.assignVendor(vendorId, manager.getEmail());
+        iamClient.assignVendor(vendorId, manager.getEmail(), "MANAGER");
         return vendorRepository.save(vendor);
     }
 
