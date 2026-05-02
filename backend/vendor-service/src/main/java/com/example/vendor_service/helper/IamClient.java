@@ -92,9 +92,10 @@ public class IamClient {
     }
 
 
-    public void assignVendor(String vendorId, String email){
+    public void assignVendor(String vendorId, String email, String role){
         Map<String, String> body = new HashMap<>();
         body.put("email", email);
+        body.put("role",role);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

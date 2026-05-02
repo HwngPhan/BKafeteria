@@ -16,7 +16,6 @@ import com.example.menu_service.dtos.Request.CreateMenuItemRequest;
 import java.util.List;
 import java.time.LocalDateTime;
 
-
 @Service
 public class MenuItemService {
   private final MenuItemRepository menuItemRepository;
@@ -32,13 +31,16 @@ public class MenuItemService {
     UserInfoDto userInfo = iamClient.getUserInfo(userId);
 
     // // Check if the user has access to the requested vendor's menu items
-    // if (!userInfo.getVendorId().equals(vendorId) && !userInfo.getRole().equals("ADMIN")) {
-    //   throw new UnauthorizedException("You do not have access to this vendor's menu items.");
+    // if (!userInfo.getVendorId().equals(vendorId) &&
+    // !userInfo.getRole().equals("ADMIN")) {
+    // throw new UnauthorizedException("You do not have access to this vendor's menu
+    // items.");
     // }
 
     // Fetch and return menu items for the specified vendor
     return menuItemRepository.findByVendorId(userInfo.getVendorId());
   }
+
   @Transactional
   public MenuItem createMenuItem(CreateMenuItemRequest createMenuItemRequest, String userId) {
     // Validate token and get user info
@@ -51,7 +53,7 @@ public class MenuItemService {
     menuItem.setPrice(createMenuItemRequest.getPrice());
     menuItem.setCategory(createMenuItemRequest.getCategory());
     menuItem.setRemaining(createMenuItemRequest.getRemaining());
-    menuItem.setVendorId(userInfo.getVendorId());
+    menuItem.setVendorId(userInfo.getVendorId()); // bug
     menuItem.setRating(0.0);
     menuItem.setCreatedAt(LocalDateTime.now());
     menuItem.setUpdatedAt(LocalDateTime.now());
@@ -116,17 +118,17 @@ public class MenuItemService {
   public Page<MenuItem> searchMenuItems(String name, String category, Pageable pageable) {
     if (name != null && category != null) {
       return menuItemRepository
-              .findByNameContainingIgnoreCaseAndCategory(name, category, pageable);
+          .findByNameContainingIgnoreCaseAndCategory(name, category, pageable);
     }
 
     if (name != null) {
       return menuItemRepository
-              .findByNameContainingIgnoreCase(name, pageable);
+          .findByNameContainingIgnoreCase(name, pageable);
     }
 
     if (category != null) {
       return menuItemRepository
-              .findByCategory(category, pageable);
+          .findByCategory(category, pageable);
     }
 
     return menuItemRepository.findAll(pageable);
@@ -157,7 +159,7 @@ public class MenuItemService {
   }
 
   @Transactional
-  public MenuItem updateMenuItemRemaining(String itemId,  Integer remaining) {
+  public MenuItem updateMenuItemRemaining(String itemId, Integer remaining) {
     // Fetch existing MenuItem
     MenuItem menuItem = menuItemRepository.findById(itemId).orElse(null);
     if (menuItem == null) {

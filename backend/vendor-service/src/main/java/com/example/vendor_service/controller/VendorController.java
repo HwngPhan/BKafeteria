@@ -51,7 +51,7 @@ public class VendorController {
 
             String managerId = userDetails.getId();
             VendorDto vendorDto = vendorDtoConverter.convert(vendorService.createVendor(createVendorRequest,managerId));
-
+            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail(), "MANAGER");
             ApiResponse<VendorDto> response = new ApiResponse<>(
                     HttpStatus.CREATED.value(),
                     "Vendor registered successfully",

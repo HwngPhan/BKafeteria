@@ -14,4 +14,6 @@ public class UserInfoDto {
 	private String email;
 	private String role;
 	private Double balance;
+	private Integer points;
+	private String vendorId;
 }

@@ -1,13 +1,13 @@
 package com.example.order_service.controller;
 
-
-import com.example.order_service.dtos.OrderDto;
-import com.example.order_service.dtos.OrderDtoConverter;
+import com.example.order_service.dtos.*;
 import com.example.order_service.dtos.Request.OrderRequest;
 import com.example.order_service.helper.IamClient;
 import com.example.order_service.model.Order;
+import com.example.order_service.model.VendorOrder;
 import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.service.OrderService;
+import com.example.order_service.service.VendorOrderService;
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,87 +30,115 @@ import java.util.stream.Collectors;
 public class OrderController {
     private final OrderService orderService;
     private final OrderDtoConverter orderDtoConverter;
+    private final VendorOrderService vendorOrderService;
+    private final VendorOrderDtoConverter vendorOrderDtoConverter;
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> getOrderById(@PathVariable String id) {
-        try{
+        try {
             OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id));
             return ResponseEntity.ok(
-                new ApiResponse<>(200, "Order retrieved successfully", orderDto)
-            );
-        }catch(Exception e){
+                    new ApiResponse<>(200, "Order retrieved successfully", orderDto));
+        } catch (Exception e) {
             log.error("Error retrieving order: {}", e.getMessage());
             ApiResponse<OrderDto> response = new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Failed to retrieve order: " + e.getMessage(),
-                null);
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to retrieve order: " + e.getMessage(),
+                    null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     // @PutMapping("/{id}")
     // @PreAuthorize("isAuthenticated()")
-    // public ResponseEntity<ApiResponse<OrderDto>> updateOrder(@PathVariable String id, @RequestBody OrderDto orderDto) {
-    //     try{
+    // public ResponseEntity<ApiResponse<OrderDto>> updateOrder(@PathVariable String
+    // id, @RequestBody OrderDto orderDto) {
+    // try{
 
-    //         return ResponseEntity.ok(
-    //             new ApiResponse<>(200, "Order updated successfully", orderDto)
-    //         );
-    //     }catch(Exception e){
-    //         log.error("Error updating order: {}", e.getMessage());
-    //         ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to update order: " + e.getMessage(), null);
-    //         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
+    // return ResponseEntity.ok(
+    // new ApiResponse<>(200, "Order updated successfully", orderDto)
+    // );
+    // }catch(Exception e){
+    // log.error("Error updating order: {}", e.getMessage());
+    // ApiResponse<OrderDto> response = new
+    // ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to update
+    // order: " + e.getMessage(), null);
+    // return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
     // }
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest,
-                                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        try{
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
 
-            Order order = orderService.createOrder(orderRequest,userDetails.getId());
+            Order order = orderService.createOrder(orderRequest, userDetails.getId());
             OrderDto orderDto = orderDtoConverter.convert(order);
             return ResponseEntity.ok(
-                new ApiResponse<>(200, "Order created successfully", orderDto)
-            );
-        }catch(Exception e){
+                    new ApiResponse<>(200, "Order created successfully", orderDto));
+        } catch (Exception e) {
             log.error("Error creating order: {}", e.getMessage());
-            ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create order: " + e.getMessage(), null);
+            ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to create order: " + e.getMessage(), null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/{id}/payment")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<OrderDto>> makePayment(@PathVariable String id, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        try{
+    public ResponseEntity<ApiResponse<OrderDto>> makePayment(@PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
             orderService.makePayment(id, userDetails.getId());
             OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id));
             return ResponseEntity.ok(
-                new ApiResponse<>(200, "Order paid successfully", orderDto)
-            );
-        }catch(Exception e){
+                    new ApiResponse<>(200, "Order paid successfully", orderDto));
+        } catch (Exception e) {
             log.error("Error making payment: {}", e.getMessage());
-            ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to make payment: " + e.getMessage(), null);
+            ApiResponse<OrderDto> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to make payment: " + e.getMessage(), null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/get-my-order")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        try{
+    public ResponseEntity<ApiResponse<List<OrderDto>>> getOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
             List<Order> orders = orderService.getOrders(userDetails.getId());
             List<OrderDto> orderDtos = orders.stream().map(orderDtoConverter::convert).collect(Collectors.toList());
             return ResponseEntity.ok(
-                new ApiResponse<>(200, "Orders retrieved successfully", orderDtos)
-            );
-        }catch(Exception e){
+                    new ApiResponse<>(200, "Orders retrieved successfully", orderDtos));
+        } catch (Exception e) {
             log.error("Error retrieving orders: {}", e.getMessage());
-            ApiResponse<List<OrderDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to retrieve orders: " + e.getMessage(), null);
+            ApiResponse<List<OrderDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Failed to retrieve orders: " + e.getMessage(), null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // get order theo vendor
+    // @GetMapping("/get-vendor-order")
+    // @PreAuthorize("isAuthenticated()")
+    // public ResponseEntity<ApiResponse<List<VendorOrderDto>>> getVendorOrders(
+    // @AuthenticationPrincipal CustomUserDetails userDetails) {
+    // try {
+    // List<VendorOrder> vendorOrders =
+    // vendorOrderService.getVendorOrdersByVendorId(userDetails.getId());
+    // List<VendorOrderDto> vendorOrderDtos =
+    // vendorOrderDtoConverter.convert(vendorOrders);
+    // return ResponseEntity.ok(
+    // new ApiResponse<>(200, "Vendor orders retrieved successfully",
+    // vendorOrderDtos));
+    // } catch (Exception e) {
+    // log.error("Error retrieving vendor orders: {}", e.getMessage());
+    // ApiResponse<List<VendorOrderDto>> response = new
+    // ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+    // "Failed to retrieve vendor orders: " + e.getMessage(), null);
+    // return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
+    // }
 }

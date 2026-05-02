@@ -1,11 +1,9 @@
 package com.example.iam_service.model;
 
-
 import com.example.shared.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 
 import com.example.shared.enums.UserStatus;
 import com.example.shared.hepler.CustomIdGenerator;
@@ -64,4 +62,12 @@ public class User {
     private Boolean isDeleted = false;
 
     private Double balance;
+
+    // Membership
+    // 50 points => Bronze - 5%
+    // 100 points => Silver - 10%
+    // 500 points => Gold - 15%
+    // 2000 points => Platinum - 20%
+    // Order >= 10000 total 1 point, >= 20000 total 2 points, etc.
+    private Integer points;
 }
