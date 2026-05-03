@@ -97,4 +97,8 @@ public class VendorOrderController {
                     .body(new ApiResponse<>(500, "Failed to retrieve vendor orders", null));
         }
     }
+
+    // Processing
+    // Cancelled
+    // + role Staff to update status
 }
