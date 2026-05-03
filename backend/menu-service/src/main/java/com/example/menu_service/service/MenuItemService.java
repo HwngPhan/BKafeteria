@@ -41,6 +41,10 @@ public class MenuItemService {
     return menuItemRepository.findByVendorId(userInfo.getVendorId());
   }
 
+  public List<MenuItem> getMenuItemsByVendorId(String vendorId) {
+    return menuItemRepository.findByVendorId(vendorId);
+  }
+
   @Transactional
   public MenuItem createMenuItem(CreateMenuItemRequest createMenuItemRequest, String userId) {
     // Validate token and get user info
