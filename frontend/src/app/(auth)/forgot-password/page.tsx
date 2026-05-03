@@ -57,8 +57,9 @@ export default function ResetPasswordPage() {
       toast.success("Mã OTP đã được gửi đến email của bạn");
       setStep("otp");
       setCounter(60);
-    } catch (e: any) {
-      toast.error(e.message || "Gửi OTP thất bại");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Gửi OTP thất bại";
+      toast.error(errorMessage);
     }
   };
 
@@ -67,8 +68,9 @@ export default function ResetPasswordPage() {
       await verifyOtp({ email, otp });
       toast.success("Xác thực OTP thành công!");
       setStep("reset");
-    } catch (e: any) {
-      toast.error(e.message || "Mã OTP không đúng");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Mã OTP không đúng";
+      toast.error(errorMessage);
     }
   };
 
@@ -84,8 +86,9 @@ export default function ResetPasswordPage() {
       await resetPassword.mutateAsync({ email, newPassword: password });
       toast.success("Đổi mật khẩu thành công");
       setStep("success");
-    } catch (e: any) {
-      toast.error(e.message || "Đổi mật khẩu thất bại");
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Đổi mật khẩu thất bại";
+      toast.error(errorMessage);
     }
   };
 

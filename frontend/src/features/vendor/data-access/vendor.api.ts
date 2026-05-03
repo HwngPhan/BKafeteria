@@ -1,0 +1,34 @@
+import { API_GATEWAY_BASE_URL, TokenType } from "@/lib/constants";
+import { fetchWithToken } from "@/lib/fetchWithToken";
+import { handleResponse } from "@/lib/handle-response";
+import { throwApiError } from "@/lib/throwApiError";
+import { VendorDto } from "../config/vendor.types";
+
+const BASE_URL = `${API_GATEWAY_BASE_URL}/vendor/vendors`;
+
+export const GetActiveVendorsApi = async (): Promise<VendorDto[]> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/active`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto[] }>(response);
+  return responseDTO.data;
+};
+
+export const GetVendorByIdApi = async (id: string): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};
+
+export const GetMyVendorApi = async (): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-vendor`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};

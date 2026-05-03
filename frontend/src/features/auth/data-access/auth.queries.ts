@@ -2,12 +2,13 @@ import { userKeys } from "@/features/user/data-access/user.queries";
 import { TokenType } from "@/lib/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AccountActivationApi, LoginApi, LogoutApi, RegisterApi, ResetPasswordApi, SendOtpApi, VerifyOtpApi } from "./auth.api";
+import { ApiRegisterRequest, LoginRequest } from "../config/auth.schema";
 
 export const useSendOtp = () => {
     return useMutation({
       mutationFn: SendOtpApi,
-      onError: (error: any) => {
-        console.error('Send OTP failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Send OTP failed:', error.message);
       }
     });
 }
@@ -20,8 +21,8 @@ export const useVerifyOtp = () => {
             localStorage.setItem(TokenType.otpToken, data.otpToken);
         }
       },
-      onError: (error: any) => {
-        console.error('Verify OTP failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Verify OTP failed:', error.message);
       }
     });
 }
@@ -34,8 +35,8 @@ export const useResetPassword = () => {
           localStorage.removeItem(TokenType.otpToken);
         }
       },
-      onError: (error: any) => {
-        console.error('Reset password failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Reset password failed:', error.message);
       }
     });
 }
@@ -43,15 +44,15 @@ export const useResetPassword = () => {
 export const useLogin = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: LoginApi,
+      mutationFn: (payload: LoginRequest) => LoginApi(payload),
       onSuccess: (data) => {
         if (data.accessToken !== null && typeof window !== "undefined") {
           localStorage.setItem(TokenType.authToken, data.accessToken);
         } 
         queryClient.invalidateQueries({ queryKey: userKeys.me() });
       },
-      onError: (error: any) => {
-        console.error('Login failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Login failed:', error.message);
       }
     });
 }
@@ -66,8 +67,8 @@ export const useLogout = () => {
         }
         queryClient.invalidateQueries({ queryKey: userKeys.me() });
       },
-      onError: (error: any) => {
-        console.error('Logout failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Logout failed:', error.message);
       }
     });
 }
@@ -75,9 +76,9 @@ export const useLogout = () => {
 
 export const useRegister = () => {  
     return useMutation({
-      mutationFn: RegisterApi,
-      onError: (error: any) => {
-        console.error('Register failed:', error?.message || error);
+      mutationFn: (payload: ApiRegisterRequest) => RegisterApi(payload),
+      onError: (error: Error) => {
+        console.error('Register failed:', error.message);
       }
     });
   }
@@ -85,9 +86,8 @@ export const useRegister = () => {
 export const useAccountActivation = () => {
     return useMutation({
       mutationFn: AccountActivationApi,
-      onError: (error: any) => {
-        console.error('Account activation failed:', error?.message || error);
+      onError: (error: Error) => {
+        console.error('Account activation failed:', error.message);
       }
     });
   }
-  

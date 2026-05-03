@@ -1,149 +1,132 @@
-"use client";
+'use client'
 
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Loader2, Utensils, XCircle } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, use } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { CheckCircle2, XCircle, Loader2, Utensils, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { useAccountActivation } from "@/features/auth/data-access/auth.queries";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useAccountActivation } from '@/features/auth/data-access/auth.queries'
+import { toast } from 'sonner'
 
-export default function ActivatePage() {
-  const accountActivate = useAccountActivation();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("Đang xử lý yêu cầu...");
+export default function AccountActivationPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
+  const router = useRouter()
+  const params = use(searchParams)
+  const token = params.token
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const { mutateAsync: activate } = useAccountActivation()
 
   useEffect(() => {
-    // Nếu không có token, báo lỗi ngay
     if (!token) {
-      setStatus("error");
-      setMessage("Mã kích hoạt không hợp lệ hoặc đường dẫn bị thiếu.");
-      return;
+      setStatus('error')
+      return
     }
 
-    async function activate(token: string) {
+    const handleActivation = async () => {
       try {
-        // Giả lập delay một chút để UI không bị giật (UX tốt hơn)
-        const delay = Math.random() * 500 + 1000;
-        await new Promise((res) => setTimeout(res, delay));
-        
-        // Gọi API
-        await accountActivate.mutateAsync(token);
-
-        setStatus("success");
-        setMessage("Tài khoản của bạn đã được kích hoạt thành công!");
-      } catch (e: any) {
-        setStatus("error");
-        setMessage(e.message || "Kích hoạt thất bại. Vui lòng thử lại hoặc liên hệ hỗ trợ.");
+        await activate(token)
+        setStatus('success')
+        toast.success('Account activated successfully!')
+      } catch (err) {
+        setStatus('error')
+        toast.error('Activation failed. The link may be expired or invalid.')
       }
     }
 
-    activate(token);
-  }, [token, accountActivate]); // Thêm dependencies chuẩn
-
-  // Helper render content dựa theo status
-  const renderContent = () => {
-    switch (status) {
-      case "loading":
-        return (
-          <div className="flex flex-col items-center space-y-6 py-4 animate-in fade-in duration-500">
-            <div className="relative">
-                <div className="h-16 w-16 rounded-full border-4 border-secondary/20 border-t-secondary animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 text-secondary/50 animate-pulse" />
-                </div>
-            </div>
-            <div className="text-center space-y-1">
-                <h3 className="text-lg font-semibold text-foreground">Đang kích hoạt...</h3>
-                <p className="text-muted-foreground text-sm">Vui lòng đợi trong giây lát</p>
-            </div>
-          </div>
-        );
-
-      case "success":
-        return (
-          <div className="flex flex-col items-center space-y-6 py-4 animate-in zoom-in-95 duration-300">
-            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center ring-4 ring-green-50">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
-            </div>
-            
-            <div className="text-center space-y-2">
-              <h3 className="text-xl font-bold text-green-700">Thành công!</h3>
-              <p className="text-muted-foreground">{message}</p>
-            </div>
-
-            <Button asChild className="h-14 w-full rounded-xl bg-primary text-lg font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 mt-2 transition-all hover:scale-[1.01]">
-              <Link href="/login">
-                Đăng nhập ngay <ArrowRight className="ml-2 w-5 h-5"/>
-              </Link>
-            </Button>
-          </div>
-        );
-
-      case "error":
-        return (
-          <div className="flex flex-col items-center space-y-6 py-4 animate-in zoom-in-95 duration-300">
-            <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center ring-4 ring-red-50">
-              <XCircle className="w-10 h-10 text-red-600" />
-            </div>
-
-            <div className="text-center space-y-2">
-              <h3 className="text-xl font-bold text-red-700">Đã có lỗi xảy ra</h3>
-              <p className="text-muted-foreground px-4">{message}</p>
-            </div>
-
-            <div className="w-full space-y-3 pt-2">
-                <Button asChild variant="secondary" className="h-12 w-full rounded-xl border-secondary/20">
-                    <Link href="/login">Quay lại trang đăng nhập</Link>
-                </Button>
-            </div>
-          </div>
-        );
-    }
-  };
+    handleActivation()
+  }, [token, activate])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="w-full max-w-lg"
+        className="w-full max-w-md"
       >
-        <Card className="rounded-3xl border-4 border-dashed border-secondary/30 shadow-xl overflow-hidden">
-          {/* ---------------- HEADER ---------------- */}
-          <CardHeader className="bg-secondary/5 text-center pt-10 pb-8">
-            <div className="mx-auto mb-4 w-fit rounded-2xl bg-white p-4 shadow-sm">
-              <Utensils className="h-10 w-10 text-secondary" />
+        <Card className="rounded-3xl border-4 border-dashed border-primary/20 shadow-2xl overflow-hidden text-center">
+          <CardHeader className="pt-12 pb-6">
+            <div className="mx-auto mb-6 flex justify-center">
+              <Utensils className="h-10 w-10 text-primary/40" />
             </div>
-            <CardTitle className="text-3xl font-bold text-primary">
-              Kích hoạt tài khoản
-            </CardTitle>
-            <CardDescription className="mt-2 text-base">
-              Chào mừng bạn đến với{' '}
-              <span className="font-semibold text-secondary">
-                BKAFETERIA
-              </span>
-            </CardDescription>
+            
+            <AnimatePresence mode="wait">
+              {status === 'loading' && (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <Loader2 className="h-16 w-16 text-primary animate-spin" />
+                  <CardTitle className="text-2xl font-bold">Activating your account...</CardTitle>
+                </motion.div>
+              )}
+
+              {status === 'success' && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <div className="bg-green-100 p-4 rounded-full">
+                    <CheckCircle2 className="h-16 w-16 text-green-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-green-600">All set!</CardTitle>
+                  <CardDescription className="text-base">
+                    Your account is now active and ready to use.
+                  </CardDescription>
+                </motion.div>
+              )}
+
+              {status === 'error' && (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <div className="bg-red-100 p-4 rounded-full">
+                    <XCircle className="h-16 w-16 text-red-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-red-600">Activation Failed</CardTitle>
+                  <CardDescription className="text-base">
+                    The token is invalid or has expired.
+                  </CardDescription>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </CardHeader>
 
-          {/* ---------------- CONTENT ---------------- */}
-          <CardContent className="p-8">
-            {renderContent()}
+          <CardContent className="px-10 pb-12">
+            {status === 'success' ? (
+              <Button asChild className="w-full h-14 rounded-2xl text-lg font-bold">
+                <Link href="/login">
+                  Go to Login <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            ) : status === 'error' ? (
+              <div className="space-y-4">
+                <Button asChild variant="outline" className="w-full h-14 rounded-2xl">
+                  <Link href="/register">Try Registering Again</Link>
+                </Button>
+                <Button asChild variant="ghost" className="w-full">
+                  <Link href="/login">Back to Login</Link>
+                </Button>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </motion.div>
     </div>
-  );
+  )
 }

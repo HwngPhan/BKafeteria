@@ -48,12 +48,12 @@ const formSchema = z
         .min(10, 'SĐT tối thiểu 10 số')
         .regex(/^[0-9]+$/, 'SĐT chỉ được chứa số'),
 
-    gender: z.enum(['MALE', 'FEMALE'], 'Vui lòng chọn giới tính'), // Fix message zod error
+    gender: z.enum(['MALE', 'FEMALE'], { error: 'Vui lòng chọn giới tính' }),
     
     // 3 trường rời rạc cho Date
-    day: z.string("Chọn ngày" ),
-    month: z.string("Chọn tháng" ),
-    year: z.string("Chọn năm"),
+    day: z.string({ error: "Chọn ngày" }).min(1, "Chọn ngày"),
+    month: z.string({ error: "Chọn tháng" }).min(1, "Chọn tháng"),
+    year: z.string({ error: "Chọn năm" }).min(1, "Chọn năm"),
 
     password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
     confirmPassword: z.string(),
@@ -151,9 +151,10 @@ export default function RegisterPage() {
       await registerMutation(apiData);
 
       toast.success("Registration successful! Please verify your email.");
-      console.log("Success Payload:", apiData); 
-    } catch (err: any) {
-      toast.error(err?.message || "Registration failed");
+      router.push('/verify-email-pending');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

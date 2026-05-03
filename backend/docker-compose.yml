@@ -21,7 +21,7 @@ services:
       - iam-service
       - vendor-service
       - menu-service
-#      - order-service
+      - order-service
       - kafka
     networks:
       - app-network
@@ -149,7 +149,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
+    container_name: bkafeteria-kafka
     restart: always
     ports:
       - "9092:9092"

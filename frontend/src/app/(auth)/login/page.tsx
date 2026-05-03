@@ -76,8 +76,9 @@ export default function LoginPage() {
       setIsLoading(true);
       await Login(apiData);
       toast.success("Login successful");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Login failed");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
