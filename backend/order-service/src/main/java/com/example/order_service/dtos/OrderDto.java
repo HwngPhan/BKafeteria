@@ -6,12 +6,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record OrderDto(
-    String orderId,
-    String status,
-    List<OrderItem> orderItems,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    Double totalPrice,
-    String customerId,
-    Boolean isDeleted        
-) {}
+        String orderId,
+        String status,
+        // List<OrderItem> orderItems,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        Double totalPrice,
+        String customerId,
+        Boolean isDeleted,
+        List<VendorOrderDto> vendorOrders) {
+}

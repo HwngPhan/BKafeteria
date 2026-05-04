@@ -82,8 +82,9 @@ public class OrderService {
                     menuItem.setQuantity(itemReq.getQuantity());
                     if (itemInfoDto.getRemaining() < itemReq.getQuantity())
                         throw new RuntimeException(
-                                "Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining() + " remaining");
-                    
+                                "Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining()
+                                        + " remaining");
+
                     menuClient.updateRemaining(itemReq.getItemId(), itemInfoDto.getRemaining() - itemReq.getQuantity());
                     reducedItems.add(menuItem);
 
@@ -114,7 +115,8 @@ public class OrderService {
             for (MenuItem reducedItem : reducedItems) {
                 try {
                     MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(reducedItem.getItemId());
-                    menuClient.updateRemaining(reducedItem.getItemId(), itemInfoDto.getRemaining() + reducedItem.getQuantity());
+                    menuClient.updateRemaining(reducedItem.getItemId(),
+                            itemInfoDto.getRemaining() + reducedItem.getQuantity());
                 } catch (Exception ex) {
                     logger.error("Failed to revert remaining quantity for item {}", reducedItem.getItemId(), ex);
                 }
@@ -205,6 +207,14 @@ public class OrderService {
         for (Order order : pendingOrders) {
             order.setStatus(OrderStatus.CANCELED);
             order.setUpdatedAt(LocalDateTime.now());
+
+            // List<VendorOrder> vendorOrders =
+            // vendorOrderRepository.findByOrderId(order.getOrderId());
+            // for (VendorOrder vendorOrder : vendorOrders) {
+            // vendorOrder.setStatus(OrderStatus.CANCELED);
+            // vendorOrderRepository.save(vendorOrder);
+            // }
+
             // Return remaining dishes
             if (order.getOrderItems() != null) {
                 for (OrderItem orderItem : order.getOrderItems()) {
@@ -212,9 +222,11 @@ public class OrderService {
                         for (MenuItem menuItem : orderItem.getMenuItems()) {
                             try {
                                 MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(menuItem.getItemId());
-                                menuClient.updateRemaining(menuItem.getItemId(), itemInfoDto.getRemaining() + menuItem.getQuantity());
+                                menuClient.updateRemaining(menuItem.getItemId(),
+                                        itemInfoDto.getRemaining() + menuItem.getQuantity());
                             } catch (Exception e) {
-                                logger.error("Failed to restore remaining quantity for item {}", menuItem.getItemId(), e);
+                                logger.error("Failed to restore remaining quantity for item {}", menuItem.getItemId(),
+                                        e);
                             }
                         }
                     }
