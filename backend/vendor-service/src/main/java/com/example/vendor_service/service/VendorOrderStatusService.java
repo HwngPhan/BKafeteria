@@ -32,6 +32,40 @@ public class VendorOrderStatusService {
     }
 
     @Transactional
+    public VendorOrderNotification confirmOrder(String vendorOrderId, String managerId) {
+        VendorOrderNotification row = notificationRepository.findById(vendorOrderId)
+                .orElseThrow(() -> new RuntimeException("VendorOrder not found: " + vendorOrderId));
+
+        Vendor vendor = vendorService.getVendorById(row.getVendorId());
+        if (vendor == null || !managerId.equals(vendor.getManagerId())) {
+            throw new RuntimeException("Not authorized to update this order");
+        }
+
+        row.setStatus(OrderStatus.PROCESSING);
+        VendorOrderNotification saved = notificationRepository.save(row);
+
+        OrderStatusUpdateMessage msg = new OrderStatusUpdateMessage(
+                saved.getOrderId(),
+                saved.getVendorOrderId(),
+                saved.getVendorId(),
+                saved.getCustomerId(),
+                OrderStatus.PROCESSING,
+                "Your order is being prepared",
+                LocalDateTime.now()
+        );
+        try {
+            kafkaProducerService.sendStatusUpdate(STATUS_TOPIC, msg);
+            logger.info("Published PROCESSING status for vendorOrder: {} customer: {}",
+                    saved.getVendorOrderId(), saved.getCustomerId());
+        } catch (Exception e) {
+            logger.error("Failed to publish PROCESSING status for vendorOrder: {}",
+                    saved.getVendorOrderId(), e);
+        }
+
+        return saved;
+    }
+
+    @Transactional
     public VendorOrderNotification markFinished(String vendorOrderId, String managerId) {
         VendorOrderNotification row = notificationRepository.findById(vendorOrderId)
                 .orElseThrow(() -> new RuntimeException("VendorOrder not found: " + vendorOrderId));

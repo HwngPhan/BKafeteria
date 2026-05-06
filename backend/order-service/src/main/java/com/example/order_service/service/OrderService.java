@@ -63,51 +63,74 @@ public class OrderService {
         List<OrderItem> orderItems = new ArrayList<>();
 
         Double totalOrderPrice = 0.0;
+        List<MenuItem> reducedItems = new ArrayList<>();
 
-        for (VendorOrderRequest vendorReq : orderRequest.getVendorOrders()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setVendorId(vendorReq.getVendorId());
+        try {
+            for (VendorOrderRequest vendorReq : orderRequest.getVendorOrders()) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setVendorId(vendorReq.getVendorId());
 
-            List<MenuItem> menuItems = new ArrayList<>();
-            Double vendorItemPrice = 0.0;
+                List<MenuItem> menuItems = new ArrayList<>();
+                Double vendorItemPrice = 0.0;
 
-            for (ItemRequest itemReq : vendorReq.getItems()) {
-                MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(itemReq.getItemId());
-                if (itemInfoDto.getRemaining() <= 0)
-                    throw new RuntimeException("Item unavailable");
-                MenuItem menuItem = new MenuItem();
-                menuItem.setItemId(itemReq.getItemId());
-                menuItem.setQuantity(itemReq.getQuantity());
-                if (itemInfoDto.getRemaining() < itemReq.getQuantity())
-                    throw new RuntimeException(
-                            "Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining() + " remaining");
-                menuItem.setItemName(itemInfoDto.getName());
-                menuItem.setPrice(itemInfoDto.getPrice());
+                for (ItemRequest itemReq : vendorReq.getItems()) {
+                    MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(itemReq.getItemId());
+                    if (itemInfoDto.getRemaining() <= 0)
+                        throw new RuntimeException("Item unavailable");
+                    MenuItem menuItem = new MenuItem();
+                    menuItem.setItemId(itemReq.getItemId());
+                    menuItem.setQuantity(itemReq.getQuantity());
+                    if (itemInfoDto.getRemaining() < itemReq.getQuantity())
+                        throw new RuntimeException(
+                                "Item " + itemInfoDto.getName() + " has only " + itemInfoDto.getRemaining()
+                                        + " remaining");
 
-                vendorItemPrice += menuItem.getPrice() * menuItem.getQuantity();
-                menuItems.add(menuItem);
+                    menuClient.updateRemaining(itemReq.getItemId(), itemInfoDto.getRemaining() - itemReq.getQuantity());
+                    reducedItems.add(menuItem);
+
+                    menuItem.setItemName(itemInfoDto.getName());
+                    menuItem.setPrice(itemInfoDto.getPrice());
+
+                    vendorItemPrice += menuItem.getPrice() * menuItem.getQuantity();
+                    menuItems.add(menuItem);
+                }
+
+                orderItem.setMenuItems(menuItems);
+                orderItem.setVendorPrice(vendorItemPrice);
+                orderItems.add(orderItem);
+
+                totalOrderPrice += vendorItemPrice;
             }
 
-            orderItem.setMenuItems(menuItems);
-            orderItem.setVendorPrice(vendorItemPrice);
-            orderItems.add(orderItem);
+            order.setOrderItems(orderItems);
+            order.setStatus(OrderStatus.PENDING);
+            order.setCreatedAt(LocalDateTime.now());
+            order.setUpdatedAt(LocalDateTime.now());
 
-            totalOrderPrice += vendorItemPrice;
+            // Membership
+            order.setTotalPrice(totalOrderPrice);
+            order.setCustomerId(customerId);
+            return orderRepository.save(order);
+        } catch (Exception e) {
+            for (MenuItem reducedItem : reducedItems) {
+                try {
+                    MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(reducedItem.getItemId());
+                    menuClient.updateRemaining(reducedItem.getItemId(),
+                            itemInfoDto.getRemaining() + reducedItem.getQuantity());
+                } catch (Exception ex) {
+                    logger.error("Failed to revert remaining quantity for item {}", reducedItem.getItemId(), ex);
+                }
+            }
+            throw e;
         }
-
-        order.setOrderItems(orderItems);
-        order.setStatus(OrderStatus.PENDING);
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
-
-        // Membership
-        order.setTotalPrice(totalOrderPrice);
-        order.setCustomerId(customerId);
-        return orderRepository.save(order);
     }
 
     public void makePayment(String orderId, String customerId) throws RuntimeException {
         Order order = getOrderById(orderId);
+        if (order == null)
+            throw new RuntimeException("Order not found");
+        if (order.getStatus() != OrderStatus.PENDING)
+            throw new RuntimeException("Order is not in PENDING state");
         if (!customerId.equals(order.getCustomerId()))
             throw new RuntimeException("Invalid customerId");
         UserInfoDto customer = iamClient.getUserInfo(customerId);
@@ -138,11 +161,7 @@ public class OrderService {
             VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(orderItem.getVendorId());
             UserInfoDto manager = iamClient.getUserInfo(vendorInfoDto.getManagerId());
             iamClient.setBalance(vendorInfoDto.getManagerId(), manager.getBalance() + orderItem.getVendorPrice());
-            // Update remaining
-            for (MenuItem menuItem : orderItem.getMenuItems()) {
-                MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(menuItem.getItemId());
-                menuClient.updateRemaining(menuItem.getItemId(), itemInfoDto.getRemaining() - menuItem.getQuantity());
-            }
+            // Remaining was updated during createOrder
             // Create vendorOrders for each vendor
 
             VendorOrder vendorOrder = new VendorOrder();
@@ -179,5 +198,42 @@ public class OrderService {
         order.setStatus(OrderStatus.PURCHASED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 60000)
+    public void cancelUnpaidOrders() {
+        LocalDateTime twoMinutesAgo = LocalDateTime.now().minusMinutes(2);
+        List<Order> pendingOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PENDING, twoMinutesAgo);
+        for (Order order : pendingOrders) {
+            order.setStatus(OrderStatus.CANCELED);
+            order.setUpdatedAt(LocalDateTime.now());
+
+            // List<VendorOrder> vendorOrders =
+            // vendorOrderRepository.findByOrderId(order.getOrderId());
+            // for (VendorOrder vendorOrder : vendorOrders) {
+            // vendorOrder.setStatus(OrderStatus.CANCELED);
+            // vendorOrderRepository.save(vendorOrder);
+            // }
+
+            // Return remaining dishes
+            if (order.getOrderItems() != null) {
+                for (OrderItem orderItem : order.getOrderItems()) {
+                    if (orderItem.getMenuItems() != null) {
+                        for (MenuItem menuItem : orderItem.getMenuItems()) {
+                            try {
+                                MenuItemInfoDto itemInfoDto = menuClient.getItemInfo(menuItem.getItemId());
+                                menuClient.updateRemaining(menuItem.getItemId(),
+                                        itemInfoDto.getRemaining() + menuItem.getQuantity());
+                            } catch (Exception e) {
+                                logger.error("Failed to restore remaining quantity for item {}", menuItem.getItemId(),
+                                        e);
+                            }
+                        }
+                    }
+                }
+            }
+            orderRepository.save(order);
+            logger.info("Auto-canceled unpaid order: {}", order.getOrderId());
+        }
     }
 }
