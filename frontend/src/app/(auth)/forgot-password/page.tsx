@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
             </Button>
             
             <div className="text-center">
-                <Button variant="link" asChild className="text-secondary font-semibold">
+                <Button variant="link" asChild className="px-1 font-bold text-secondary text-base">
                     <Link href="/login">Quay lại đăng nhập</Link>
                 </Button>
             </div>

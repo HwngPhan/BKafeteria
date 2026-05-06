@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { User } from "@/features/user/config/user.config"; // bạn đã có
 import { useGetMe } from "@/features/user/data-access/user.queries";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -27,7 +28,10 @@ const AuthContext = createContext<AuthContextState | null>(null);
 // -------------------------------
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { data: user, error, isLoading: queryLoading } = useGetMe();
+  const pathname = usePathname();
+  // Don't run getMe on landing page unless manually triggered (not implemented here as requested)
+  const isLandingPage = pathname === "/";
+  const { data: user, error, isLoading: queryLoading } = useGetMe(!isLandingPage);
 
   const [delayDone, setDelayDone] = useState(false);
 
@@ -36,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const isLoading = queryLoading || !delayDone;
+  const isLoading = !isLandingPage && (queryLoading || !delayDone);
 
   const isAuthenticated = !!user;
   const isUnauthenticated = error?.message === "UNAUTHENTICATED";

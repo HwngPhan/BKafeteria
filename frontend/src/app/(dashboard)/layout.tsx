@@ -23,8 +23,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return <Loading />
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
 
-  if (!isLoading && isAuthenticated) {
+  if (isAuthenticated) {
     return (
       <MainLayout>
         {children}

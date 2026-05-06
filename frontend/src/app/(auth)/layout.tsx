@@ -3,6 +3,7 @@
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Loading from "../loading";
 
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       router.push('/dashboard');
     }
   }, [isAuthenticated, isLoading, router])
+
+  if (isLoading) {
+    return (
+      <Loading />
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return children;
 }

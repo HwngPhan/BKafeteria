@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Loader2, Utensils, ArrowRight } from 'lucide-react'
@@ -23,21 +23,23 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
   const token = params.token
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const { mutateAsync: activate } = useAccountActivation()
+  const activated = useRef(false)
 
   useEffect(() => {
-    if (!token) {
-      setStatus('error')
+    if (!token || activated.current) {
+      if (!token) setStatus('error')
       return
     }
 
     const handleActivation = async () => {
+      activated.current = true
       try {
         await activate(token)
         setStatus('success')
-        toast.success('Account activated successfully!')
+        toast.success('Kích hoạt tài khoản thành công!')
       } catch (err) {
         setStatus('error')
-        toast.error('Activation failed. The link may be expired or invalid.')
+        toast.error('Kích hoạt thất bại. Liên kết có thể đã hết hạn hoặc không hợp lệ.')
       }
     }
 
@@ -67,7 +69,7 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   className="flex flex-col items-center gap-4"
                 >
                   <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                  <CardTitle className="text-2xl font-bold">Activating your account...</CardTitle>
+                  <CardTitle className="text-2xl font-bold">Đang kích hoạt tài khoản...</CardTitle>
                 </motion.div>
               )}
 
@@ -81,9 +83,9 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   <div className="bg-green-100 p-4 rounded-full">
                     <CheckCircle2 className="h-16 w-16 text-green-600" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-green-600">All set!</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-green-600">Hoàn tất!</CardTitle>
                   <CardDescription className="text-base">
-                    Your account is now active and ready to use.
+                    Tài khoản của bạn đã được kích hoạt và sẵn sàng sử dụng.
                   </CardDescription>
                 </motion.div>
               )}
@@ -98,9 +100,9 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   <div className="bg-red-100 p-4 rounded-full">
                     <XCircle className="h-16 w-16 text-red-600" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-red-600">Activation Failed</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-red-600">Kích hoạt thất bại</CardTitle>
                   <CardDescription className="text-base">
-                    The token is invalid or has expired.
+                    Mã xác thực không hợp lệ hoặc đã hết hạn.
                   </CardDescription>
                 </motion.div>
               )}
@@ -109,18 +111,18 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
 
           <CardContent className="px-10 pb-12">
             {status === 'success' ? (
-              <Button asChild className="w-full h-14 rounded-2xl text-lg font-bold">
+              <Button asChild className="h-14 w-full rounded-xl bg-primary text-lg font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-[1.01]">
                 <Link href="/login">
-                  Go to Login <ArrowRight className="ml-2 h-5 w-5" />
+                  Đăng nhập ngay <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             ) : status === 'error' ? (
               <div className="space-y-4">
-                <Button asChild variant="outline" className="w-full h-14 rounded-2xl">
-                  <Link href="/register">Try Registering Again</Link>
+                <Button asChild variant="outline" className="h-14 w-full rounded-xl border-secondary/20 hover:bg-secondary/5 transition-all">
+                  <Link href="/register">Thử đăng ký lại</Link>
                 </Button>
-                <Button asChild variant="ghost" className="w-full">
-                  <Link href="/login">Back to Login</Link>
+                <Button asChild variant="ghost" className="w-full text-muted-foreground hover:text-primary">
+                  <Link href="/login">Quay lại đăng nhập</Link>
                 </Button>
               </div>
             ) : null}

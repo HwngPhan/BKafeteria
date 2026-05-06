@@ -69,9 +69,9 @@ export default function VerifyPage() {
               <Button
                 variant="ghost"
                 asChild
-                className="h-12 w-full rounded-xl text-muted-foreground hover:text-primary hover:bg-secondary/5"
+                className="h-12 w-full rounded-xl text-muted-foreground hover:text-primary transition-all"
               >
-                <Link href="/login" className="flex items-center gap-2">
+                <Link href="/" className="flex items-center justify-center gap-2">
                   <ArrowLeft className="h-4 w-4" /> Quay lại trang chủ
                 </Link>
               </Button>

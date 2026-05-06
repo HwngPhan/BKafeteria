@@ -1,8 +1,7 @@
 'use client'
 
-import { Bell, Search, User as UserIcon } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,12 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/providers/AuthProvider'
+import { Input } from '@/components/ui/input'
+import { useLogout } from '@/features/auth/data-access/auth.queries'
 import { CartSheet } from '@/features/cart/components/CartSheet'
+import { useAuth } from '@/providers/AuthProvider'
+import { Bell, Search } from 'lucide-react'
 
 export function TopBar() {
   const { user } = useAuth()
+  const { mutateAsync: logout } = useLogout()
 
   return (
     <header className="fixed top-0 right-0 z-30 flex h-16 w-full items-center justify-between border-b bg-background/60 backdrop-blur-xl px-6 md:left-auto md:w-[calc(100%-16rem)] transition-all duration-300">
@@ -52,7 +54,7 @@ export function TopBar() {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user?.fullName}</p>
@@ -67,7 +69,10 @@ export function TopBar() {
               Cài đặt
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="rounded-lg cursor-pointer text-red-500 focus:text-red-500">
+            <DropdownMenuItem
+              className="rounded-lg cursor-pointer text-red-500 focus:text-red-500"
+              onClick={() => logout()}
+            >
               Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>

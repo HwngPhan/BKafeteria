@@ -47,10 +47,12 @@
 //     return response;
 //   }
 
+import { getCookie } from "cookies-next";
+
 export async function fetchWithToken(tokenType: string, input: RequestInfo, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers || {});
-  const token = localStorage.getItem(tokenType);
-  // console.log("Fetched token:", token);
+  const token = getCookie(tokenType);
+  
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }

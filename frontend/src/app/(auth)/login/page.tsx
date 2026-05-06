@@ -75,9 +75,9 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       await Login(apiData);
-      toast.success("Login successful");
+      toast.success("Đăng nhập thành công");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      const errorMessage = err instanceof Error ? err.message : "Đăng nhập thất bại";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

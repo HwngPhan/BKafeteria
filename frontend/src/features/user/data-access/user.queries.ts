@@ -1,3 +1,4 @@
+import { getCookie } from "cookies-next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GetMeApi, UpdateMeApi } from "./user.api";
 import { TokenType } from "@/lib/constants";
@@ -9,11 +10,11 @@ export const userKeys = {
     me: () => [...userKeys.details(), 'me'] as const,
 }
 
-export const useGetMe = () => { 
+export const useGetMe = (enabled: boolean = true) => { 
     return useQuery({
       queryKey: userKeys.me(),
       queryFn: async () => {
-        const token = typeof window !== "undefined" ? localStorage.getItem(TokenType.authToken) : null;
+        const token = getCookie(TokenType.authToken);
         if (!token) {
             return null;
         }
@@ -21,11 +22,10 @@ export const useGetMe = () => {
           const data = await GetMeApi();
           return data;
         } catch (error: unknown) {
-          console.error("GetMe failed:", error);
           return null;
         }
       },
-      enabled: true,
+      enabled,
       retry: false,
     });
   };
@@ -38,7 +38,6 @@ export const useUpdateMe = () => {
       queryClient.invalidateQueries({ queryKey: userKeys.me() });
     },
     onError: (error: Error) => {
-      console.error('Update user info failed:', error.message);
     }
   })
 };

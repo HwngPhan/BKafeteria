@@ -9,13 +9,11 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronRight,
-  LogOut,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useLogout } from '@/features/auth/data-access/auth.queries'
 import { useAuth } from '@/providers/AuthProvider'
 
 const navItems = [
@@ -30,7 +28,6 @@ const navItems = [
 export function SideNav() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const { mutate: logout } = useLogout()
   const { user } = useAuth()
 
   return (
@@ -97,19 +94,6 @@ export function SideNav() {
         })}
       </nav>
 
-      <div className="p-4 border-t">
-        <Button
-          variant="ghost"
-          className={cn(
-            'w-full justify-start gap-3 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors',
-            isCollapsed && 'px-0 justify-center'
-          )}
-          onClick={() => logout()}
-        >
-          <LogOut size={22} />
-          {!isCollapsed && <span className="font-medium">Đăng xuất</span>}
-        </Button>
-      </div>
     </aside>
   )
 }

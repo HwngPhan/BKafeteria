@@ -1,22 +1,18 @@
 'use client'
 
-import { useVendorById } from '@/features/vendor/data-access/vendor.queries'
-import { useMenuItems } from '@/features/menu/data-access/menu.queries'
-import { MenuCard } from '@/features/menu/components/MenuCard'
-import { Loader2, ArrowLeft, Clock, Info, Utensils } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { use, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MenuCard } from '@/features/menu/components/MenuCard'
+import { useMenuItemsByVendorId } from '@/features/menu/data-access/menu.queries'
+import { useVendorById } from '@/features/vendor/data-access/vendor.queries'
+import { ArrowLeft, Clock, Info, Loader2, Utensils } from 'lucide-react'
+import Link from 'next/link'
+import { use } from 'react'
 
 export default function VendorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: vendor, isLoading: vendorLoading } = useVendorById(id)
-  const { data: menuData, isLoading: menuLoading } = useMenuItems({ page: 0, size: 100 })
-
-  const vendorMenuItems = useMemo(() => {
-    return menuData?.content.filter(item => item.vendorId === id)
-  }, [menuData, id])
+  const { data: menuData, isLoading: menuLoading } = useMenuItemsByVendorId(id)
 
   if (vendorLoading || menuLoading) {
     return (
@@ -50,7 +46,7 @@ export default function VendorDetailPage({ params }: { params: Promise<{ id: str
             <ArrowLeft size={20} />
             <span className="font-medium">Back</span>
           </Link>
-          
+
           <div className="space-y-2">
             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md">
               {vendor.status}
@@ -82,13 +78,13 @@ export default function VendorDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
-        {!vendorMenuItems || vendorMenuItems.length === 0 ? (
+        {menuData?.length === 0 ? (
           <div className="bg-white rounded-3xl p-20 text-center border-4 border-dashed border-secondary/10">
             <p className="text-muted-foreground text-lg font-medium">This vendor hasn't uploaded any menu items yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {vendorMenuItems.map((item) => (
+            {menuData?.map((item) => (
               <MenuCard key={item.menuItemId} item={item} vendorName={vendor.name} />
             ))}
           </div>

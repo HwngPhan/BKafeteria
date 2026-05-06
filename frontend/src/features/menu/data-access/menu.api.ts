@@ -42,3 +42,12 @@ export const GetMenuItemByIdApi = async (id: string): Promise<MenuItemDto> => {
   const responseDTO = await handleResponse<{ data: MenuItemDto }>(response);
   return responseDTO.data;
 };
+
+export const GetAllMenuItemsByVendorApi = async (vendorId: string): Promise<MenuItemDto[]> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-by-vendor/${vendorId}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: MenuItemDto[] }>(response);
+  return responseDTO.data;
+};

@@ -42,14 +42,14 @@ const formSchema = z
     fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
     email: z.email('Email không hợp lệ'),
     studentId: z.string().length(7, 'Mã số sinh viên phải có đúng 7 ký tự'),
-    
+
     // Thêm validate số điện thoại: chỉ chứa số, min 10
     phoneNumber: z.string()
-        .min(10, 'SĐT tối thiểu 10 số')
-        .regex(/^[0-9]+$/, 'SĐT chỉ được chứa số'),
+      .min(10, 'SĐT tối thiểu 10 số')
+      .regex(/^[0-9]+$/, 'SĐT chỉ được chứa số'),
 
     gender: z.enum(['MALE', 'FEMALE'], { error: 'Vui lòng chọn giới tính' }),
-    
+
     // 3 trường rời rạc cho Date
     day: z.string({ error: "Chọn ngày" }).min(1, "Chọn ngày"),
     month: z.string({ error: "Chọn tháng" }).min(1, "Chọn tháng"),
@@ -65,13 +65,13 @@ const formSchema = z
 
 // Định nghĩa kiểu dữ liệu gửi lên API (RegisterObject)
 type RegisterObject = {
-    fullName: string;
-    email: string;
-    phoneNumber: string; // Thêm field này
-    studentId: string;
-    gender: "MALE" | "FEMALE";
-    dateOfBirth: Date; 
-    password: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string; // Thêm field này
+  studentId: string;
+  gender: "MALE" | "FEMALE";
+  dateOfBirth: Date;
+  password: string;
 }
 
 /* ---------------- HELPERS ---------------- */
@@ -79,13 +79,13 @@ type RegisterObject = {
 const RequiredMark = () => <span className="text-red-500 ml-1">*</span>
 
 const range = (start: number, end: number) => {
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 }
 
 function AbsoluteFormMessage() {
-    return (
-        <FormMessage className="absolute left-0 top-full mt-1 text-xs font-medium text-red-500 animate-in fade-in-0 slide-in-from-top-1" />
-    )
+  return (
+    <FormMessage className="absolute left-0 top-full mt-1 text-xs font-medium text-red-500 animate-in fade-in-0 slide-in-from-top-1" />
+  )
 }
 
 /* ---------------- PAGE ---------------- */
@@ -95,7 +95,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   // Mock mutation (Thay bằng hook thật của bạn)
-  const {mutateAsync: registerMutation } = useRegister();
+  const { mutateAsync: registerMutation } = useRegister();
 
   // Data cho Date Picker
   const currentYear = new Date().getFullYear()
@@ -112,7 +112,7 @@ export default function RegisterPage() {
       studentId: '',
       password: '',
       confirmPassword: '',
-      day: '', 
+      day: '',
       month: '',
       year: '',
     },
@@ -122,38 +122,37 @@ export default function RegisterPage() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // 1. Kiểm tra password match 
     if (values.password !== values.confirmPassword) {
-        toast.error("Passwords do not match");
-        return;
+      toast.error("Mật khẩu không khớp");
+      return;
     }
 
     // 2. Xử lý gộp ngày tháng năm
     const { day, month, year, ...rest } = values;
-    
+
     const dob = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
+
     if (dob.getMonth() !== parseInt(month) - 1) {
-        form.setError("day", { message: "Ngày không hợp lệ" })
-        toast.error("Ngày sinh không hợp lệ");
-        return;
+      form.setError("day", { message: "Ngày không hợp lệ" })
+      toast.error("Ngày sinh không hợp lệ");
+      return;
     }
 
     // 3. Chuẩn bị data chuẩn để gửi API
     // `rest` đã bao gồm phoneNumber do schema đã define
     const apiData: RegisterObject = {
-        ...rest,
-        dateOfBirth: dob,
+      ...rest,
+      dateOfBirth: dob,
     }
 
     // 4. Gọi API 
     try {
       setIsLoading(true);
-      console.log("Submitting Payload:", apiData);
       await registerMutation(apiData);
 
-      toast.success("Registration successful! Please verify your email.");
-      router.push('/verify-email-pending');
+      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
+      router.push('/verify');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      const errorMessage = err instanceof Error ? err.message : "Đăng ký thất bại";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -188,7 +187,7 @@ export default function RegisterPage() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8 w-full" 
+                className="space-y-8 w-full"
               >
                 {/* Row 1: Full Name */}
                 <FormField
@@ -210,7 +209,7 @@ export default function RegisterPage() {
                 />
 
                 {/* Row 2: Student ID & Gender */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full"> 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                   <FormField
                     control={form.control}
                     name="studentId"
@@ -254,118 +253,118 @@ export default function RegisterPage() {
 
                 {/* Row 3: Date of Birth */}
                 <div className="w-full">
-                    <FormLabel>Ngày sinh <RequiredMark /></FormLabel>
-                    <div className="grid grid-cols-3 gap-4 w-full mt-2">
-                        {/* Day */}
-                        <FormField
-                            control={form.control}
-                            name="day"
-                            render={({ field }) => (
-                                <FormItem className="relative">
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                                <SelectValue placeholder="Ngày" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent position="popper" className="h-[200px] bg-background z-50">
-                                            {days.map((d) => (
-                                                <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <AbsoluteFormMessage />
-                                </FormItem>
-                            )}
-                        />
+                  <FormLabel>Ngày sinh <RequiredMark /></FormLabel>
+                  <div className="grid grid-cols-3 gap-4 w-full mt-2">
+                    {/* Day */}
+                    <FormField
+                      control={form.control}
+                      name="day"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
+                                <SelectValue placeholder="Ngày" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent position="popper" className="h-[200px] bg-background z-50">
+                              {days.map((d) => (
+                                <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <AbsoluteFormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                        {/* Month */}
-                        <FormField
-                            control={form.control}
-                            name="month"
-                            render={({ field }) => (
-                                <FormItem className="relative">
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                                <SelectValue placeholder="Tháng" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent position="popper" className="h-[200px] bg-background z-50">
-                                            {months.map((m) => (
-                                                <SelectItem key={m} value={m.toString()}>Tháng {m}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                        />
+                    {/* Month */}
+                    <FormField
+                      control={form.control}
+                      name="month"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
+                                <SelectValue placeholder="Tháng" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent position="popper" className="h-[200px] bg-background z-50">
+                              {months.map((m) => (
+                                <SelectItem key={m} value={m.toString()}>Tháng {m}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
 
-                        {/* Year */}
-                        <FormField
-                            control={form.control}
-                            name="year"
-                            render={({ field }) => (
-                                <FormItem className="relative">
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                                <SelectValue placeholder="Năm" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent position="popper" className="h-[200px] bg-background z-50">
-                                            {years.map((y) => (
-                                                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+                    {/* Year */}
+                    <FormField
+                      control={form.control}
+                      name="year"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
+                                <SelectValue placeholder="Năm" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent position="popper" className="h-[200px] bg-background z-50">
+                              {years.map((y) => (
+                                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* Row 4: Phone & Email (Gom nhóm) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                    {/* Phone Number */}
-                    <FormField
+                  {/* Phone Number */}
+                  <FormField
                     control={form.control}
                     name="phoneNumber"
                     render={({ field }) => (
-                        <FormItem className="w-full relative">
+                      <FormItem className="w-full relative">
                         <FormLabel>Số điện thoại <RequiredMark /></FormLabel>
                         <FormControl>
-                            <Input
+                          <Input
                             {...field}
                             type="tel" // Dùng type tel cho bàn phím số trên mobile
                             placeholder="0xxxxxxxxx"
                             className="h-12 w-full rounded-xl border-secondary/20"
-                            />
+                          />
                         </FormControl>
                         <AbsoluteFormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
+                  />
 
-                    {/* Email */}
-                    <FormField
+                  {/* Email */}
+                  <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                        <FormItem className="w-full relative">
+                      <FormItem className="w-full relative">
                         <FormLabel>Email <RequiredMark /></FormLabel>
                         <FormControl>
-                            <Input
+                          <Input
                             {...field}
                             type="email"
                             placeholder="email@example.com"
                             className="h-12 w-full rounded-xl border-secondary/20"
-                            />
+                          />
                         </FormControl>
                         <AbsoluteFormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
+                  />
                 </div>
 
                 {/* Row 5: Passwords */}
