@@ -5,6 +5,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Loading from "../loading";
+import { useOrderWebSocket } from "@/hooks/useOrderWebSocket";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -12,6 +13,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // MOVED UP: Gọi usePathname ở đây để đảm bảo nó luôn được gọi trong mọi lần render
   const pathname = usePathname();
+
+  // Initialize WebSocket connection for orders
+  useOrderWebSocket();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

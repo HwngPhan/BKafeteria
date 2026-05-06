@@ -1,14 +1,14 @@
 "use client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { motion } from "framer-motion"
-import { Plus, Loader2 } from "lucide-react"
-import { useState, useMemo } from "react"
+import { Plus, Loader2, Star, UtensilsCrossed } from "lucide-react"
+import { useState } from "react"
 import { useMenuItems } from "@/features/menu/data-access/menu.queries"
 import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries"
 import { useCartStore } from "@/features/cart/store/cart.store"
 import { MenuItemDto } from "@/features/menu/config/menu.types"
+import { toast } from "sonner"
 
 const UI_CATEGORIES = ["Tất cả", "Món ăn", "Đồ uống", "Ăn vặt", "Tráng miệng"]
 
@@ -20,11 +20,11 @@ const CATEGORY_MAP: Record<string, string> = {
 }
 
 export default function MenuPage() {
-  const [activeCat, setActiveCat] = useState("All")
+  const [activeCat, setActiveCat] = useState("Tất cả")
   const { addItem } = useCartStore()
   
   const { data: menuData, isLoading: menuLoading } = useMenuItems({
-    category: activeCat === "All" ? undefined : CATEGORY_MAP[activeCat],
+    category: activeCat === "Tất cả" ? undefined : CATEGORY_MAP[activeCat],
     size: 100
   })
 
@@ -44,6 +44,7 @@ export default function MenuPage() {
       vendorName: getVendorName(item.vendorId),
       imageUrl: item.imageUrl
     })
+    toast.success(`Đã thêm ${item.name} vào giỏ hàng`)
   }
 
   if (menuLoading) {
@@ -57,8 +58,12 @@ export default function MenuPage() {
   const products = menuData?.content || []
 
   return (
-    <div className="px-4 py-6 space-y-6">
-       <h1 className="text-3xl font-bold text-primary text-center">Thực đơn</h1>
+    <div className="space-y-8 pb-20">
+       {/* Header */}
+       <div>
+         <h1 className="text-4xl font-black tracking-tight text-primary">Thực đơn</h1>
+         <p className="text-muted-foreground mt-2">Khám phá các món ăn ngon từ các quán trong BKafeteria.</p>
+       </div>
        
        {/* Category Filter */}
        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
@@ -67,60 +72,90 @@ export default function MenuPage() {
               key={cat}
               variant={activeCat === cat ? "default" : "outline"}
               onClick={() => setActiveCat(cat)}
-              className={`rounded-xl px-6 ${activeCat === cat ? "bg-secondary hover:bg-secondary/90 text-white shadow-lg shadow-secondary/30" : "border-secondary/30 text-muted-foreground"}`}
+              className={`rounded-full px-6 h-10 font-semibold transition-all ${
+                activeCat === cat
+                  ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25"
+                  : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
+              }`}
             >
               {cat}
             </Button>
           ))}
        </div>
 
-       {/* List Items */}
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
+       {/* Menu Grid */}
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-muted-foreground">
-              Không tìm thấy món ăn nào trong danh mục này.
+            <div className="col-span-full flex flex-col items-center justify-center py-24 space-y-4">
+              <div className="p-6 rounded-full bg-secondary/5">
+                <UtensilsCrossed className="h-12 w-12 text-muted-foreground/30" />
+              </div>
+              <p className="text-muted-foreground font-medium">Không tìm thấy món ăn nào trong danh mục này.</p>
             </div>
           ) : (
             products.map((product, idx) => (
               <motion.div
                 key={product.menuItemId}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
+                transition={{ delay: idx * 0.04, duration: 0.3 }}
               >
-                <Card className="rounded-3xl border-2 border-dashed border-secondary/20 p-3 flex gap-4 items-center shadow-sm hover:border-secondary transition-colors group">
-                   <div className="h-24 w-24 rounded-2xl bg-secondary/5 overflow-hidden shrink-0 border relative">
+                <div className="group relative overflow-hidden rounded-3xl bg-white border-none shadow-lg shadow-secondary/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5">
+                   {/* Image */}
+                   <div className="relative h-44 w-full overflow-hidden">
                       {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name} 
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/20 italic text-[10px] text-center px-1">Không có ảnh</div>
+                        <div className="h-full w-full bg-gradient-to-br from-secondary/5 to-primary/5 flex items-center justify-center">
+                          <UtensilsCrossed className="h-10 w-10 text-muted-foreground/15" />
+                        </div>
+                      )}
+                      {/* Category Badge */}
+                      <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none font-semibold text-xs">
+                         {product.category}
+                      </Badge>
+                      {/* Rating */}
+                      <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
+                        <Star size={12} className="fill-white" />
+                        {product.rating || '5.0'}
+                      </div>
+                      {/* Low Stock Warning */}
+                      {product.remaining !== undefined && product.remaining <= 5 && (
+                        <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[10px] font-bold py-0.5 text-center">
+                          Chỉ còn {product.remaining} phần!
+                        </div>
                       )}
                    </div>
-                   <div className="flex-1 space-y-1">
-                      <div className="flex justify-between items-start">
-                         <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{product.name}</h3>
-                         <Badge variant="secondary" className="bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-lg text-[10px]">
-                            {product.category}
-                         </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
-                      <div className="flex justify-between items-end pt-2">
-                         <div className="flex flex-col">
-                            <span className="text-lg font-bold text-primary">
-                               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">{getVendorName(product.vendorId)}</span>
-                         </div>
-                         <Button 
-                           size="sm" 
-                           className="rounded-xl h-10 w-10 p-0 bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 transition-transform active:scale-95"
-                           onClick={() => handleAddToCart(product)}
-                         >
-                           <Plus strokeWidth={3} />
-                         </Button>
-                      </div>
+
+                   {/* Content */}
+                   <div className="p-5 pb-0 space-y-1">
+                     <h3 className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                     <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">
+                       {product.description || 'Được chế biến tươi ngon mỗi ngày.'}
+                     </p>
                    </div>
-                </Card>
+
+                   {/* Footer */}
+                   <div className="p-5 flex items-center justify-between">
+                     <div className="flex flex-col">
+                       <span className="text-[10px] text-muted-foreground font-medium">{getVendorName(product.vendorId)}</span>
+                       <span className="text-lg font-black text-primary">
+                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                       </span>
+                     </div>
+                     <Button 
+                       size="icon" 
+                       onClick={() => handleAddToCart(product)}
+                       className="h-10 w-10 rounded-2xl shadow-lg shadow-primary/20 hover:scale-110 transition-transform"
+                     >
+                       <Plus size={20} />
+                     </Button>
+                   </div>
+                </div>
               </motion.div>
             ))
           )}

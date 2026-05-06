@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/providers/AuthProvider";
 import { CartProvider } from "@/components/cart/cart-providers";
 import QueryProvider from "@/providers/QueryProvider";
+import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner"; // ⬅️ thêm dòng này
@@ -36,7 +37,9 @@ export default function RootLayout({
           {/* Global toast handler */}
           <CartProvider>
             <AuthProvider>
-              {children}
+              <WebSocketProvider>
+                {children}
+              </WebSocketProvider>
             </AuthProvider>
           </CartProvider>
         </QueryProvider>

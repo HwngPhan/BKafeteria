@@ -67,17 +67,17 @@ export function CartSheet() {
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-lg text-primary">{vendorItems[0].vendorName}</h3>
                       <Badge variant="secondary" className="bg-primary/5 text-primary">
-                        {vendorItems.length} items
+                        {vendorItems.length} món
                       </Badge>
                     </div>
                     <div className="space-y-4">
                       {vendorItems.map((item) => (
                         <div key={item.itemId} className="flex gap-4 group">
-                          <div className="h-20 w-20 rounded-2xl bg-secondary/5 overflow-hidden border">
+                          <div className="shrink-0 h-20 w-20 rounded-2xl bg-secondary/5 overflow-hidden border">
                             {item.imageUrl ? (
                               <img src={item.imageUrl} alt={item.itemName} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center text-muted-foreground/20 italic text-xs">No image</div>
+                              <div className="h-full w-full flex items-center justify-center text-muted-foreground/20 italic text-xs">Không có ảnh</div>
                             )}
                           </div>
                           <div className="flex-1 flex flex-col justify-between py-1">

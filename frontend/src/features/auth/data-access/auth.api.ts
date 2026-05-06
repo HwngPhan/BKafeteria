@@ -18,6 +18,17 @@ export const LoginApi = async (payload: LoginRequest): Promise<LoginResponse> =>
   return responseDTO.data;
 };
 
+export const RefreshTokenApi = async (): Promise<LoginResponse> => {
+  const response = await fetch(`${BASE_URL}/refresh`, {
+    method: 'POST',
+    credentials: 'include', // Send the refresh_token HTTP-only cookie
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ message: string; data: LoginResponse }>(response);
+  return responseDTO.data;
+};
+
+
 export const RegisterApi = async (payload: ApiRegisterRequest): Promise<void> => {
   const response = await fetch(`${BASE_URL}/register`, {
     method: 'POST',

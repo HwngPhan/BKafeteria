@@ -26,7 +26,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
       vendorName: vendorName,
       imageUrl: item.imageUrl,
     })
-    toast.success(`Added ${item.name} to cart`)
+    toast.success(`Đã thêm ${item.name} vào giỏ hàng`)
   }
 
   return (
@@ -41,7 +41,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
             />
           ) : (
             <div className="h-full w-full bg-secondary/5 flex items-center justify-center text-muted-foreground/20 italic">
-              No image
+              Không có ảnh
             </div>
           )}
           <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none">
@@ -58,14 +58,14 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
         <div className="space-y-1">
           <CardTitle className="text-lg font-bold line-clamp-1">{item.name}</CardTitle>
           <CardDescription className="line-clamp-2 text-xs min-h-[32px]">
-            {item.description || 'Deliciously prepared with fresh ingredients.'}
+            {item.description || 'Được chế biến tươi ngon mỗi ngày.'}
           </CardDescription>
         </div>
       </CardContent>
 
       <CardFooter className="p-5 flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground font-medium">Price</span>
+          <span className="text-xs text-muted-foreground font-medium">Giá</span>
           <span className="text-lg font-black text-primary">{item.price.toLocaleString()}đ</span>
         </div>
         
@@ -80,7 +80,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
       
       {item.remaining !== undefined && item.remaining <= 5 && (
         <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[10px] font-bold py-0.5 text-center">
-          Only {item.remaining} left!
+          Chỉ còn {item.remaining} phần!
         </div>
       )}
     </Card>

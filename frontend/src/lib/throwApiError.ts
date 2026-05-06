@@ -11,7 +11,7 @@ export class ApiError extends Error {
 }
 
 export const throwApiError = async (response: Response): Promise<never> => {
-    let message = "Unknown error";
+    let message = "Đã xảy ra lỗi không xác định";
     let code: string | undefined;
 
     try {
