@@ -135,14 +135,21 @@ export default function AdminUsersPage() {
               />
             </div>
             <div className="flex items-center gap-4 w-full md:w-auto">
-              <Select 
-                value={params.role} 
-                onValueChange={val => setParams({...params, role: val, page: 0})}
+              <Select
+                value={params.role || "all"}
+                onValueChange={(val) =>
+                  setParams({
+                    ...params,
+                    role: val === "all" ? "" : val,
+                    page: 0,
+                  })
+                }
               >
-                <SelectTrigger className="rounded-2xl h-12 bg-secondary/5 border-none min-w-[140px]">
-                  <SelectValue placeholder="Vai trò" />
+                <SelectTrigger className="rounded-2xl h-12 bg-secondary border-none min-w-[140px]">
+                  <SelectValue placeholder="Tất cả vai trò" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-none shadow-xl">
+
+                <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
                   <SelectItem value="all">Tất cả vai trò</SelectItem>
                   <SelectItem value="ADMIN">ADMIN</SelectItem>
                   <SelectItem value="MANAGER">MANAGER</SelectItem>
@@ -288,7 +295,7 @@ export default function AdminUsersPage() {
                   <SelectTrigger className="rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20">
                     <SelectValue placeholder="Chọn vai trò" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-xl">
+                  <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
                     <SelectItem value="ADMIN" className="rounded-xl">ADMIN</SelectItem>
                     <SelectItem value="MANAGER" className="rounded-xl">MANAGER</SelectItem>
                     <SelectItem value="STAFF" className="rounded-xl">STAFF</SelectItem>
