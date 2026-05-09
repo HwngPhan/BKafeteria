@@ -34,7 +34,7 @@ public class VendorOrderController {
     private final VendorService vendorService;
 
     @GetMapping("/notifications")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getOrderNotifications(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -55,7 +55,7 @@ public class VendorOrderController {
     }
 
     @PostMapping("/{vendorOrderId}/confirm")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<VendorOrderNotification>> confirmOrder(
             @PathVariable String vendorOrderId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -69,7 +69,7 @@ public class VendorOrderController {
     }
 
     @PostMapping("/{vendorOrderId}/mark-finished")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<VendorOrderNotification>> markFinished(
             @PathVariable String vendorOrderId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -92,7 +92,7 @@ public class VendorOrderController {
     }
 
     @GetMapping("/get-vendor-order")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getVendorOrders(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {

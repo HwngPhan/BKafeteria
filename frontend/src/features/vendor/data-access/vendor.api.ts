@@ -61,6 +61,7 @@ export const ApproveVendorApi = async (id: string): Promise<void> => {
 export const UpdateVendorApi = async (id: string, vendorData: Partial<VendorDto>): Promise<VendorDto> => {
   const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}`, {
     method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(vendorData),
   });
   if (!response.ok) await throwApiError(response);
