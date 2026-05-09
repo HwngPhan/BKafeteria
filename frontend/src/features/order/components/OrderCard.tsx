@@ -1,12 +1,17 @@
 'use client'
 
-import { OrderDto } from '../config/order.types'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ClipboardList, Clock, CreditCard, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { ChevronRight, ClipboardList, Clock, CreditCard } from 'lucide-react'
+import Link from 'next/link'
+import { OrderDto } from '../config/order.types'
+
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { usePayOrder } from '../data-access/order.queries'
 
 interface OrderCardProps {
   order: OrderDto
@@ -31,6 +36,17 @@ const statusLabels: Record<string, string> = {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
+  const payOrder = usePayOrder()
+
+  const handlePay = async () => {
+    try {
+      await payOrder.mutateAsync(order.orderId)
+      toast.success('Thanh toán thành công!')
+    } catch (error: any) {
+      toast.error(error?.message || 'Thanh toán thất bại')
+    }
+  }
+
   return (
     <Card className="rounded-[2rem] border-none bg-white shadow-xl shadow-secondary/5 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 group">
       <CardHeader className="p-6 bg-secondary/5 border-b flex flex-row items-center justify-between">
@@ -52,24 +68,26 @@ export function OrderCard({ order }: OrderCardProps) {
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
-        {order.orderItems.map((vendorOrder, idx) => (
+        {(order.orderItems || []).map((vendorOrder, idx) => (
           <div key={idx} className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-sm text-primary flex items-center gap-2">
                 <div className="h-1 w-1 rounded-full bg-secondary" />
                 {vendorOrder.vendorName}
               </h4>
-              <span className="text-xs font-bold text-muted-foreground">{vendorOrder.vendorPrice.toLocaleString()}đ</span>
+              <span className="text-xs font-bold text-muted-foreground">
+                {(vendorOrder.vendorPrice || 0).toLocaleString()}đ
+              </span>
             </div>
             <div className="space-y-2 pl-3">
-              {vendorOrder.menuItems.map((item, i) => (
+              {vendorOrder.menuItems?.map((item, i) => (
                 <div key={i} className="flex justify-between text-xs text-muted-foreground">
                   <span>{item.itemName} x{item.quantity}</span>
                   <span>{(item.price * item.quantity).toLocaleString()}đ</span>
                 </div>
               ))}
             </div>
-            {idx < order.orderItems.length - 1 && <Separator className="bg-secondary/5" />}
+            {idx < (order.orderItems?.length || 0) - 1 && <Separator className="bg-secondary/5" />}
           </div>
         ))}
       </CardContent>
@@ -77,17 +95,29 @@ export function OrderCard({ order }: OrderCardProps) {
       <CardFooter className="p-6 pt-0 flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-[10px] text-muted-foreground font-medium">Tổng số tiền</span>
-          <span className="text-xl font-black text-primary">{order.totalPrice.toLocaleString()}đ</span>
+          <span className="text-xl font-black text-primary">{(order.totalPrice || 0).toLocaleString()}đ</span>
         </div>
-        
+
         <div className="flex gap-2">
           {order.status === 'PENDING' && (
-            <Button size="sm" className="rounded-xl h-10 px-4 bg-primary hover:bg-primary/90 font-bold shadow-lg shadow-primary/20">
-              <CreditCard size={16} className="mr-2" /> Thanh toán
+            <Button
+              size="sm"
+              onClick={handlePay}
+              disabled={payOrder.isPending}
+              className="rounded-xl h-10 px-4 bg-primary hover:bg-primary/90 font-bold shadow-lg shadow-primary/20"
+            >
+              {payOrder.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard size={16} className="mr-2" />
+              )}
+              Thanh toán
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-4 font-bold group-hover:bg-secondary/5">
-            Chi tiết <ChevronRight size={16} className="ml-1" />
+          <Button variant="ghost" size="sm" asChild className="rounded-xl h-10 px-4 font-bold group-hover:bg-secondary/5">
+            <Link href={`/orders/${order.orderId}`}>
+              Chi tiết <ChevronRight size={16} className="ml-1" />
+            </Link>
           </Button>
         </div>
       </CardFooter>

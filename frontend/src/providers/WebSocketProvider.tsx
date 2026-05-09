@@ -4,67 +4,83 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getCookie } from 'cookies-next'
-import { API_GATEWAY_BASE_URL, TokenType } from '@/lib/constants'
+import { API_GATEWAY_BASE_URL, TokenType, USE_WEBSOCKET } from '@/lib/constants'
 
 interface WebSocketContextType {
-  stompClient: Client | null
-  isConnected: boolean
+  orderClient: Client | null
+  vendorClient: Client | null
+  isOrderConnected: boolean
+  isVendorConnected: boolean
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
-  stompClient: null,
-  isConnected: false,
+  orderClient: null,
+  vendorClient: null,
+  isOrderConnected: false,
+  isVendorConnected: false,
 })
 
 export const useWebSocket = () => useContext(WebSocketContext)
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
-  const [stompClient, setStompClient] = useState<Client | null>(null)
-  const [isConnected, setIsConnected] = useState(false)
+  const [orderClient, setOrderClient] = useState<Client | null>(null)
+  const [vendorClient, setVendorClient] = useState<Client | null>(null)
+  const [isOrderConnected, setIsOrderConnected] = useState(false)
+  const [isVendorConnected, setIsVendorConnected] = useState(false)
 
   useEffect(() => {
+    if (!USE_WEBSOCKET) return
+
     const token = getCookie(TokenType.authToken)
     if (!token) return
 
-    const client = new Client({
-      // Depending on your gateway setup, you may need to adjust this URL.
-      // Since sockjs uses standard HTTP to negotiate, we pass the HTTP URL.
+    // 1. Order Service WebSocket
+    const oClient = new Client({
       webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/order/ws`),
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      debug: function (str) {
-        // console.log('STOMP: ' + str);
-      },
+      connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     })
 
-    client.onConnect = (frame) => {
-      setIsConnected(true)
-      console.log('Connected to WebSocket')
+    oClient.onConnect = () => {
+      console.log('Connected to Order WebSocket')
+      setIsOrderConnected(true)
     }
+    oClient.onWebSocketClose = () => setIsOrderConnected(false)
+    oClient.activate()
+    setOrderClient(oClient)
 
-    client.onStompError = (frame) => {
-      console.error('Broker reported error: ' + frame.headers['message'])
-      console.error('Additional details: ' + frame.body)
+    // 2. Vendor Service WebSocket
+    const vClient = new Client({
+      webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/vendor/ws`),
+      connectHeaders: { Authorization: `Bearer ${token}` },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    })
+
+    vClient.onConnect = () => {
+      console.log('Connected to Vendor WebSocket')
+      setIsVendorConnected(true)
     }
-
-    client.onWebSocketClose = () => {
-      setIsConnected(false)
-    }
-
-    client.activate()
-    setStompClient(client)
+    vClient.onWebSocketClose = () => setIsVendorConnected(false)
+    vClient.activate()
+    setVendorClient(vClient)
 
     return () => {
-      client.deactivate()
+      oClient.deactivate()
+      vClient.deactivate()
     }
   }, [])
 
   return (
-    <WebSocketContext.Provider value={{ stompClient, isConnected }}>
+    <WebSocketContext.Provider value={{ 
+      orderClient, 
+      vendorClient, 
+      isOrderConnected, 
+      isVendorConnected 
+    }}>
       {children}
     </WebSocketContext.Provider>
   )

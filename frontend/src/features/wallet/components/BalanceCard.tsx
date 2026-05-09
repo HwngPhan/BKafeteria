@@ -5,6 +5,8 @@ import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/providers/AuthProvider'
 
+import { toast } from 'sonner'
+
 export function BalanceCard() {
   const { user } = useAuth()
 
@@ -30,10 +32,18 @@ export function BalanceCard() {
         </div>
 
         <div className="flex gap-4">
-          <Button variant="secondary" className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md">
+          <Button 
+            variant="secondary" 
+            className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md"
+            onClick={() => toast.info('Tính năng nạp tiền sẽ sớm ra mắt qua VNPay/Momo!')}
+          >
             <ArrowUpRight className="mr-2 h-5 w-5" /> Nạp tiền
           </Button>
-          <Button variant="secondary" className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md">
+          <Button 
+            variant="secondary" 
+            className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md"
+            onClick={() => toast.info('Tính năng rút tiền đang được phát triển')}
+          >
             <ArrowDownLeft className="mr-2 h-5 w-5" /> Rút tiền
           </Button>
         </div>

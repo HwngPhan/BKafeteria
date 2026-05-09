@@ -18,16 +18,16 @@ const statusLabels: Record<string, string> = {
 }
 
 export function useOrderWebSocket() {
-  const { stompClient, isConnected } = useWebSocket()
+  const { orderClient, isOrderConnected } = useWebSocket()
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!isConnected || !stompClient || !user) return
+    if (!isOrderConnected || !orderClient || !user) return
 
-    console.log('Subscribing to /topic/customer/' + user.id)
+    console.log('Subscribing to /topic/customer/' + user.userId)
 
-    const subscription = stompClient.subscribe(`/topic/customer/${user.id}`, (message) => {
+    const subscription = orderClient.subscribe(`/topic/customer/${user.userId}`, (message) => {
       try {
         const update = JSON.parse(message.body)
         console.log('WebSocket received order update:', update)
@@ -42,8 +42,8 @@ export function useOrderWebSocket() {
               // Or the overall order status if that is what the update represents
               // Depending on backend logic, if it's overall order status:
               let overallStatusUpdated = false
-              const updatedVendorOrders = order.vendorOrders?.map(vo => {
-                if (vo.vendorOrderId === update.vendorOrderId) {
+              const updatedOrderItems = order.orderItems?.map(vo => {
+                if (vo.vendorId === update.vendorId) {
                   return { ...vo, status: update.status }
                 }
                 return vo
@@ -51,8 +51,8 @@ export function useOrderWebSocket() {
 
               return {
                 ...order,
-                status: update.status, // We assume if it's pushed, it's relevant, or you can just invalidate
-                vendorOrders: updatedVendorOrders
+                status: update.status, 
+                orderItems: updatedOrderItems
               }
             }
             return order
@@ -63,8 +63,8 @@ export function useOrderWebSocket() {
         queryClient.setQueryData<OrderDto>(orderKeys.detail(update.orderId), (oldOrder) => {
           if (!oldOrder) return oldOrder
 
-          const updatedVendorOrders = oldOrder.vendorOrders?.map(vo => {
-            if (vo.vendorOrderId === update.vendorOrderId) {
+          const updatedOrderItems = oldOrder.orderItems?.map(vo => {
+            if (vo.vendorId === update.vendorId) {
               return { ...vo, status: update.status }
             }
             return vo
@@ -73,7 +73,7 @@ export function useOrderWebSocket() {
           return {
             ...oldOrder,
             status: update.status,
-            vendorOrders: updatedVendorOrders
+            orderItems: updatedOrderItems
           }
         })
 
@@ -89,8 +89,8 @@ export function useOrderWebSocket() {
     })
 
     return () => {
-      console.log('Unsubscribing from /topic/customer/' + user.id)
+      console.log('Unsubscribing from /topic/customer/' + user.userId)
       subscription.unsubscribe()
     }
-  }, [stompClient, isConnected, user, queryClient])
+  }, [orderClient, isOrderConnected, user, queryClient])
 }
