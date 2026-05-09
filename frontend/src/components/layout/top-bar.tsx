@@ -26,7 +26,7 @@ export function TopBar() {
   const router = useRouter()
 
   const isManager = user?.role === 'MANAGER' || user?.role === 'STAFF'
-  const { data: notifications } = useVendorOrderNotifications()
+  const { data: notifications } = useVendorOrderNotifications(isManager)
   const pendingNotifications = notifications?.filter(n => n.status !== 'FINISHED' && n.status !== 'CANCELLED') || []
 
   const handleLogout = async () => {
