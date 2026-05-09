@@ -23,6 +23,10 @@ public class VendorOrderService {
         return vendorOrderRepository.findByVendorId(staff.getVendorId());
     }
 
+    public List<VendorOrder> getVendorOrdersByOrderId(String orderId) {
+        return vendorOrderRepository.findByOrderId(orderId);
+    }
+
     public VendorOrder createVendorOrder(VendorOrder vendorOrder) {
         return vendorOrderRepository.save(vendorOrder);
     }

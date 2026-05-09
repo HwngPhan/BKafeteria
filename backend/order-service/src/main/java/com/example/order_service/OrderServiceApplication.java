@@ -8,15 +8,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication(scanBasePackages = {
 		"com.example.order_service",
 		"com.example.shared"
 })
 @EnableAsync
+@EnableScheduling
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {
-
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 		loadEnvFile();
 		SpringApplication.run(OrderServiceApplication.class, args);
 	}
