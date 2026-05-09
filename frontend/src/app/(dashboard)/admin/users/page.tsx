@@ -55,7 +55,7 @@ export default function AdminUsersPage() {
     size: 10
   })
 
-  const { data: usersPage, isLoading } = useAllUsers(params)
+  const { data: usersPage, isLoading, refetch } = useAllUsers(params)
   const updateUser = useUpdateUser()
   const deleteUser = useDeleteUser()
 
@@ -69,7 +69,16 @@ export default function AdminUsersPage() {
 
     updateUser.mutate({
       id: selectedUser.userId,
-      data: { role: newRole as any }
+      data: {
+        fullName: selectedUser.fullName,
+        email: selectedUser.email,
+        phoneNumber: selectedUser.phoneNumber,
+        studentId: selectedUser.studentId,
+        gender: selectedUser.gender,
+        dateOfBirth: selectedUser.dateOfBirth,
+        role: newRole as any,
+        status: selectedUser.status,
+      }
     }, {
       onSuccess: () => {
         toast.success(`Đã cập nhật vai trò cho ${selectedUser.fullName}`)
@@ -82,10 +91,20 @@ export default function AdminUsersPage() {
     const nextStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
     updateUser.mutate({
       id: user.userId,
-      data: { status: nextStatus }
+      data: {
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        studentId: user.studentId,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        role: user.role,
+        status: nextStatus,
+      }
     }, {
       onSuccess: () => {
         toast.success(`Đã ${nextStatus === 'ACTIVE' ? 'kích hoạt' : 'khóa'} tài khoản ${user.fullName}`)
+        refetch()
       }
     })
   }
