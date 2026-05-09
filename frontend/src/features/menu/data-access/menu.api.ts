@@ -51,3 +51,38 @@ export const GetAllMenuItemsByVendorApi = async (vendorId: string): Promise<Menu
   const responseDTO = await handleResponse<{ data: MenuItemDto[] }>(response);
   return responseDTO.data;
 };
+export const GetMyMenuApi = async (): Promise<MenuItemDto[]> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-menu`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: MenuItemDto[] }>(response);
+  return responseDTO.data;
+};
+
+export const CreateMenuItemApi = async (menuItemData: Partial<MenuItemDto>): Promise<MenuItemDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/create`, {
+    method: 'POST',
+    body: JSON.stringify(menuItemData),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: MenuItemDto }>(response);
+  return responseDTO.data;
+};
+
+export const UpdateMenuItemApi = async (id: string, menuItemData: Partial<MenuItemDto>): Promise<MenuItemDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/update/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(menuItemData),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: MenuItemDto }>(response);
+  return responseDTO.data;
+};
+
+export const DeleteMenuItemApi = async (id: string): Promise<void> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/delete/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) await throwApiError(response);
+};

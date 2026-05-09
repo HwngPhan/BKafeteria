@@ -7,6 +7,7 @@ import { ClipboardList, Clock, CreditCard, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 interface OrderCardProps {
   order: OrderDto
@@ -86,8 +87,10 @@ export function OrderCard({ order }: OrderCardProps) {
               <CreditCard size={16} className="mr-2" /> Thanh toán
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="rounded-xl h-10 px-4 font-bold group-hover:bg-secondary/5">
-            Chi tiết <ChevronRight size={16} className="ml-1" />
+          <Button variant="ghost" size="sm" asChild className="rounded-xl h-10 px-4 font-bold group-hover:bg-secondary/5">
+            <Link href={`/orders/${order.orderId}`}>
+              Chi tiết <ChevronRight size={16} className="ml-1" />
+            </Link>
           </Button>
         </div>
       </CardFooter>

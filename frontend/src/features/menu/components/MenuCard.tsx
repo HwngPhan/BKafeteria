@@ -7,6 +7,7 @@ import { Plus, ShoppingCart, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/features/cart/store/cart.store'
 import { toast } from 'sonner'
+import { CATEGORY_MAP } from '@/lib/constants'
 
 interface MenuCardProps {
   item: MenuItemDto
@@ -45,7 +46,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
             </div>
           )}
           <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none">
-            {item.category}
+            {CATEGORY_MAP[item.category] || item.category}
           </Badge>
           <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2 py-1 text-xs font-bold text-white shadow-lg">
             <Star size={12} className="fill-white" />

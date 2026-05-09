@@ -35,3 +35,62 @@ export const GetUserByIdApi = async (id: string): Promise<UserDto> => {
   const responseDTO = await handleResponse<{ message: string; data: UserDto }>(response);
   return responseDTO.data;
 };
+
+export interface UserPageDto {
+  content: UserDto[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export const GetAllUsersApi = async (params: {
+  search?: string;
+  role?: string;
+  status?: string;
+  page?: number;
+  size?: number;
+}): Promise<UserPageDto> => {
+  const query = new URLSearchParams();
+  if (params.search) query.append('search', params.search);
+  if (params.role) query.append('role', params.role);
+  if (params.status) query.append('status', params.status);
+  if (params.page !== undefined) query.append('page', params.page.toString());
+  if (params.size !== undefined) query.append('size', params.size.toString());
+
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}?${query.toString()}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: UserPageDto }>(response);
+  return responseDTO.data;
+};
+
+export const UpdateUserApi = async (id: string, userData: Partial<UserDto>): Promise<UserDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: UserDto }>(response);
+  return responseDTO.data;
+};
+
+export const DeleteUserApi = async (id: string, softDelete = true): Promise<void> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}?soft-delete=${softDelete}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) await throwApiError(response);
+};
+
+export const AssignVendorApi = async (vendorId: string, email: string): Promise<UserDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/assign-vendor/${vendorId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: UserDto }>(response);
+  return responseDTO.data;
+};

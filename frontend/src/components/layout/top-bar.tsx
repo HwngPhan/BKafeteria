@@ -10,26 +10,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { useLogout } from '@/features/auth/data-access/auth.queries'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { useAuth } from '@/providers/AuthProvider'
-import { Bell, Search } from 'lucide-react'
+import { Bell, Wallet } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export function TopBar() {
   const { user } = useAuth()
   const { mutateAsync: logout } = useLogout()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/login')
+  }
 
   return (
     <header className="fixed top-0 right-0 z-30 flex h-16 w-full items-center justify-between border-b bg-background/60 backdrop-blur-xl px-6 md:left-auto md:w-[calc(100%-16rem)] transition-all duration-300">
       <div className="flex flex-1 items-center gap-4">
-        <div className="relative w-full max-w-md hidden sm:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Tìm món ăn, cửa hàng..."
-            className="h-10 w-full rounded-full bg-secondary/5 pl-10 border-none focus-visible:ring-1 focus-visible:ring-primary/20"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-4">
@@ -62,6 +62,12 @@ export function TopBar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+              <Link href="/wallet" className="flex items-center w-full">
+                <Wallet size={16} className="mr-2 text-primary" />
+                Ví tiền
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className="rounded-lg cursor-pointer">
               Hồ sơ
             </DropdownMenuItem>
@@ -71,7 +77,7 @@ export function TopBar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="rounded-lg cursor-pointer text-red-500 focus:text-red-500"
-              onClick={() => logout()}
+              onClick={handleLogout}
             >
               Đăng xuất
             </DropdownMenuItem>

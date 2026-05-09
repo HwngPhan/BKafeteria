@@ -1,5 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { GetActiveVendorsApi, GetVendorByIdApi, GetMyVendorApi } from "./vendor.api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  GetActiveVendorsApi, 
+  GetVendorByIdApi, 
+  GetMyVendorApi, 
+  GetAllVendorsApi,
+  RegisterVendorApi,
+  ApproveVendorApi,
+  UpdateVendorApi
+} from "./vendor.api";
+import { VendorDto } from "../config/vendor.types";
 
 export const vendorKeys = {
   all: ['vendors'] as const,
@@ -27,5 +36,43 @@ export const useMyVendor = () => {
   return useQuery({
     queryKey: vendorKeys.mine(),
     queryFn: GetMyVendorApi,
+  });
+};
+
+export const useAllVendors = () => {
+  return useQuery({
+    queryKey: vendorKeys.all,
+    queryFn: GetAllVendorsApi,
+  });
+};
+
+export const useRegisterVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<VendorDto>) => RegisterVendorApi(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vendorKeys.all });
+    },
+  });
+};
+
+export const useApproveVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => ApproveVendorApi(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vendorKeys.all });
+    },
+  });
+};
+
+export const useUpdateVendor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<VendorDto> }) => UpdateVendorApi(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vendorKeys.all });
+      queryClient.invalidateQueries({ queryKey: vendorKeys.mine() });
+    },
   });
 };

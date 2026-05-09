@@ -9,6 +9,9 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronRight,
+  Users,
+  Settings,
+  ShieldCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -21,8 +24,15 @@ const navItems = [
   { href: '/vendors', icon: Store, label: 'Cửa hàng', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
   { href: '/menu', icon: Utensils, label: 'Thực đơn', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
   { href: '/orders', icon: ClipboardList, label: 'Đơn hàng', roles: ['CUSTOMER'] },
-  { href: '/wallet', icon: Wallet, label: 'Ví tiền', roles: ['CUSTOMER'] },
-  { href: '/vendor-management', icon: Store, label: 'Cửa hàng của tôi', roles: ['MANAGER'] },
+  
+  // Manager routes
+  { href: '/manager/vendor', icon: Settings, label: 'Quản lý cửa hàng', roles: ['MANAGER'] },
+  { href: '/manager/menu', icon: Utensils, label: 'Quản lý thực đơn', roles: ['MANAGER'] },
+  { href: '/manager/staff', icon: Users, label: 'Quản lý nhân viên', roles: ['MANAGER'] },
+  
+  // Admin routes
+  { href: '/admin/users', icon: Users, label: 'Quản lý người dùng', roles: ['ADMIN'] },
+  { href: '/admin/vendors', icon: ShieldCheck, label: 'Duyệt cửa hàng', roles: ['ADMIN'] },
 ]
 
 export function SideNav() {

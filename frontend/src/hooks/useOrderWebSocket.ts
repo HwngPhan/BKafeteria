@@ -18,16 +18,16 @@ const statusLabels: Record<string, string> = {
 }
 
 export function useOrderWebSocket() {
-  const { stompClient, isConnected } = useWebSocket()
+  const { orderClient, isOrderConnected } = useWebSocket()
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!isConnected || !stompClient || !user) return
+    if (!isOrderConnected || !orderClient || !user) return
 
-    console.log('Subscribing to /topic/customer/' + user.id)
+    console.log('Subscribing to /topic/customer/' + user.userId)
 
-    const subscription = stompClient.subscribe(`/topic/customer/${user.id}`, (message) => {
+    const subscription = orderClient.subscribe(`/topic/customer/${user.userId}`, (message) => {
       try {
         const update = JSON.parse(message.body)
         console.log('WebSocket received order update:', update)
@@ -89,8 +89,8 @@ export function useOrderWebSocket() {
     })
 
     return () => {
-      console.log('Unsubscribing from /topic/customer/' + user.id)
+      console.log('Unsubscribing from /topic/customer/' + user.userId)
       subscription.unsubscribe()
     }
-  }, [stompClient, isConnected, user, queryClient])
+  }, [orderClient, isOrderConnected, user, queryClient])
 }

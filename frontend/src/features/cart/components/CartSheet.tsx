@@ -1,19 +1,19 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetFooter,
 } from '@/components/ui/sheet'
-import { ShoppingCart, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
 import { useCartStore } from '../store/cart.store'
-import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
 
 export function CartSheet() {
   const { items, removeItem, updateQuantity, getTotalPrice, getItemsByVendor, clearCart } = useCartStore()
@@ -23,27 +23,33 @@ export function CartSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary/10">
+        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
           {items.length > 0 && (
             <Badge
-              variant="destructive"
-              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in"
             >
               {items.length}
             </Badge>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
-        <SheetHeader className="p-6 border-b">
+      <SheetContent className="w-full sm:max-w-md flex flex-col p-0 border-none shadow-2xl">
+        <SheetHeader className="p-8 border-b bg-secondary/5">
           <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2 text-xl font-bold">
-              <ShoppingBag className="text-primary" />
-              Giỏ hàng của bạn
+            <SheetTitle className="flex items-center gap-3 text-2xl font-black text-primary">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <ShoppingBag className="text-primary" size={24} />
+              </div>
+              Giỏ hàng
             </SheetTitle>
             {items.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearCart} className="text-muted-foreground hover:text-red-500">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearCart}
+                className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl font-bold text-xs"
+              >
                 Xóa tất cả
               </Button>
             )}
@@ -51,98 +57,109 @@ export function CartSheet() {
         </SheetHeader>
 
         {items.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center space-y-4 p-6">
-            <div className="p-6 rounded-full bg-secondary/5">
-              <ShoppingCart size={64} className="text-muted-foreground/30" />
+          <div className="flex-1 flex flex-col items-center justify-center space-y-6 p-8 text-center">
+            <div className="p-10 rounded-[3rem] bg-secondary/5 text-muted-foreground/20">
+              <ShoppingCart size={80} />
             </div>
-            <p className="text-lg font-medium text-muted-foreground">Giỏ hàng trống</p>
-            <Button variant="outline" className="rounded-full">Bắt đầu mua sắm</Button>
+            <div className="space-y-2">
+              <p className="text-xl font-bold text-primary">Giỏ hàng trống</p>
+              <p className="text-sm text-muted-foreground max-w-[200px]">Bạn chưa thêm món nào vào giỏ hàng cả.</p>
+            </div>
+            <Button variant="outline" className="rounded-2xl h-12 px-8 font-bold border-secondary/20">Bắt đầu mua sắm</Button>
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1 px-6">
-              <div className="py-6 space-y-8">
+            <ScrollArea className="flex-1">
+              <div className="p-8 space-y-10">
                 {Object.entries(itemsByVendor).map(([vendorId, vendorItems]) => (
-                  <div key={vendorId} className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-lg text-primary">{vendorItems[0].vendorName}</h3>
-                      <Badge variant="secondary" className="bg-primary/5 text-primary">
+                  <div key={vendorId} className="space-y-6">
+                    <div className="flex items-center justify-between bg-secondary/5 p-4 rounded-2xl">
+                      <h3 className="font-bold text-primary flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-secondary" />
+                        {vendorItems[0].vendorName}
+                      </h3>
+                      <Badge variant="secondary" className="bg-white text-primary font-black shadow-sm">
                         {vendorItems.length} món
                       </Badge>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {vendorItems.map((item) => (
-                        <div key={item.itemId} className="flex gap-4 group">
-                          <div className="shrink-0 h-20 w-20 rounded-2xl bg-secondary/5 overflow-hidden border">
+                        <div key={item.itemId} className="flex gap-4 group animate-in slide-in-from-right-4 duration-300">
+                          <div className="shrink-0 h-24 w-24 rounded-3xl bg-secondary/5 overflow-hidden border-none shadow-inner flex items-center justify-center">
                             {item.imageUrl ? (
-                              <img src={item.imageUrl} alt={item.itemName} className="h-full w-full object-cover" />
+                              <img src={item.imageUrl} alt={item.itemName} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center text-muted-foreground/20 italic text-xs">Không có ảnh</div>
+                              <UtensilsCrossed size={24} className="text-muted-foreground/20" />
                             )}
                           </div>
                           <div className="flex-1 flex flex-col justify-between py-1">
                             <div>
-                              <h4 className="font-semibold text-sm line-clamp-1">{item.itemName}</h4>
-                              <p className="text-primary font-bold text-sm">
+                              <h4 className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">{item.itemName}</h4>
+                              <p className="text-primary font-black text-sm mt-1">
                                 {item.price.toLocaleString()}đ
                               </p>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center bg-secondary/10 rounded-full p-1 h-8">
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center bg-secondary/5 rounded-2xl p-1 h-10 border border-secondary/10">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 rounded-full"
-                                  onClick={() => updateQuantity(item.itemId, item.quantity - 1)}
+                                  className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(item.itemId, item.quantity - 1);
+                                  }}
                                 >
-                                  <Minus size={14} />
+                                  <Minus size={14} strokeWidth={3} />
                                 </Button>
-                                <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                                <span className="w-10 text-center text-sm font-black text-primary">{item.quantity}</span>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 rounded-full"
-                                  onClick={() => updateQuantity(item.itemId, item.quantity + 1)}
+                                  className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(item.itemId, item.quantity + 1);
+                                  }}
                                 >
-                                  <Plus size={14} />
+                                  <Plus size={14} strokeWidth={3} />
                                 </Button>
                               </div>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                 onClick={() => removeItem(item.itemId)}
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={18} />
                               </Button>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <Separator className="bg-secondary/10" />
                   </div>
                 ))}
               </div>
             </ScrollArea>
 
-            <SheetFooter className="p-6 border-t bg-secondary/5 flex-col space-y-4">
-              <div className="space-y-2 w-full">
-                <div className="flex justify-between text-sm text-muted-foreground">
+            <SheetFooter className="p-8 pt-6 border-t bg-secondary/5 flex-col space-y-6">
+              <div className="space-y-3 w-full">
+                <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Tạm tính</span>
                   <span>{total.toLocaleString()}đ</span>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
                   <span>Phí dịch vụ</span>
-                  <span>0đ</span>
+                  <span className="text-emerald-600">Miễn phí</span>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Tổng cộng</span>
-                  <span className="text-primary">{total.toLocaleString()}đ</span>
+                <Separator className="bg-secondary/10" />
+                <div className="flex justify-between items-end">
+                  <span className="text-sm font-bold text-primary uppercase tracking-widest">Tổng cộng</span>
+                  <span className="text-3xl font-black text-primary">{total.toLocaleString()}đ</span>
                 </div>
               </div>
-              <Button className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20">
+              <Button className="w-full h-12 rounded-[2rem] text-xl font-black shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 Thanh toán ngay
               </Button>
             </SheetFooter>

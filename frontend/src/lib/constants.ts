@@ -7,3 +7,10 @@ export enum TokenType {
     otpToken = "otpToken",
 }
 
+export const CATEGORY_MAP: Record<string, string> = {
+  BEVERAGES: 'Đồ uống',
+  PASTRIES: 'Bánh ngọt',
+  SNACKS: 'Ăn nhẹ',
+  MEALS: 'Bữa chính',
+  DESSERTS: 'Tráng miệng',
+}
