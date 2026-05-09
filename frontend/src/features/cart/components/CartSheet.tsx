@@ -12,16 +12,52 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed, Loader2 } from 'lucide-react'
 import { useCartStore } from '../store/cart.store'
+import { useCreateOrder } from '../../order/data-access/order.queries'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { useState } from 'react'
 
 export function CartSheet() {
-  const { items, removeItem, updateQuantity, getTotalPrice, getItemsByVendor, clearCart } = useCartStore()
+  const items = useCartStore((state) => state.items)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const updateQuantity = useCartStore((state) => state.updateQuantity)
+  const clearCart = useCartStore((state) => state.clearCart)
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice)
+  const getItemsByVendor = useCartStore((state) => state.getItemsByVendor)
+
   const itemsByVendor = getItemsByVendor()
   const total = getTotalPrice()
+  const createOrder = useCreateOrder()
+  const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return
+
+    try {
+      const vendorOrders = Object.entries(itemsByVendor).map(([vendorId, vendorItems]) => ({
+        vendorId,
+        items: vendorItems.map(item => ({
+          itemId: item.itemId,
+          quantity: item.quantity
+        }))
+      }))
+
+      const result = await createOrder.mutateAsync({ vendorOrders })
+      
+      toast.success('Đặt đơn hàng thành công!')
+      clearCart()
+      setIsOpen(false)
+      router.push('/orders')
+    } catch (error: any) {
+      toast.error(error?.message || 'Có lỗi xảy ra khi đặt đơn hàng')
+    }
+  }
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
@@ -48,6 +84,7 @@ export function CartSheet() {
                 variant="ghost"
                 size="sm"
                 onClick={clearCart}
+                disabled={createOrder.isPending}
                 className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl font-bold text-xs"
               >
                 Xóa tất cả
@@ -65,7 +102,13 @@ export function CartSheet() {
               <p className="text-xl font-bold text-primary">Giỏ hàng trống</p>
               <p className="text-sm text-muted-foreground max-w-[200px]">Bạn chưa thêm món nào vào giỏ hàng cả.</p>
             </div>
-            <Button variant="outline" className="rounded-2xl h-12 px-8 font-bold border-secondary/20">Bắt đầu mua sắm</Button>
+            <Button 
+              variant="outline" 
+              className="rounded-2xl h-12 px-8 font-bold border-secondary/20"
+              onClick={() => setIsOpen(false)}
+            >
+              Bắt đầu mua sắm
+            </Button>
           </div>
         ) : (
           <>
@@ -104,6 +147,7 @@ export function CartSheet() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  disabled={createOrder.isPending}
                                   className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -116,6 +160,7 @@ export function CartSheet() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  disabled={createOrder.isPending}
                                   className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -128,6 +173,7 @@ export function CartSheet() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                disabled={createOrder.isPending}
                                 className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                 onClick={() => removeItem(item.itemId)}
                               >
@@ -159,8 +205,19 @@ export function CartSheet() {
                   <span className="text-3xl font-black text-primary">{total.toLocaleString()}đ</span>
                 </div>
               </div>
-              <Button className="w-full h-12 rounded-[2rem] text-xl font-black shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                Thanh toán ngay
+              <Button 
+                onClick={handleCheckout}
+                disabled={createOrder.isPending}
+                className="w-full h-12 rounded-[2rem] text-xl font-black shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                {createOrder.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  'Thanh toán ngay'
+                )}
               </Button>
             </SheetFooter>
           </>

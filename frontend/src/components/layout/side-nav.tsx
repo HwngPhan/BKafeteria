@@ -26,6 +26,7 @@ const navItems = [
   { href: '/orders', icon: ClipboardList, label: 'Đơn hàng', roles: ['CUSTOMER'] },
   
   // Manager routes
+  { href: '/manager/orders', icon: ClipboardList, label: 'Quản lý đơn hàng', roles: ['MANAGER', 'STAFF'] },
   { href: '/manager/vendor', icon: Settings, label: 'Quản lý cửa hàng', roles: ['MANAGER'] },
   { href: '/manager/menu', icon: Utensils, label: 'Quản lý thực đơn', roles: ['MANAGER'] },
   { href: '/manager/staff', icon: Users, label: 'Quản lý nhân viên', roles: ['MANAGER'] },

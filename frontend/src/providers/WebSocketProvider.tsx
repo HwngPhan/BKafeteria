@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getCookie } from 'cookies-next'
-import { API_GATEWAY_BASE_URL, TokenType } from '@/lib/constants'
+import { API_GATEWAY_BASE_URL, TokenType, USE_WEBSOCKET } from '@/lib/constants'
 
 interface WebSocketContextType {
   orderClient: Client | null
@@ -29,6 +29,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [isVendorConnected, setIsVendorConnected] = useState(false)
 
   useEffect(() => {
+    if (!USE_WEBSOCKET) return
+
     const token = getCookie(TokenType.authToken)
     if (!token) return
 
