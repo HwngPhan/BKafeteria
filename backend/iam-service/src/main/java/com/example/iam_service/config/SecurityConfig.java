@@ -1,14 +1,8 @@
 package com.example.iam_service.config;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,13 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.filter.CorsFilter;
 
 import com.example.iam_service.config.jwt.JwtAuthenticationFilter;
 import com.example.iam_service.service.CustomUserDetailsService;
-import com.example.shared.config.CorsProperties;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import com.example.shared.config.CustomAccessDeniedHandler;
 import com.example.shared.config.CustomAuthenticationEntryPoint;
 
@@ -36,58 +26,22 @@ public class SecurityConfig {
 	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomUserDetailsService customUserDetailsService;
-	private final CorsProperties corsProperties;
-	private final DiscoveryClient discoveryClient;
 
 	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
 						  CustomAccessDeniedHandler customAccessDeniedHandler,
 						  CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-						  CustomUserDetailsService customUserDetailsService,
-						  CorsProperties corsProperties,
-						  DiscoveryClient discoveryClient) {
+						  CustomUserDetailsService customUserDetailsService) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.customAccessDeniedHandler = customAccessDeniedHandler;
 		this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
 		this.customUserDetailsService = customUserDetailsService;
-		this.corsProperties = corsProperties;
-		this.discoveryClient = discoveryClient;
-	}
-
-	@Bean
-	public CorsFilter corsFilter() {
-		return new CorsFilter(request -> {
-			String origin = request.getHeader("Origin");
-			Set<String> allowedOrigins = new HashSet<>(corsProperties.getAllowedOrigins());
-
-			for (String serviceName : discoveryClient.getServices()) {
-				List<ServiceInstance> instances = discoveryClient.getInstances(serviceName);
-				for (ServiceInstance instance : instances) {
-					allowedOrigins.add(instance.getUri().toString());
-				}
-			}
-
-			if (origin != null && allowedOrigins.contains(origin)) {
-				CorsConfiguration config = new CorsConfiguration();
-				config.setAllowedOrigins(List.of(origin));
-				config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-				config.setAllowedHeaders(List.of("Authorization", "Content-Type",
-						"X-Requested-With", "Accept", "Origin",
-						"Access-Control-Request-Method", "Access-Control-Request-Headers"));
-				config.setExposedHeaders(List.of("Authorization", "Content-Type"));
-				config.setAllowCredentials(true);
-				config.setMaxAge(3600L);
-				return config;
-			}
-
-			return null;
-		});
 	}
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(csrf -> csrf.disable())
-				.cors(Customizer.withDefaults())
+				.cors(cors -> cors.disable())
 				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/auth/**").permitAll()

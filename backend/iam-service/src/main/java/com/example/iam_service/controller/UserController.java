@@ -76,7 +76,7 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping
     public ResponseEntity<ApiResponse<PageDto<UserDto>>> getAllUsers(
             @ParameterObject @Valid UserFilterRequest userFilterDto,

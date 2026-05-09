@@ -3,6 +3,7 @@ package com.example.vendor_service.service;
 import com.example.shared.enums.VendorStatus;
 import com.example.vendor_service.dtos.UserInfoDto;
 import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
+import com.example.vendor_service.dtos.VendorDtos.Request.UpdateVendorRequest;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.repository.VendorRepository;
@@ -55,7 +56,7 @@ public class VendorService {
         Vendor vendor = new Vendor();
         vendor.setCreatedAt(LocalDateTime.now());
         vendor.setUpdatedAt(LocalDateTime.now());
-        vendor.setStatus(VendorStatus.PENDING);
+        vendor.setStatus(VendorStatus.ACCEPTED);
         vendor.setName(request.getName());
         vendor.setDescription(request.getDescription());
         vendor.setManagerId(managerId);
@@ -77,6 +78,25 @@ public class VendorService {
 
         UserInfoDto manager = iamClient.getUserInfo(vendor.getManagerId());
         iamClient.assignVendor(vendorId, manager.getEmail(), "MANAGER");
+        return vendorRepository.save(vendor);
+    }
+
+    @Transactional
+    public Vendor updateVendor(String vendorId, UpdateVendorRequest request, String managerId) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with ID: " + vendorId));
+
+        if (!vendor.getManagerId().equals(managerId)) {
+            throw new IllegalArgumentException("You are not authorized to update this vendor");
+        }
+
+        vendor.setName(request.getName());
+        vendor.setDescription(request.getDescription());
+        vendor.setWorkingHourFrom(request.getWorkingHourFrom());
+        vendor.setWorkingHourTo(request.getWorkingHourTo());
+        vendor.setCertification(request.getCertification());
+        vendor.setUpdatedAt(LocalDateTime.now());
+
         return vendorRepository.save(vendor);
     }
 
