@@ -37,6 +37,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     // 1. Order Service WebSocket
     const oClient = new Client({
       webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/order/ws`),
+      // webSocketFactory: () => new SockJS(`https://api.bkafeteria.site/api/order/ws`),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,

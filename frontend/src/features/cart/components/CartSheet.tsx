@@ -18,6 +18,7 @@ import { useCreateOrder } from '../../order/data-access/order.queries'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export function CartSheet() {
   const items = useCartStore((state) => state.items)
@@ -32,6 +33,7 @@ export function CartSheet() {
   const createOrder = useCreateOrder()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useLanguage()
 
   const handleCheckout = async () => {
     if (items.length === 0) return
@@ -45,14 +47,14 @@ export function CartSheet() {
         }))
       }))
 
-      const result = await createOrder.mutateAsync({ vendorOrders })
-      
-      toast.success('Đặt đơn hàng thành công!')
+      await createOrder.mutateAsync({ vendorOrders })
+
+      toast.success(t('cart.toast_success'))
       clearCart()
       setIsOpen(false)
       router.push('/orders')
     } catch (error: any) {
-      toast.error(error?.message || 'Có lỗi xảy ra khi đặt đơn hàng')
+      toast.error(error?.message || t('cart.toast_error'))
     }
   }
 
@@ -62,9 +64,7 @@ export function CartSheet() {
         <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
           {items.length > 0 && (
-            <Badge
-              className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in"
-            >
+            <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in">
               {items.length}
             </Badge>
           )}
@@ -77,7 +77,7 @@ export function CartSheet() {
               <div className="p-2 rounded-xl bg-primary/10">
                 <ShoppingBag className="text-primary" size={24} />
               </div>
-              Giỏ hàng
+              {t('cart.title')}
             </SheetTitle>
             {items.length > 0 && (
               <Button
@@ -87,7 +87,7 @@ export function CartSheet() {
                 disabled={createOrder.isPending}
                 className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl font-bold text-xs"
               >
-                Xóa tất cả
+                {t('cart.clear')}
               </Button>
             )}
           </div>
@@ -99,15 +99,15 @@ export function CartSheet() {
               <ShoppingCart size={80} />
             </div>
             <div className="space-y-2">
-              <p className="text-xl font-bold text-primary">Giỏ hàng trống</p>
-              <p className="text-sm text-muted-foreground max-w-[200px]">Bạn chưa thêm món nào vào giỏ hàng cả.</p>
+              <p className="text-xl font-bold text-primary">{t('cart.empty_title')}</p>
+              <p className="text-sm text-muted-foreground max-w-[200px]">{t('cart.empty_desc')}</p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="rounded-2xl h-12 px-8 font-bold border-secondary/20"
               onClick={() => setIsOpen(false)}
             >
-              Bắt đầu mua sắm
+              {t('cart.start_shopping')}
             </Button>
           </div>
         ) : (
@@ -122,7 +122,7 @@ export function CartSheet() {
                         {vendorItems[0].vendorName}
                       </h3>
                       <Badge variant="secondary" className="bg-white text-primary font-black shadow-sm">
-                        {vendorItems.length} món
+                        {vendorItems.length} {t('cart.items_unit')}
                       </Badge>
                     </div>
                     <div className="space-y-6">
@@ -149,10 +149,7 @@ export function CartSheet() {
                                   size="icon"
                                   disabled={createOrder.isPending}
                                   className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateQuantity(item.itemId, item.quantity - 1);
-                                  }}
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(item.itemId, item.quantity - 1) }}
                                 >
                                   <Minus size={14} strokeWidth={3} />
                                 </Button>
@@ -162,10 +159,7 @@ export function CartSheet() {
                                   size="icon"
                                   disabled={createOrder.isPending}
                                   className="h-8 w-8 rounded-xl hover:bg-white hover:text-primary transition-all"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateQuantity(item.itemId, item.quantity + 1);
-                                  }}
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(item.itemId, item.quantity + 1) }}
                                 >
                                   <Plus size={14} strokeWidth={3} />
                                 </Button>
@@ -192,20 +186,20 @@ export function CartSheet() {
             <SheetFooter className="p-8 pt-6 border-t bg-secondary/5 flex-col space-y-6">
               <div className="space-y-3 w-full">
                 <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                  <span>Tạm tính</span>
+                  <span>{t('cart.subtotal')}</span>
                   <span>{total.toLocaleString()}đ</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                  <span>Phí dịch vụ</span>
-                  <span className="text-emerald-600">Miễn phí</span>
+                  <span>{t('cart.service_fee')}</span>
+                  <span className="text-emerald-600">{t('cart.free')}</span>
                 </div>
                 <Separator className="bg-secondary/10" />
                 <div className="flex justify-between items-end">
-                  <span className="text-sm font-bold text-primary uppercase tracking-widest">Tổng cộng</span>
+                  <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('cart.total')}</span>
                   <span className="text-3xl font-black text-primary">{total.toLocaleString()}đ</span>
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={handleCheckout}
                 disabled={createOrder.isPending}
                 className="w-full h-12 rounded-[2rem] text-xl font-black shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
@@ -213,10 +207,10 @@ export function CartSheet() {
                 {createOrder.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Đang xử lý...
+                    {t('cart.processing')}
                   </>
                 ) : (
-                  'Thanh toán ngay'
+                  t('cart.checkout')
                 )}
               </Button>
             </SheetFooter>

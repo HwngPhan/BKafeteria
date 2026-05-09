@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { ArrowLeft, Home } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "@/providers/LanguageProvider"
 
 export default function NotFoundPage() {
   const router = useRouter()
+  const { t } = useLanguage()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#eaf4ff] p-6">
@@ -18,31 +20,20 @@ export default function NotFoundPage() {
       >
         <div className="rounded-3xl border-4 border-dashed border-[#032b91] bg-white p-10 text-center">
           <h1 className="text-7xl font-extrabold text-[#1488db] tracking-tight">404</h1>
-          <p className="mt-3 text-lg font-semibold text-[#032b91]">
-            Không tìm thấy trang
-          </p>
-          <p className="mt-2 text-sm text-slate-500">
-            Trang bạn tìm không tồn tại hoặc đã bị di chuyển.
-          </p>
+          <p className="mt-3 text-lg font-semibold text-[#032b91]">{t('notfound.title')}</p>
+          <p className="mt-2 text-sm text-slate-500">{t('notfound.desc')}</p>
 
           <div className="mt-8 flex flex-col gap-3">
-            <Button
-              onClick={() => router.push("/")}
-            >
+            <Button onClick={() => router.push("/")}>
               <Home className="mr-2 h-4 w-4" />
-              Về trang chủ
+              {t('notfound.home')}
             </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => router.back()}
-            >
+            <Button variant="secondary" onClick={() => router.back()}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Quay lại
+              {t('notfound.back')}
             </Button>
           </div>
         </div>
-
         <p className="mt-6 text-center text-xs text-slate-400">
           © {new Date().getFullYear()} BKafeteria
         </p>

@@ -10,11 +10,13 @@ import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function ManagerVendorPage() {
   const { data: vendor, isLoading } = useMyVendor()
   const updateVendor = useUpdateVendor()
-  
+  const { t } = useLanguage()
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -38,17 +40,9 @@ export default function ManagerVendorPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!vendor) return
-
-    updateVendor.mutate({
-      id: vendor.vendorId,
-      data: formData
-    }, {
-      onSuccess: () => {
-        toast.success('Cập nhật thông tin cửa hàng thành công')
-      },
-      onError: () => {
-        toast.error('Cập nhật thất bại, vui lòng thử lại')
-      }
+    updateVendor.mutate({ id: vendor.vendorId, data: formData }, {
+      onSuccess: () => toast.success(t('manager.vendor.toast_success')),
+      onError: () => toast.error(t('manager.vendor.toast_error')),
     })
   }
 
@@ -67,10 +61,8 @@ export default function ManagerVendorPage() {
           <Store className="h-16 w-16 text-muted-foreground/30" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-bold text-primary">Bạn chưa có cửa hàng nào</h3>
-          <p className="text-muted-foreground max-w-xs">
-            Vui lòng liên hệ Admin để đăng ký hoặc duyệt cửa hàng của bạn.
-          </p>
+          <h3 className="text-xl font-bold text-primary">{t('manager.vendor.no_vendor')}</h3>
+          <p className="text-muted-foreground max-w-xs">{t('manager.vendor.no_vendor_desc')}</p>
         </div>
       </div>
     )
@@ -83,24 +75,22 @@ export default function ManagerVendorPage() {
     CLOSED: 'bg-gray-100 text-gray-700 border-gray-200',
   }
 
-  const statusLabels: Record<string, string> = {
-    PENDING: 'Chờ duyệt',
-    ACCEPTED: 'Đang hoạt động',
-    REJECTED: 'Bị từ chối',
-    CLOSED: 'Đóng cửa',
+  const statusLabelKeys: Record<string, string> = {
+    PENDING: 'manager.vendor.status_pending',
+    ACCEPTED: 'manager.vendor.status_accepted',
+    REJECTED: 'manager.vendor.status_rejected',
+    CLOSED: 'manager.vendor.status_closed',
   }
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Cửa hàng của tôi</h1>
-          <p className="text-muted-foreground mt-1 font-medium flex items-center gap-2">
-            Quản lý thông tin và trạng thái hoạt động của cửa hàng.
-          </p>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.vendor.title')}</h1>
+          <p className="text-muted-foreground mt-1 font-medium">{t('manager.vendor.subtitle')}</p>
         </div>
         <Badge className={cn('rounded-full px-6 py-2 text-xs font-bold border self-start md:self-center', statusColors[vendor.status])}>
-          {statusLabels[vendor.status] || vendor.status}
+          {t(statusLabelKeys[vendor.status]) || vendor.status}
         </Badge>
       </div>
 
@@ -113,8 +103,8 @@ export default function ManagerVendorPage() {
                   <Store size={24} />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold">Thông tin chi tiết</CardTitle>
-                  <CardDescription className="font-medium text-xs">Cập nhật các thông tin cơ bản về cửa hàng của bạn.</CardDescription>
+                  <CardTitle className="text-xl font-bold">{t('manager.vendor.card_title')}</CardTitle>
+                  <CardDescription className="font-medium text-xs">{t('manager.vendor.card_desc')}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -122,83 +112,68 @@ export default function ManagerVendorPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Tên cửa hàng</label>
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('manager.vendor.name')}</label>
                     <div className="relative">
                       <Store className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        value={formData.name} 
-                        onChange={e => setFormData({...formData, name: e.target.value})} 
+                      <Input
+                        value={formData.name}
+                        onChange={e => setFormData({...formData, name: e.target.value})}
                         className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                        placeholder="Nhập tên cửa hàng..."
+                        placeholder={t('manager.vendor.name_placeholder')}
                         required
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Chứng nhận / Giấy phép</label>
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('manager.vendor.cert')}</label>
                     <div className="relative">
                       <FileText className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        value={formData.certification} 
-                        onChange={e => setFormData({...formData, certification: e.target.value})} 
+                      <Input
+                        value={formData.certification}
+                        onChange={e => setFormData({...formData, certification: e.target.value})}
                         className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                        placeholder="Số VSATTP..."
+                        placeholder={t('manager.vendor.cert_placeholder')}
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Mô tả cửa hàng</label>
-                  <Textarea 
-                    value={formData.description} 
-                    onChange={e => setFormData({...formData, description: e.target.value})} 
+                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('manager.vendor.desc')}</label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={e => setFormData({...formData, description: e.target.value})}
                     className="rounded-3xl min-h-[120px] bg-secondary/5 border-none focus-visible:ring-primary/20 p-4"
-                    placeholder="Giới thiệu về cửa hàng của bạn..."
+                    placeholder={t('manager.vendor.desc_placeholder')}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Giờ mở cửa</label>
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('manager.vendor.open')}</label>
                     <div className="relative">
                       <Clock className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        type="time"
-                        step="1"
-                        value={formData.workingHourFrom} 
-                        onChange={e => setFormData({...formData, workingHourFrom: e.target.value})} 
-                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                      />
+                      <Input type="time" step="1" value={formData.workingHourFrom}
+                        onChange={e => setFormData({...formData, workingHourFrom: e.target.value})}
+                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Giờ đóng cửa</label>
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('manager.vendor.close')}</label>
                     <div className="relative">
                       <Clock className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        type="time"
-                        step="1"
-                        value={formData.workingHourTo} 
-                        onChange={e => setFormData({...formData, workingHourTo: e.target.value})} 
-                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                      />
+                      <Input type="time" step="1" value={formData.workingHourTo}
+                        onChange={e => setFormData({...formData, workingHourTo: e.target.value})}
+                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20" />
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-4 flex justify-end">
-                  <Button 
-                    type="submit" 
-                    disabled={updateVendor.isPending}
-                    className="rounded-2xl h-12 px-8 font-bold gap-2 shadow-lg shadow-primary/20"
-                  >
-                    {updateVendor.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save size={18} />
-                    )}
-                    Lưu thay đổi
+                  <Button type="submit" disabled={updateVendor.isPending}
+                    className="rounded-2xl h-12 px-8 font-bold gap-2 shadow-lg shadow-primary/20">
+                    {updateVendor.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={18} />}
+                    {t('manager.vendor.save')}
                   </Button>
                 </div>
               </form>
@@ -209,24 +184,20 @@ export default function ManagerVendorPage() {
         <div className="space-y-8">
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 overflow-hidden bg-white">
             <CardHeader className="p-8">
-              <CardTitle className="text-lg font-bold">Thống kê nhanh</CardTitle>
+              <CardTitle className="text-lg font-bold">{t('manager.vendor.stats')}</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="flex items-center gap-4 bg-secondary/5 p-4 rounded-3xl">
-                <div className="p-3 rounded-2xl bg-white text-primary">
-                  <CheckCircle2 size={24} />
-                </div>
+                <div className="p-3 rounded-2xl bg-white text-primary"><CheckCircle2 size={24} /></div>
                 <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Đơn hoàn thành</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('manager.vendor.completed')}</p>
                   <p className="text-2xl font-black text-primary">--</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-3xl">
-                <div className="p-3 rounded-2xl bg-white text-primary">
-                  <FileText size={24} />
-                </div>
+                <div className="p-3 rounded-2xl bg-white text-primary"><FileText size={24} /></div>
                 <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Thực đơn</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('manager.vendor.menu')}</p>
                   <p className="text-2xl font-black text-primary">--</p>
                 </div>
               </div>
@@ -235,10 +206,8 @@ export default function ManagerVendorPage() {
 
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 overflow-hidden bg-gradient-to-br from-primary to-secondary text-primary-foreground">
             <CardContent className="p-8 space-y-4">
-              <h4 className="font-bold">Mẹo nhỏ</h4>
-              <p className="text-sm opacity-80 leading-relaxed font-medium">
-                Cập nhật đầy đủ mô tả và hình ảnh chứng nhận giúp khách hàng tin tưởng và lựa chọn món ăn của bạn nhiều hơn.
-              </p>
+              <h4 className="font-bold">{t('manager.vendor.tip_title')}</h4>
+              <p className="text-sm opacity-80 leading-relaxed font-medium">{t('manager.vendor.tip_desc')}</p>
             </CardContent>
           </Card>
         </div>

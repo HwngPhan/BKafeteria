@@ -18,28 +18,31 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/providers/AuthProvider'
-
-const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Tổng quan', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
-  { href: '/vendors', icon: Store, label: 'Cửa hàng', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
-  { href: '/menu', icon: Utensils, label: 'Thực đơn', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
-  { href: '/orders', icon: ClipboardList, label: 'Đơn hàng', roles: ['CUSTOMER'] },
-  
-  // Manager routes
-  { href: '/manager/orders', icon: ClipboardList, label: 'Quản lý đơn hàng', roles: ['MANAGER', 'STAFF'] },
-  { href: '/manager/vendor', icon: Settings, label: 'Quản lý cửa hàng', roles: ['MANAGER'] },
-  { href: '/manager/menu', icon: Utensils, label: 'Quản lý thực đơn', roles: ['MANAGER'] },
-  { href: '/manager/staff', icon: Users, label: 'Quản lý nhân viên', roles: ['MANAGER'] },
-  
-  // Admin routes
-  { href: '/admin/users', icon: Users, label: 'Quản lý người dùng', roles: ['ADMIN'] },
-  { href: '/admin/vendors', icon: ShieldCheck, label: 'Duyệt cửa hàng', roles: ['ADMIN'] },
-]
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export function SideNav() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { user } = useAuth()
+  const { t } = useLanguage()
+
+  const navItems = [
+    { href: '/dashboard', icon: Home, labelKey: 'nav.overview', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
+    { href: '/vendors', icon: Store, labelKey: 'nav.stores', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
+    { href: '/menu', icon: Utensils, labelKey: 'nav.menu', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
+    { href: '/orders', icon: ClipboardList, labelKey: 'nav.orders', roles: ['CUSTOMER'] },
+    { href: '/wallet', icon: Wallet, labelKey: 'nav.wallet', roles: ['CUSTOMER'] },
+
+    // Manager routes
+    { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER', 'STAFF'] },
+    { href: '/manager/vendor', icon: Settings, labelKey: 'nav.manage_store', roles: ['MANAGER'] },
+    { href: '/manager/menu', icon: Utensils, labelKey: 'nav.manage_menu', roles: ['MANAGER'] },
+    { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
+
+    // Admin routes
+    { href: '/admin/users', icon: Users, labelKey: 'nav.manage_users', roles: ['ADMIN'] },
+    { href: '/admin/vendors', icon: ShieldCheck, labelKey: 'nav.approve_stores', roles: ['ADMIN'] },
+  ]
 
   return (
     <aside
@@ -51,15 +54,15 @@ export function SideNav() {
       <div className="flex h-16 items-center justify-between px-6 border-b">
         {!isCollapsed && (
           <div className="flex flex-col">
-          <span className="text-xl font-black tracking-tight text-foreground">
-            BK<span className="text-primary">AFETERIA</span>
-          </span>
-          {user && (
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-              {user.role}
+            <span className="text-xl font-black tracking-tight text-foreground">
+              BK<span className="text-primary">AFETERIA</span>
             </span>
-          )}
-        </div>
+            {user && (
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+                {user.role}
+              </span>
+            )}
+          </div>
         )}
         <Button
           variant="ghost"
@@ -75,7 +78,7 @@ export function SideNav() {
         {navItems.map((item) => {
           const isActive = pathname === item.href
           if (item.roles && user && !item.roles.includes(user.role)) return null
-          
+
           return (
             <Link
               key={item.href}
@@ -95,7 +98,7 @@ export function SideNav() {
                 )}
               />
               {!isCollapsed && (
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{t(item.labelKey)}</span>
               )}
               {isActive && !isCollapsed && (
                 <div className="ml-auto h-2 w-2 rounded-full bg-white animate-pulse" />
@@ -104,7 +107,6 @@ export function SideNav() {
           )
         })}
       </nav>
-
     </aside>
   )
 }
