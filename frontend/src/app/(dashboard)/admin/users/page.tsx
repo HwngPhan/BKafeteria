@@ -240,7 +240,7 @@ export default function AdminUsersPage() {
                             <MoreHorizontal size={20} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2">
+                        <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2 bg-background opacity-100">
                           <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => {
                             setSelectedUser(user)
                             setNewRole(user.role)
