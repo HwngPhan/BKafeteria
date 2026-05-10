@@ -8,7 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Loader2, ShoppingBag, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
+import { useMarkOrderFinished, useVendorOrders } from '@/features/vendor/data-access/vendor-order.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { AlertCircle, ArrowUpDown, CheckCircle2, Clock, Loader2, ShoppingBag } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
 const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
@@ -20,6 +24,16 @@ export default function ManagerOrdersPage() {
   const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
 
   const markFinished = useMarkOrderFinished()
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+
+  const sortedOrders = useMemo(() => {
+    if (!orders) return []
+    return [...orders].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime()
+      const dateB = new Date(b.createdAt).getTime()
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB
+    })
+  }, [orders, sortBy])
   const { t } = useLanguage()
 
   const handleMarkFinished = async (id: string) => {
@@ -47,6 +61,26 @@ export default function ManagerOrdersPage() {
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-primary">Quản lý đơn hàng</h1>
+          <p className="text-muted-foreground mt-1 font-medium">Theo dõi và xử lý các đơn hàng đang đến.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown size={14} className="text-muted-foreground" />
+                <SelectValue placeholder="Sắp xếp" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-none shadow-xl">
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        </div>
       <div>
         <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
         <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>

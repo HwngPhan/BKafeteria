@@ -57,6 +57,7 @@ export function TopBar() {
         <CartSheet />
 
         {/* Notifications */}
+        {isManager && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary/10">
@@ -109,6 +110,7 @@ export function TopBar() {
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
 
         {/* User Profile */}
         <DropdownMenu>
@@ -137,13 +139,13 @@ export function TopBar() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-              <Link href="/user-settings" className="flex items-center w-full">
+              <Link href="/profile" className="flex items-center w-full">
                 <UserIcon size={16} className="mr-2 text-primary" />
                 {t('topbar.profile')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-              <Link href="/user-settings" className="flex items-center w-full">
+              <Link href="/profile" className="flex items-center w-full">
                 <Settings size={16} className="mr-2 text-primary" />
                 {t('topbar.settings')}
               </Link>
