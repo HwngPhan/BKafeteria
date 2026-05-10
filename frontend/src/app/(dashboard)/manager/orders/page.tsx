@@ -1,16 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { useVendorOrders, useMarkOrderFinished } from '@/features/vendor/data-access/vendor-order.queries'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, ShoppingBag, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Loader2, ShoppingBag, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
 import { useLanguage } from '@/providers/LanguageProvider'
 
+const ACTIVE_STATUSES = ['PENDING', 'PROCESSING']
+const HISTORY_STATUSES = ['FINISHED', 'CANCELLED']
+
 export default function ManagerOrdersPage() {
-  const { data: orders, isLoading } = useVendorOrders()
+  const [historyPage, setHistoryPage] = useState(0)
+
+  // Page 0 with large size for active orders (they're typically few)
+  const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50)
+  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10)
+
   const markFinished = useMarkOrderFinished()
   const { t } = useLanguage()
 
@@ -23,7 +32,9 @@ export default function ManagerOrdersPage() {
     }
   }
 
-  if (isLoading) {
+  const isLoading = activeLoading || historyLoading
+
+  if (isLoading && !activePage && !historyPageData) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 text-primary animate-spin" />
@@ -31,8 +42,9 @@ export default function ManagerOrdersPage() {
     )
   }
 
-  const pendingOrders = orders?.filter(o => o.status === 'PENDING' || o.status === 'PROCESSING') || []
-  const historyOrders = orders?.filter(o => o.status === 'FINISHED' || o.status === 'CANCELLED') || []
+  const pendingOrders = activePage?.content.filter(o => ACTIVE_STATUSES.includes(o.status)) || []
+  const historyOrders = historyPageData?.content.filter(o => HISTORY_STATUSES.includes(o.status)) || []
+  const totalHistoryPages = historyPageData?.totalPages ?? 0
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -104,26 +116,54 @@ export default function ManagerOrdersPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-primary">{t('manager.orders.history')}</h2>
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden h-full min-h-[500px]">
-            <CardContent className="p-8">
+            <CardContent className="p-8 flex flex-col h-full">
               {historyOrders.length > 0 ? (
-                <div className="space-y-4">
-                  {historyOrders.map((order) => (
-                    <div key={order.vendorOrderId} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                          <CheckCircle2 size={16} />
+                <>
+                  <div className="space-y-4 flex-1">
+                    {historyOrders.map((order) => (
+                      <div key={order.vendorOrderId} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <CheckCircle2 size={16} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">#{order.orderId.substring(0, 8)}</p>
+                            <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">#{order.orderId.substring(0, 8)}</p>
-                          <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
-                        </div>
+                        <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
+                          {order.status}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
-                        {order.status}
-                      </Badge>
+                    ))}
+                  </div>
+
+                  {totalHistoryPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => p - 1)}
+                        disabled={!historyPageData?.hasPreviousPage}
+                        className="rounded-xl h-9 gap-1 border-secondary/20 hover:bg-secondary/5"
+                      >
+                        <ChevronLeft size={14} />
+                      </Button>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {historyPage + 1} / {totalHistoryPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => p + 1)}
+                        disabled={!historyPageData?.hasNextPage}
+                        className="rounded-xl h-9 gap-1 border-secondary/20 hover:bg-secondary/5"
+                      >
+                        <ChevronRight size={14} />
+                      </Button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-4">
                   <AlertCircle size={40} className="text-muted-foreground/20" />

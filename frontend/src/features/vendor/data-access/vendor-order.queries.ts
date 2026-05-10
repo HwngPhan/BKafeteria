@@ -21,10 +21,10 @@ export const useVendorOrderNotifications = (enabled = true) => {
   });
 };
 
-export const useVendorOrders = () => {
+export const useVendorOrders = (page = 0, size = 10) => {
   return useQuery({
-    queryKey: vendorOrderKeys.list(),
-    queryFn: GetVendorOrdersApi,
+    queryKey: [...vendorOrderKeys.list(), page, size],
+    queryFn: () => GetVendorOrdersApi(page, size),
     refetchInterval: USE_POLLING ? 5000 : false,
   });
 };
