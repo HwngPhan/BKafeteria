@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useMyOrders } from '@/features/order/data-access/order.queries'
 import { OrderCard } from '@/features/order/components/OrderCard'
-import { Loader2, ClipboardList, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ClipboardList, Loader2, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function OrdersPage() {
   const [page, setPage] = useState(0)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const { data: ordersPage, isLoading, refetch } = useMyOrders(page)
   const { t } = useLanguage()
 
@@ -22,15 +24,26 @@ export default function OrdersPage() {
           <h1 className="text-4xl font-black tracking-tight text-primary">{t('orders.title')}</h1>
           <p className="text-muted-foreground mt-2">{t('orders.subtitle')}</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          className="rounded-xl h-10 gap-2 border-secondary/20 hover:bg-secondary/5"
-        >
-          <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
-          {t('orders.refresh')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
+              <SelectValue placeholder="Sắp xếp" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-none shadow-xl">
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="rounded-xl h-10 gap-2 border-secondary/20 hover:bg-secondary/5"
+          >
+            <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
+            Làm mới
+          </Button>
+        </div>
       </div>
 
       {isLoading && !ordersPage ? (

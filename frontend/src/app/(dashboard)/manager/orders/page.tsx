@@ -5,9 +5,10 @@ import { useVendorOrders, useMarkOrderFinished } from '@/features/vendor/data-ac
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, ShoppingBag, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Loader2, ShoppingBag, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLanguage } from '@/providers/LanguageProvider'
 
 const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
@@ -15,6 +16,7 @@ const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
 
 export default function ManagerOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
 
   const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
   const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
@@ -45,11 +47,33 @@ export default function ManagerOrdersPage() {
   const historyOrders = historyPageData?.content ?? []
   const totalHistoryPages = historyPageData?.totalPages ?? 0
 
+  const sortedOrders = [...pendingOrders].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
+    return sortBy === 'newest' ? dateB - dateA : dateA - dateB
+  })
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
-        <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
+          <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown size={14} className="text-muted-foreground" />
+                <SelectValue placeholder="Sắp xếp" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-none shadow-xl">
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -58,13 +82,13 @@ export default function ManagerOrdersPage() {
             <h2 className="text-xl font-bold text-primary flex items-center gap-2">
               {t('manager.orders.processing')}
               <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary border-none">
-                {pendingOrders.length}
+                {sortedOrders.length}
               </Badge>
             </h2>
           </div>
 
-          {pendingOrders.length > 0 ? (
-            pendingOrders.map((order) => (
+          {sortedOrders.length > 0 ? (
+            sortedOrders.map((order) => (
               <Card key={order.vendorOrderId} className="rounded-[2rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
                 <CardHeader className="p-6 bg-secondary/5 border-b flex flex-row items-center justify-between">
                   <div className="flex items-center gap-3">

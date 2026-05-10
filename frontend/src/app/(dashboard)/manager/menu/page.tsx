@@ -36,6 +36,8 @@ import {
   SelectValue 
 } from '@/components/ui/select'
 import { CATEGORY_MAP } from '@/lib/constants'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { cn } from '@/lib/utils'
 
 const categories = ['BEVERAGES', 'PASTRIES', 'SNACKS', 'MEALS', 'DESSERTS']
 
@@ -53,7 +55,8 @@ export default function ManagerMenuPage() {
     description: '',
     price: '',
     remaining: '',
-    category: 'MEALS'
+    category: 'MEALS',
+    imageUrl: ''
   })
 
   const filteredItems = menuItems?.filter(item => 
@@ -68,7 +71,8 @@ export default function ManagerMenuPage() {
         description: item.description || '',
         price: item.price.toString(),
         remaining: item.remaining?.toString() || '0',
-        category: item.category || 'MEALS'
+        category: item.category || 'MEALS',
+        imageUrl: item.imageUrl || ''
       })
     } else {
       setEditingItem(null)
@@ -77,7 +81,8 @@ export default function ManagerMenuPage() {
         description: '',
         price: '',
         remaining: '50',
-        category: 'MEALS'
+        category: 'MEALS',
+        imageUrl: ''
       })
     }
     setIsDialogOpen(true)
@@ -314,6 +319,14 @@ export default function ManagerMenuPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Hình ảnh món ăn</label>
+                <ImageUpload 
+                  value={formData.imageUrl} 
+                  onChange={url => setFormData({...formData, imageUrl: url})} 
+                />
               </div>
 
               <div className="space-y-2">

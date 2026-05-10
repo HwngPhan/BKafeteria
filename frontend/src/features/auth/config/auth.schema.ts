@@ -54,6 +54,7 @@ export interface UserDto {
   balance: number;
   isDeleted: boolean;
   role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
+  avatarUrl: string | null;
 }
 
 export interface LoginResponse {

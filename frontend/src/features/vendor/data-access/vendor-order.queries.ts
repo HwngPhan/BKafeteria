@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  GetVendorOrderNotificationsApi, 
-  GetVendorOrdersApi, 
-  MarkOrderFinishedApi 
-} from "./vendor-order.api";
 import { USE_POLLING } from "@/lib/constants";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  GetVendorOrderNotificationsApi,
+  GetVendorOrdersApi,
+  MarkOrderFinishedApi
+} from "./vendor-order.api";
 
 export const vendorOrderKeys = {
   all: ['vendor-orders'] as const,
@@ -12,7 +12,7 @@ export const vendorOrderKeys = {
   list: () => [...vendorOrderKeys.all, 'list'] as const,
 };
 
-export const useVendorOrderNotifications = (enabled = true) => {
+export const useVendorOrderNotifications = (enabled: boolean = true) => {
   return useQuery({
     queryKey: vendorOrderKeys.notifications(),
     queryFn: GetVendorOrderNotificationsApi,
