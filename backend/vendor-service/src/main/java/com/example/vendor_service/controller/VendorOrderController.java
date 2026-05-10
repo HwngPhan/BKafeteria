@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,8 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/vendor-orders")
@@ -105,7 +108,8 @@ public class VendorOrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String statuses) {
         try {
             List<Vendor> vendors = vendorService.getVendorsByManagerId(userDetails.getId());
             if (vendors.isEmpty()) {
@@ -116,8 +120,16 @@ public class VendorOrderController {
             Sort sort = direction.equalsIgnoreCase("asc")
                     ? Sort.by(sortBy).ascending()
                     : Sort.by(sortBy).descending();
-            Page<VendorOrderNotification> vendorOrders = notificationRepository
-                    .findByVendorIdIn(vendorIds, PageRequest.of(page, size, sort));
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<VendorOrderNotification> vendorOrders;
+            if (statuses != null && !statuses.isBlank()) {
+                List<com.example.shared.enums.OrderStatus> statusList = Arrays.stream(statuses.split(","))
+                        .map(com.example.shared.enums.OrderStatus::valueOf)
+                        .collect(Collectors.toList());
+                vendorOrders = notificationRepository.findByVendorIdInAndStatusIn(vendorIds, statusList, pageable);
+            } else {
+                vendorOrders = notificationRepository.findByVendorIdIn(vendorIds, pageable);
+            }
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Vendor orders retrieved successfully", pageDtoConverter.convert(vendorOrders)));
         } catch (Exception e) {

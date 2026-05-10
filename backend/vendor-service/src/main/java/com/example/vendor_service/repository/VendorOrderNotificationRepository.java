@@ -14,4 +14,5 @@ public interface VendorOrderNotificationRepository extends JpaRepository<VendorO
     List<VendorOrderNotification> findByVendorId(String vendorId);
     List<VendorOrderNotification> findByVendorIdAndStatus(String vendorId, OrderStatus status);
     Page<VendorOrderNotification> findByVendorIdIn(List<String> vendorIds, Pageable pageable);
+    Page<VendorOrderNotification> findByVendorIdInAndStatusIn(List<String> vendorIds, List<OrderStatus> statuses, Pageable pageable);
 }

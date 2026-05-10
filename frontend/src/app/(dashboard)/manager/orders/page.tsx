@@ -16,9 +16,8 @@ const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
 export default function ManagerOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0)
 
-  // Page 0 with large size for active orders (they're typically few)
-  const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50)
-  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10)
+  const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
+  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
 
   const markFinished = useMarkOrderFinished()
   const { t } = useLanguage()
@@ -42,8 +41,8 @@ export default function ManagerOrdersPage() {
     )
   }
 
-  const pendingOrders = activePage?.content.filter(o => ACTIVE_STATUSES.includes(o.status)) || []
-  const historyOrders = historyPageData?.content.filter(o => HISTORY_STATUSES.includes(o.status)) || []
+  const pendingOrders = activePage?.content ?? []
+  const historyOrders = historyPageData?.content ?? []
   const totalHistoryPages = historyPageData?.totalPages ?? 0
 
   return (

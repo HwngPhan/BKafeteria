@@ -15,10 +15,17 @@ export const GetVendorOrderNotificationsApi = async (): Promise<VendorOrderNotif
   return responseDTO.data;
 };
 
-export const GetVendorOrdersApi = async (page = 0, size = 10): Promise<PageDto<VendorOrderNotification>> => {
+export const GetVendorOrdersApi = async (page = 0, size = 10, statuses?: string[]): Promise<PageDto<VendorOrderNotification>> => {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    sortBy: 'createdAt',
+    direction: 'desc',
+  });
+  if (statuses?.length) params.set('statuses', statuses.join(','));
   const response = await fetchWithToken(
     TokenType.authToken,
-    `${BASE_URL}/get-vendor-order?page=${page}&size=${size}&sortBy=createdAt&direction=desc`,
+    `${BASE_URL}/get-vendor-order?${params}`,
     { method: 'GET' }
   );
   if (!response.ok) await throwApiError(response);

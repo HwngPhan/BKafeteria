@@ -129,7 +129,7 @@ public class VendorOrderControllerTest {
         doReturn(pageDto).when(pageDtoConverter).convert(any(PageImpl.class));
 
         ResponseEntity<ApiResponse<PageDto<VendorOrderNotification>>> response =
-                vendorOrderController.getVendorOrders(userDetails, 0, 10, "createdAt", "desc");
+                vendorOrderController.getVendorOrders(userDetails, 0, 10, "createdAt", "desc", null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().getData().content().size());
