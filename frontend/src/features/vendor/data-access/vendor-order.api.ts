@@ -24,6 +24,15 @@ export const GetVendorOrdersApi = async (): Promise<VendorOrderNotification[]> =
   return responseDTO.data;
 };
 
+export const ConfirmOrderApi = async (vendorOrderId: string): Promise<VendorOrderNotification> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${vendorOrderId}/confirm`, {
+    method: 'POST',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorOrderNotification }>(response);
+  return responseDTO.data;
+};
+
 export const MarkOrderFinishedApi = async (vendorOrderId: string): Promise<VendorOrderNotification> => {
   const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${vendorOrderId}/mark-finished`, {
     method: 'POST',

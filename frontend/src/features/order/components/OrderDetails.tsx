@@ -4,15 +4,16 @@ import { OrderDto, OrderStatus } from '../config/order.types'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { 
-  ClipboardList, 
-  Clock, 
-  CheckCircle2, 
-  Circle, 
-  Package, 
-  Truck, 
+import {
+  ClipboardList,
+  Clock,
+  CheckCircle2,
+  Circle,
+  Package,
+  Truck,
   UtensilsCrossed,
-  Store
+  Store,
+  Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -49,6 +50,10 @@ const statusLabels: Record<string, string> = {
 export function OrderDetails({ order }: OrderDetailsProps) {
   const currentStatusIndex = statusSteps.findIndex(s => s.status === order.status)
   const isCanceled = order.status === 'CANCELED'
+
+  const originalPrice = (order.vendorOrders || []).reduce((sum, vo) => sum + (vo.vendorPrice || 0), 0)
+  const discount = originalPrice > 0 ? originalPrice - order.totalPrice : 0
+  const discountPercent = originalPrice > 0 ? Math.round((discount / originalPrice) * 100) : 0
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -138,7 +143,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <CardTitle className="text-lg font-bold">Món đã đặt</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-8">
-              {order.orderItems.map((vendorOrder, idx) => (
+              {(order.vendorOrders || []).map((vendorOrder, idx) => (
                 <div key={idx} className="space-y-4">
                   <div className="flex items-center justify-between bg-secondary/5 p-4 rounded-2xl">
                     <h4 className="font-bold text-primary flex items-center gap-2">
@@ -150,7 +155,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     </Badge>
                   </div>
                   <div className="space-y-4 px-2">
-                    {vendorOrder.menuItems.map((item, i) => (
+                    {(vendorOrder.orderItems || []).map((item, i) => (
                       <div key={i} className="flex items-center justify-between group">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-secondary/5 flex items-center justify-center text-primary font-bold">
@@ -165,11 +170,42 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                       </div>
                     ))}
                   </div>
-                  {idx < order.orderItems.length - 1 && <Separator className="bg-secondary/5" />}
+                  {idx < (order.vendorOrders?.length || 0) - 1 && <Separator className="bg-secondary/5" />}
                 </div>
               ))}
             </CardContent>
           </Card>
+
+          {discount > 0 && (
+            <Card className="rounded-[2.5rem] border-none shadow-xl shadow-emerald-100/50 overflow-hidden bg-emerald-50">
+              <CardContent className="p-8 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600">
+                    <Tag size={18} />
+                  </div>
+                  <h3 className="font-bold text-emerald-700">Ưu đãi thành viên</h3>
+                  <Badge className="ml-auto rounded-full bg-emerald-100 text-emerald-700 border-none font-bold text-xs px-3">
+                    -{discountPercent}%
+                  </Badge>
+                </div>
+                <div className="space-y-3 pt-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Giá gốc</span>
+                    <span className="font-medium line-through text-muted-foreground">{originalPrice.toLocaleString()}đ</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-emerald-600 font-medium">Giảm giá</span>
+                    <span className="font-bold text-emerald-600">-{discount.toLocaleString()}đ</span>
+                  </div>
+                  <Separator className="bg-emerald-100" />
+                  <div className="flex justify-between">
+                    <span className="font-bold text-sm">Thành tiền</span>
+                    <span className="font-black text-primary">{order.totalPrice.toLocaleString()}đ</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6">

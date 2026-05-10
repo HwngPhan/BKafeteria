@@ -3,22 +3,21 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { useMarkOrderFinished, useVendorOrders } from '@/features/vendor/data-access/vendor-order.queries'
+import { useConfirmOrder, useMarkOrderFinished, useVendorOrders } from '@/features/vendor/data-access/vendor-order.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { AlertCircle, ArrowUpDown, CheckCircle2, Clock, Loader2, ShoppingBag } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function ManagerOrdersPage() {
-  const { data: orders, isLoading } = useVendorOrders()
+  const [historyPage, setHistoryPage] = useState(0)
+
+  const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
+  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
+
+  const confirmOrder = useConfirmOrder()
   const markFinished = useMarkOrderFinished()
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
 
@@ -31,6 +30,15 @@ export default function ManagerOrdersPage() {
     })
   }, [orders, sortBy])
   const { t } = useLanguage()
+
+  const handleConfirm = async (id: string) => {
+    try {
+      await confirmOrder.mutateAsync(id)
+      toast.success('Đơn hàng đang được xử lý')
+    } catch (error: any) {
+      toast.error(error?.message || 'Có lỗi xảy ra')
+    }
+  }
 
   const handleMarkFinished = async (id: string) => {
     try {
@@ -52,12 +60,13 @@ export default function ManagerOrdersPage() {
   const pendingOrders = orders?.filter(o => o.status === 'PENDING' || o.status === 'PROCESSING') || []
   const historyOrders = orders?.filter(o => o.status === 'FINISHED' || o.status === 'CANCELLED') || []
 
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Quản lý đơn hàng</h1>
-          <p className="text-muted-foreground mt-1 font-medium">Theo dõi và xử lý các đơn hàng đang đến.</p>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
+          <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
@@ -73,10 +82,6 @@ export default function ManagerOrdersPage() {
             </SelectContent>
           </Select>
         </div>
-        </div>
-      <div>
-        <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
-        <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -85,13 +90,13 @@ export default function ManagerOrdersPage() {
             <h2 className="text-xl font-bold text-primary flex items-center gap-2">
               {t('manager.orders.processing')}
               <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary border-none">
-                {pendingOrders.length}
+                {sortedOrders.length}
               </Badge>
             </h2>
           </div>
 
-          {pendingOrders.length > 0 ? (
-            pendingOrders.map((order) => (
+          {sortedOrders.length > 0 ? (
+            sortedOrders.map((order) => (
               <Card key={order.vendorOrderId} className="rounded-[2rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
                 <CardHeader className="p-6 bg-secondary/5 border-b flex flex-row items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -117,15 +122,28 @@ export default function ManagerOrdersPage() {
                   </div>
                 </CardContent>
                 <Separator className="bg-secondary/5" />
-                <div className="p-6 bg-secondary/5 flex justify-end">
-                  <Button
-                    onClick={() => handleMarkFinished(order.vendorOrderId)}
-                    disabled={markFinished.isPending}
-                    className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2"
-                  >
-                    {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                    {t('manager.orders.finish')}
-                  </Button>
+                <div className="p-6 bg-secondary/5 flex justify-end gap-3">
+                  {order.status === 'PURCHASED' && (
+                    <Button
+                      onClick={() => handleConfirm(order.vendorOrderId)}
+                      disabled={confirmOrder.isPending}
+                      variant="outline"
+                      className="rounded-xl h-10 px-6 font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      {confirmOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
+                      Xử lý
+                    </Button>
+                  )}
+                  {order.status === 'PROCESSING' && (
+                    <Button
+                      onClick={() => handleMarkFinished(order.vendorOrderId)}
+                      disabled={markFinished.isPending}
+                      className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2"
+                    >
+                      {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                      {t('manager.orders.finish')}
+                    </Button>
+                  )}
                 </div>
               </Card>
             ))

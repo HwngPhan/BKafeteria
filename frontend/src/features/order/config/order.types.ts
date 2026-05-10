@@ -10,14 +10,14 @@ export interface OrderItem {
 export interface VendorOrder {
   vendorId: string;
   vendorName: string;
-  menuItems: OrderItem[];
+  orderItems: OrderItem[];
   vendorPrice: number;
 }
 
 export interface OrderDto {
   orderId: string;
   status: OrderStatus;
-  orderItems: VendorOrder[];
+  vendorOrders: VendorOrder[];
   createdAt: string;
   updatedAt: string;
   totalPrice: number;

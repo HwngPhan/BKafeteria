@@ -68,7 +68,7 @@ export function OrderCard({ order }: OrderCardProps) {
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
-        {(order.orderItems || []).map((vendorOrder, idx) => (
+        {(order.vendorOrders || []).map((vendorOrder, idx) => (
           <div key={idx} className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-sm text-primary flex items-center gap-2">
@@ -80,14 +80,14 @@ export function OrderCard({ order }: OrderCardProps) {
               </span>
             </div>
             <div className="space-y-2 pl-3">
-              {vendorOrder.menuItems?.map((item, i) => (
+              {vendorOrder.orderItems?.map((item, i) => (
                 <div key={i} className="flex justify-between text-xs text-muted-foreground">
                   <span>{item.itemName} x{item.quantity}</span>
                   <span>{(item.price * item.quantity).toLocaleString()}đ</span>
                 </div>
               ))}
             </div>
-            {idx < (order.orderItems?.length || 0) - 1 && <Separator className="bg-secondary/5" />}
+            {idx < (order.vendorOrders?.length || 0) - 1 && <Separator className="bg-secondary/5" />}
           </div>
         ))}
       </CardContent>
