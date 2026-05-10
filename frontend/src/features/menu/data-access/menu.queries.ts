@@ -1,14 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  GetAllMenuItemsApi, 
-  GetAllMenuItemsByVendorApi, 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MenuItemDto } from "../config/menu.types";
+import {
+  CreateMenuItemApi,
+  DeleteMenuItemApi,
+  GetAllMenuItemsApi,
+  GetAllMenuItemsByVendorApi,
   GetMenuItemByIdApi,
   GetMyMenuApi,
-  CreateMenuItemApi,
   UpdateMenuItemApi,
-  DeleteMenuItemApi
+  UpdateMenuItemImageApi
 } from "./menu.api";
-import { MenuItemDto } from "../config/menu.types";
 
 export interface MenuQueryParams {
   name?: string;
@@ -65,6 +66,18 @@ export const useCreateMenuItem = () => {
     },
   });
 };
+
+export const useUpdateMenuItemImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({id, data} : {id: string; data: {imageUrl: string} }) => UpdateMenuItemImageApi(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.all });
+      queryClient.invalidateQueries({ queryKey: menuKeys.mine() });
+      queryClient.invalidateQueries({ queryKey: menuKeys.detail('') }); // Invalidate all details
+    },
+  });
+}
 
 export const useUpdateMenuItem = () => {
   const queryClient = useQueryClient();

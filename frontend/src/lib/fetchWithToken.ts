@@ -2,13 +2,25 @@ import { getCookie, setCookie, deleteCookie } from "cookies-next";
 import { RefreshTokenApi } from "@/features/auth/data-access/auth.api";
 import { TokenType } from "./constants";
 
-export async function fetchWithToken(tokenType: string, input: RequestInfo, init?: RequestInit): Promise<Response> {
+function prepareHeaders(init?: RequestInit, token?: string | null): Headers {
   const headers = new Headers(init?.headers || {});
-  let token = getCookie(tokenType);
   
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+
+  // Automatically set Content-Type to application/json if there's a body and it's a string
+  if (init?.body && typeof init.body === "string" && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return headers;
+}
+
+export async function fetchWithToken(tokenType: string, input: RequestInfo, init?: RequestInit): Promise<Response> {
+  const token = getCookie(tokenType) as string | null;
+  const headers = prepareHeaders(init, token);
+  
   const requestInit: RequestInit = {
     ...init,
     headers,
@@ -28,12 +40,11 @@ export async function fetchWithToken(tokenType: string, input: RequestInfo, init
       setCookie(TokenType.authToken, refreshResult.accessToken, { maxAge: 60 * 60 * 24 * 7 });
 
       // 3. Retry original request with new token
-      const newHeaders = new Headers(init?.headers || {});
-      newHeaders.set("Authorization", `Bearer ${refreshResult.accessToken}`);
+      const retryHeaders = prepareHeaders(init, refreshResult.accessToken);
 
       const retryInit: RequestInit = {
         ...init,
-        headers: newHeaders,
+        headers: retryHeaders,
       };
 
       console.info("Retrying original request with refreshed token...");

@@ -66,8 +66,19 @@ export const CreateMenuItemApi = async (menuItemData: Partial<MenuItemDto>): Pro
     body: JSON.stringify(menuItemData),
   });
   if (!response.ok) await throwApiError(response);
-  const responseDTO = await handleResponse<{ data: MenuItemDto }>(response);
-  return responseDTO.data;
+  const responseDTO = await handleResponse<{data: MenuItemDto}>(response);
+  // Handle both wrapped { data: ... } and direct object responses
+  return responseDTO.data || responseDTO;
+};
+
+export const UpdateMenuItemImageApi = async (id: string, data: { imageUrl: string }): Promise<MenuItemDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/img/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{data: MenuItemDto}>(response);
+  return responseDTO.data || responseDTO;
 };
 
 export const UpdateMenuItemApi = async (id: string, menuItemData: Partial<MenuItemDto>): Promise<MenuItemDto> => {
@@ -76,8 +87,8 @@ export const UpdateMenuItemApi = async (id: string, menuItemData: Partial<MenuIt
     body: JSON.stringify(menuItemData),
   });
   if (!response.ok) await throwApiError(response);
-  const responseDTO = await handleResponse<{ data: MenuItemDto }>(response);
-  return responseDTO.data;
+  const responseDTO = await handleResponse<{data: MenuItemDto}>(response);
+  return responseDTO.data || responseDTO;
 };
 
 export const DeleteMenuItemApi = async (id: string): Promise<void> => {

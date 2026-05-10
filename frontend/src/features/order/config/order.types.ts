@@ -34,3 +34,14 @@ export interface CreateOrderRequest {
     }[];
   }[];
 }
+
+export interface PageDto<T> {
+  content: T[];
+  page: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  isLast: boolean;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}

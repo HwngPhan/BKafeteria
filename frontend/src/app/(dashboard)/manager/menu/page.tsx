@@ -1,51 +1,55 @@
 'use client'
 
-import { useMyMenu, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '@/features/menu/data-access/menu.queries'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Loader2, 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2, 
-  UtensilsCrossed, 
-  Filter,
+import { FoodCategory } from '@/features/menu/config/menu.types'
+import { useCreateMenuItem, useDeleteMenuItem, useMyMenu, useUpdateMenuItem, useUpdateMenuItemImage } from '@/features/menu/data-access/menu.queries'
+import { useUploadImage } from '@/hooks/useUploadImage'
+import { CATEGORY_MAP } from '@/lib/constants'
+import { cn } from '@/lib/utils'
+import {
   DollarSign,
+  Edit2,
+  Filter,
+  Layers,
+  Loader2,
   Package,
-  Layers
+  Plus,
+  Search,
+  Trash2,
+  UtensilsCrossed
 } from 'lucide-react'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogDescription
-} from '@/components/ui/dialog'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { CATEGORY_MAP } from '@/lib/constants'
-import { ImageUpload } from '@/components/ui/image-upload'
-import { cn } from '@/lib/utils'
 
-const categories = ['BEVERAGES', 'PASTRIES', 'SNACKS', 'MEALS', 'DESSERTS']
+const categories: FoodCategory[] = ['BEVERAGES', 'PASTRIES', 'SNACKS', 'MEALS', 'DESSERTS']
 
 export default function ManagerMenuPage() {
   const { data: menuItems, isLoading } = useMyMenu()
-  const createItem = useCreateMenuItem()
-  const updateItem = useUpdateMenuItem()
-  const deleteItem = useDeleteMenuItem()
+  const { mutateAsync: createItem, isPending: isCreatingPending } = useCreateMenuItem()
+  const { mutateAsync: updateItem, isPending: isUpdatingPending } = useUpdateMenuItem()
+  const { mutateAsync: updateItemImage, isPending: isUpdatingImagePending } = useUpdateMenuItemImage()
+  const { mutateAsync: deleteItem } = useDeleteMenuItem()
+
 
   const [searchQuery, setSearchQuery] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -55,9 +59,11 @@ export default function ManagerMenuPage() {
     description: '',
     price: '',
     remaining: '',
-    category: 'MEALS',
+    category: 'MEALS' as FoodCategory,
     imageUrl: ''
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const { uploadImage, isUploading: isUploadingImage } = useUploadImage()
 
   const filteredItems = menuItems?.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -71,7 +77,7 @@ export default function ManagerMenuPage() {
         description: item.description || '',
         price: item.price.toString(),
         remaining: item.remaining?.toString() || '0',
-        category: item.category || 'MEALS',
+        category: item.category || 'MEALS' as FoodCategory,
         imageUrl: item.imageUrl || ''
       })
     } else {
@@ -81,14 +87,19 @@ export default function ManagerMenuPage() {
         description: '',
         price: '',
         remaining: '50',
-        category: 'MEALS',
+        category: 'MEALS' as FoodCategory,
         imageUrl: ''
       })
     }
+    // Clean up any existing blob URL if we're resetting
+    if (formData.imageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.imageUrl)
+    }
+    setSelectedFile(null)
     setIsDialogOpen(true)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const data = {
       ...formData,
@@ -96,21 +107,67 @@ export default function ManagerMenuPage() {
       remaining: parseInt(formData.remaining)
     }
 
+    const cleanup = () => {
+      if (formData.imageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(formData.imageUrl)
+      }
+      setSelectedFile(null)
+    }
+
     if (editingItem) {
-      updateItem.mutate({
+      const isNewFileSelected = !!selectedFile;
+      const initialData = isNewFileSelected 
+        ? { ...data, imageUrl: editingItem.imageUrl } 
+        : data;
+
+      updateItem({
         id: editingItem.menuItemId,
-        data
+        data: initialData
       }, {
-        onSuccess: () => {
-          toast.success('Cập nhật món ăn thành công')
-          setIsDialogOpen(false)
+        onSuccess: async () => {
+          try {
+            if (selectedFile) {
+              const url = await uploadImage(selectedFile)
+              if (url) {
+                console.log('Updating menu item with new image URL:', url)
+                await updateItemImage({
+                  id: editingItem.menuItemId,
+                  data: { imageUrl: url }
+                })
+              }
+            }
+            toast.success('Cập nhật món ăn thành công')
+          } catch (error) {
+            console.error('Failed to update image:', error)
+            toast.error('Cập nhật thông tin thành công nhưng tải ảnh thất bại')
+          } finally {
+            cleanup()
+            setIsDialogOpen(false)
+          }
         }
       })
     } else {
-      createItem.mutate(data, {
-        onSuccess: () => {
-          toast.success('Thêm món ăn mới thành công')
-          setIsDialogOpen(false)
+      createItem({ ...data, imageUrl: '' }, {
+        onSuccess: async (createdItem) => {
+          try {
+            console.log("Created Item: ", createdItem)
+            if (selectedFile) {
+              const url = await uploadImage(selectedFile)
+              if (url && createdItem.menuItemId) {
+                await updateItemImage({
+                  id: createdItem.menuItemId,
+                  data: { imageUrl: url }
+                })
+              }
+            }
+            toast.success('Thêm món ăn mới thành công')
+          } catch (error) {
+            console.error('Failed to upload image:', error)
+            toast.error('Thêm món ăn thành công nhưng tải ảnh thất bại')
+          } finally {
+            cleanup()
+            setIsDialogOpen(false)
+          }
         }
       })
     }
@@ -118,7 +175,7 @@ export default function ManagerMenuPage() {
 
   const handleDelete = (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa món ăn này?')) {
-      deleteItem.mutate(id, {
+      deleteItem(id, {
         onSuccess: () => {
           toast.success('Đã xóa món ăn')
         }
@@ -242,8 +299,15 @@ export default function ManagerMenuPage() {
       </Card>
 
       {/* Dialog for Create/Edit */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white max-w-lg">
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          if (formData.imageUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(formData.imageUrl)
+          }
+        }
+        setIsDialogOpen(open)
+      }}>
+        <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white max-w-4xl">
           <DialogHeader className="p-8 bg-secondary/5 border-b">
             <DialogTitle className="text-xl font-black text-primary">
               {editingItem ? 'Cập nhật món ăn' : 'Thêm món ăn mới'}
@@ -253,90 +317,97 @@ export default function ManagerMenuPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="p-8 space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Tên món ăn</label>
-                <div className="relative">
-                  <UtensilsCrossed className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={formData.name} 
-                    onChange={e => setFormData({...formData, name: e.target.value})} 
-                    className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                    placeholder="VD: Cơm sườn nướng..."
-                    required
+            <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+              {/* Left Column: Image */}
+              <div className="md:col-span-5 space-y-4 flex flex-col">
+                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Hình ảnh món ăn</label>
+                <div className="flex-1 min-h-[300px] flex items-center justify-center bg-secondary/5 rounded-[2rem] border-2 border-dashed border-secondary/20 p-4">
+                  <ImageUpload 
+                    value={formData.imageUrl} 
+                    onChange={url => setFormData({...formData, imageUrl: url})} 
+                    onFileChange={file => setSelectedFile(file)}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Right Column: Details */}
+              <div className="md:col-span-7 space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Giá bán (VNĐ)</label>
+                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Tên món ăn</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
+                    <UtensilsCrossed className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      type="number"
-                      value={formData.price} 
-                      onChange={e => setFormData({...formData, price: e.target.value})} 
+                      value={formData.name} 
+                      onChange={e => setFormData({...formData, name: e.target.value})} 
                       className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                      placeholder="35000"
+                      placeholder="VD: Cơm sườn nướng..."
                       required
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Số lượng còn lại</label>
-                  <div className="relative">
-                    <Package className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      type="number"
-                      value={formData.remaining} 
-                      onChange={e => setFormData({...formData, remaining: e.target.value})} 
-                      className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
-                      placeholder="50"
-                      required
-                    />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Giá bán (VNĐ)</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="number"
+                        value={formData.price} 
+                        onChange={e => setFormData({...formData, price: e.target.value})} 
+                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
+                        placeholder="35000"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Số lượng còn lại</label>
+                    <div className="relative">
+                      <Package className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="number"
+                        value={formData.remaining} 
+                        onChange={e => setFormData({...formData, remaining: e.target.value})} 
+                        className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
+                        placeholder="50"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Danh mục</label>
-                <div className="relative">
-                  <Layers className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground z-10" />
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={value => setFormData({...formData, category: value})}
-                  >
-                    <SelectTrigger className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20">
-                      <SelectValue placeholder="Chọn danh mục" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-none shadow-xl">
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat} className="rounded-xl">
-                          {CATEGORY_MAP[cat] || cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Danh mục</label>
+                  <div className="relative">
+                    <Layers className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground z-10" />
+                    <Select 
+                      value={formData.category} 
+                      onValueChange={value => setFormData({...formData, category: value as FoodCategory})}
+                    >
+                      <SelectTrigger className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20">
+                        <SelectValue placeholder="Chọn danh mục" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-none shadow-xl">
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat} className="rounded-xl">
+                            {CATEGORY_MAP[cat] || cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Hình ảnh món ăn</label>
-                <ImageUpload 
-                  value={formData.imageUrl} 
-                  onChange={url => setFormData({...formData, imageUrl: url})} 
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Mô tả món ăn</label>
-                <Textarea 
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})} 
-                  className="rounded-3xl min-h-[100px] bg-secondary/5 border-none focus-visible:ring-primary/20 p-4"
-                  placeholder="Thành phần, hương vị..."
-                />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Mô tả món ăn</label>
+                  <Textarea 
+                    value={formData.description} 
+                    onChange={e => setFormData({...formData, description: e.target.value})} 
+                    className="rounded-3xl min-h-[120px] bg-secondary/5 border-none focus-visible:ring-primary/20 p-4"
+                    placeholder="Thành phần, hương vị..."
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter className="p-8 pt-0 flex gap-3">
@@ -350,10 +421,10 @@ export default function ManagerMenuPage() {
               </Button>
               <Button 
                 type="submit" 
-                disabled={createItem.isPending || updateItem.isPending}
+                disabled={isCreatingPending || isUpdatingPending || isUploadingImage}
                 className="rounded-2xl h-12 px-8 font-bold flex-1 gap-2 shadow-lg shadow-primary/20"
               >
-                {(createItem.isPending || updateItem.isPending) ? (
+                {(isCreatingPending || isUpdatingPending || isUploadingImage) ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Plus size={18} />

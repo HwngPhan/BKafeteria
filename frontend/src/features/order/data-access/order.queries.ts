@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GetMyOrdersApi, GetOrderByIdApi, CreateOrderApi, PayOrderApi } from "./order.api";
-import { OrderDto, CreateOrderRequest } from "../config/order.types";
-import { USE_POLLING } from "@/lib/constants";
 import { userKeys } from "@/features/user/data-access/user.queries";
+import { USE_POLLING } from "@/lib/constants";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CreateOrderRequest, OrderDto } from "../config/order.types";
+import { CreateOrderApi, GetMyOrdersApi, GetOrderByIdApi, PayOrderApi } from "./order.api";
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -10,10 +10,10 @@ export const orderKeys = {
   detail: (id: string) => [...orderKeys.all, 'detail', id] as const,
 };
 
-export const useMyOrders = () => {
+export const useMyOrders = (page = 0, size = 9) => {
   return useQuery({
-    queryKey: orderKeys.mine(),
-    queryFn: GetMyOrdersApi,
+    queryKey: [...orderKeys.mine(), page,size],
+    queryFn: () => GetMyOrdersApi(page, size),
     refetchInterval: USE_POLLING ? 5000 : false, 
   });
 };

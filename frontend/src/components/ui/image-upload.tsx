@@ -10,6 +10,7 @@ import { useUploadImage } from '@/hooks/useUploadImage'
 interface ImageUploadProps {
   value?: string
   onChange: (url: string) => void
+  onFileChange?: (file: File | null) => void
   disabled?: boolean
   className?: string
 }
@@ -17,6 +18,7 @@ interface ImageUploadProps {
 export function ImageUpload({ 
   value, 
   onChange, 
+  onFileChange,
   disabled,
   className 
 }: ImageUploadProps) {
@@ -27,9 +29,18 @@ export function ImageUpload({
     const file = e.target.files?.[0]
     if (!file) return
 
-    const url = await uploadImage(file)
-    if (url) {
-      onChange(url)
+    // If onFileChange is provided, we use manual mode
+    if (onFileChange) {
+      // Create temporary blob link for preview
+      const blobUrl = URL.createObjectURL(file)
+      onChange(blobUrl)
+      onFileChange(file)
+    } else {
+      // Fallback to auto-upload mode
+      const url = await uploadImage(file)
+      if (url) {
+        onChange(url)
+      }
     }
     
     // Clear the input so the same file can be uploaded again if needed
@@ -39,7 +50,13 @@ export function ImageUpload({
   }
 
   const removeImage = () => {
+    // If it was a blob URL, we should ideally revoke it, 
+    // but onChange('') might be enough if the parent handles it.
+    // However, let's keep it simple for now as per user request.
     onChange('')
+    if (onFileChange) {
+      onFileChange(null)
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
