@@ -12,11 +12,12 @@ export const vendorOrderKeys = {
   list: () => [...vendorOrderKeys.all, 'list'] as const,
 };
 
-export const useVendorOrderNotifications = () => {
+export const useVendorOrderNotifications = (enabled: boolean = true) => {
   return useQuery({
     queryKey: vendorOrderKeys.notifications(),
     queryFn: GetVendorOrderNotificationsApi,
     refetchInterval: USE_POLLING ? 5000 : false,
+    enabled,
   });
 };
 

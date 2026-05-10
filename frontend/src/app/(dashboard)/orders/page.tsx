@@ -4,9 +4,27 @@ import { useMyOrders } from '@/features/order/data-access/order.queries'
 import { OrderCard } from '@/features/order/components/OrderCard'
 import { Loader2, ClipboardList, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select'
+import { useState, useMemo } from 'react'
 
 export default function OrdersPage() {
   const { data: orders, isLoading, refetch } = useMyOrders()
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+
+  const sortedOrders = useMemo(() => {
+    if (!orders) return []
+    return [...orders].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime()
+      const dateB = new Date(b.createdAt).getTime()
+      return sortBy === 'newest' ? dateB - dateA : dateA - dateB
+    })
+  }, [orders, sortBy])
 
   return (
     <div className="space-y-8 pb-20">
@@ -15,24 +33,35 @@ export default function OrdersPage() {
           <h1 className="text-4xl font-black tracking-tight text-primary">Đơn hàng của tôi</h1>
           <p className="text-muted-foreground mt-2">Theo dõi trạng thái đơn hàng của bạn theo thời gian thực.</p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => refetch()} 
-          className="rounded-xl h-10 gap-2 border-secondary/20 hover:bg-secondary/5"
-        >
-          <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
+              <SelectValue placeholder="Sắp xếp" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-none shadow-xl">
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetch()} 
+            className="rounded-xl h-10 gap-2 border-secondary/20 hover:bg-secondary/5"
+          >
+            <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
+            Làm mới
+          </Button>
+        </div>
       </div>
 
       {isLoading && !orders ? (
         <div className="flex h-64 items-center justify-center">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
         </div>
-      ) : orders && orders.length > 0 ? (
+      ) : sortedOrders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {orders.map((order) => (
+          {sortedOrders.map((order) => (
             <OrderCard key={order.orderId} order={order} />
           ))}
         </div>
