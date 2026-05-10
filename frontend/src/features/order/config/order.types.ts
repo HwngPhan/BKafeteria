@@ -1,16 +1,5 @@
 export type OrderStatus = 'PENDING' | 'PURCHASED' | 'PROCESSING' | 'COMPLETED' | 'DELIVERED' | 'CANCELED';
 
-export interface PageDto<T> {
-  content: T[];
-  page: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-  isLast: boolean;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
 export interface OrderItem {
   itemId: string;
   itemName: string;

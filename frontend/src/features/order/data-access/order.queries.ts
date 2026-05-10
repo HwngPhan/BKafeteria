@@ -9,11 +9,11 @@ export const orderKeys = {
   detail: (id: string) => [...orderKeys.all, 'detail', id] as const,
 };
 
-export const useMyOrders = (page = 0, size = 9) => {
+export const useMyOrders = () => {
   return useQuery({
-    queryKey: [...orderKeys.mine(), page, size],
-    queryFn: () => GetMyOrdersApi(page, size),
-    refetchInterval: USE_POLLING ? 5000 : false,
+    queryKey: orderKeys.mine(),
+    queryFn: GetMyOrdersApi,
+    refetchInterval: USE_POLLING ? 5000 : false, 
   });
 };
 
