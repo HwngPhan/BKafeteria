@@ -9,7 +9,7 @@ export const orderKeys = {
   detail: (id: string) => [...orderKeys.all, 'detail', id] as const,
 };
 
-export const useMyOrders = (page = 0, size = 10) => {
+export const useMyOrders = (page = 0, size = 9) => {
   return useQuery({
     queryKey: [...orderKeys.mine(), page, size],
     queryFn: () => GetMyOrdersApi(page, size),

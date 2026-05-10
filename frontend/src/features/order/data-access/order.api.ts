@@ -6,7 +6,7 @@ import { CreateOrderRequest, OrderDto, PageDto } from "../config/order.types";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/order/orders`;
 
-export const GetMyOrdersApi = async (page = 0, size = 10): Promise<PageDto<OrderDto>> => {
+export const GetMyOrdersApi = async (page = 0, size = 9): Promise<PageDto<OrderDto>> => {
   const response = await fetchWithToken(
     TokenType.authToken,
     `${BASE_URL}/get-my-order?page=${page}&size=${size}&sortBy=createdAt&direction=desc`,
