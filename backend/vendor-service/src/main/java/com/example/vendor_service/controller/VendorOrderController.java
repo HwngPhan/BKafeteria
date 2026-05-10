@@ -2,6 +2,8 @@ package com.example.vendor_service.controller;
 
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
+import com.example.shared.dtos.PageDtos.PageDto;
+import com.example.shared.dtos.PageDtos.PageDtoConverter;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.model.VendorOrderNotification;
 import com.example.vendor_service.repository.VendorOrderNotificationRepository;
@@ -10,6 +12,10 @@ import com.example.vendor_service.service.VendorService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,10 +23,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/vendor-orders")
@@ -32,6 +41,7 @@ public class VendorOrderController {
     private final VendorOrderNotificationRepository notificationRepository;
     private final VendorOrderStatusService vendorOrderStatusService;
     private final VendorService vendorService;
+    private final PageDtoConverter pageDtoConverter;
 
     @GetMapping("/notifications")
     @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
@@ -93,18 +103,35 @@ public class VendorOrderController {
 
     @GetMapping("/get-vendor-order")
     @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
-    public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getVendorOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ApiResponse<PageDto<VendorOrderNotification>>> getVendorOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String statuses) {
         try {
             List<Vendor> vendors = vendorService.getVendorsByManagerId(userDetails.getId());
             if (vendors.isEmpty()) {
                 return ResponseEntity
-                        .ok(new ApiResponse<>(404, "No vendor associated with this manager", Collections.emptyList()));
+                        .ok(new ApiResponse<>(404, "No vendor associated with this manager", PageDto.empty()));
             }
-            List<VendorOrderNotification> vendorOrders = vendors.stream()
-                    .flatMap(v -> notificationRepository.findByVendorId(v.getVendorId()).stream())
-                    .toList();
-            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor orders retrieved successfully", vendorOrders));
+            List<String> vendorIds = vendors.stream().map(Vendor::getVendorId).toList();
+            Sort sort = direction.equalsIgnoreCase("asc")
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<VendorOrderNotification> vendorOrders;
+            if (statuses != null && !statuses.isBlank()) {
+                List<com.example.shared.enums.OrderStatus> statusList = Arrays.stream(statuses.split(","))
+                        .map(com.example.shared.enums.OrderStatus::valueOf)
+                        .collect(Collectors.toList());
+                vendorOrders = notificationRepository.findByVendorIdInAndStatusIn(vendorIds, statusList, pageable);
+            } else {
+                vendorOrders = notificationRepository.findByVendorIdIn(vendorIds, pageable);
+            }
+            return ResponseEntity.ok(
+                    new ApiResponse<>(200, "Vendor orders retrieved successfully", pageDtoConverter.convert(vendorOrders)));
         } catch (Exception e) {
             log.error("Error retrieving vendor orders for manager: {}", userDetails.getId(), e);
             return ResponseEntity.internalServerError()

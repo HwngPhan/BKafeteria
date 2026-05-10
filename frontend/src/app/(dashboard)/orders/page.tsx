@@ -3,19 +3,27 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { OrderCard } from '@/features/order/components/OrderCard'
+import { OrderDto } from '@/features/order/config/order.types'
 import { useMyOrders } from '@/features/order/data-access/order.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { ChevronLeft, ChevronRight, ClipboardList, Loader2, RefreshCcw } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function OrdersPage() {
   const [page, setPage] = useState(0)
+  const [orders, setOrders] = useState<OrderDto[]>([])
+  const [totalPages, setTotalPages] = useState(0)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const { data: ordersPage, isLoading, refetch } = useMyOrders(page)
   const { t } = useLanguage()
 
-  const orders = ordersPage?.content ?? []
-  const totalPages = ordersPage?.totalPages ?? 0
+  // Update orders and totalPages when ordersPage changes
+  useEffect(() => {
+    if (ordersPage) {
+      setOrders(ordersPage.content)
+      setTotalPages(ordersPage.totalPages)
+    }
+  }, [ordersPage])
 
   return (
     <div className="space-y-8 pb-20">
