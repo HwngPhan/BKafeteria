@@ -37,7 +37,17 @@ public class OrderController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> getOrderById(@PathVariable String id) {
         try {
-            OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id));
+            Order order = orderService.getOrderById(id);
+            if (order == null) {
+                return new ResponseEntity<>(
+                        new ApiResponse<>(404, "Order not found", null),
+                        HttpStatus.NOT_FOUND);
+            }
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Order retrieved successfully", orderDto));
         } catch (Exception e) {
@@ -92,7 +102,11 @@ public class OrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             orderService.makePayment(id, userDetails.getId());
-            OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id));
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id), vendorOrders);
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Order paid successfully", orderDto));
         } catch (Exception e) {
@@ -109,7 +123,13 @@ public class OrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             List<Order> orders = orderService.getOrders(userDetails.getId());
-            List<OrderDto> orderDtos = orders.stream().map(orderDtoConverter::convert).collect(Collectors.toList());
+            List<OrderDto> orderDtos = orders.stream().map(order -> {
+                List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(order.getOrderId())
+                        .stream()
+                        .map(vendorOrderDtoConverter::convert)
+                        .collect(Collectors.toList());
+                return orderDtoConverter.convert(order, vendorOrders);
+            }).collect(Collectors.toList());
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Orders retrieved successfully", orderDtos));
         } catch (Exception e) {

@@ -2,6 +2,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { CartProvider } from "@/components/cart/cart-providers";
 import QueryProvider from "@/providers/QueryProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner"; // ⬅️ thêm dòng này
@@ -34,14 +35,15 @@ export default function RootLayout({
       >
         <Toaster richColors position="bottom-right" />   {/* ⬅️ đặt ở đây */}
         <QueryProvider>
-          {/* Global toast handler */}
-          <CartProvider>
-            <AuthProvider>
-              <WebSocketProvider>
-                {children}
-              </WebSocketProvider>
-            </AuthProvider>
-          </CartProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <AuthProvider>
+                <WebSocketProvider>
+                  {children}
+                </WebSocketProvider>
+              </AuthProvider>
+            </CartProvider>
+          </LanguageProvider>
         </QueryProvider>
       </body>
     </html>

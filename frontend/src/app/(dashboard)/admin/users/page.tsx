@@ -45,8 +45,10 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function AdminUsersPage() {
+  const { t } = useLanguage()
   const [params, setParams] = useState({
     search: '',
     role: '',
@@ -55,7 +57,7 @@ export default function AdminUsersPage() {
     size: 10
   })
 
-  const { data: usersPage, isLoading } = useAllUsers(params)
+  const { data: usersPage, isLoading, refetch } = useAllUsers(params)
   const updateUser = useUpdateUser()
   const deleteUser = useDeleteUser()
 
@@ -69,10 +71,19 @@ export default function AdminUsersPage() {
 
     updateUser.mutate({
       id: selectedUser.userId,
-      data: { role: newRole as any }
+      data: {
+        fullName: selectedUser.fullName,
+        email: selectedUser.email,
+        phoneNumber: selectedUser.phoneNumber,
+        studentId: selectedUser.studentId,
+        gender: selectedUser.gender,
+        dateOfBirth: selectedUser.dateOfBirth,
+        role: newRole as any,
+        status: selectedUser.status,
+      }
     }, {
       onSuccess: () => {
-        toast.success(`Đã cập nhật vai trò cho ${selectedUser.fullName}`)
+        toast.success(t('admin.users.toast_role').replace('{name}', selectedUser.fullName))
         setIsRoleDialogOpen(false)
       }
     })
@@ -82,20 +93,28 @@ export default function AdminUsersPage() {
     const nextStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
     updateUser.mutate({
       id: user.userId,
-      data: { status: nextStatus }
+      data: {
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        studentId: user.studentId,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        role: user.role,
+        status: nextStatus,
+      }
     }, {
       onSuccess: () => {
-        toast.success(`Đã ${nextStatus === 'ACTIVE' ? 'kích hoạt' : 'khóa'} tài khoản ${user.fullName}`)
+        toast.success((nextStatus === 'ACTIVE' ? t('admin.users.toast_activated') : t('admin.users.toast_locked')).replace('{name}', user.fullName))
+        refetch()
       }
     })
   }
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ${name}?`)) {
+    if (confirm(t('admin.users.confirm_delete').replace('{name}', name))) {
       deleteUser.mutate({ id }, {
-        onSuccess: () => {
-          toast.success(`Đã xóa tài khoản ${name}`)
-        }
+        onSuccess: () => toast.success(t('admin.users.toast_deleted').replace('{name}', name)),
       })
     }
   }
@@ -118,8 +137,8 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-4xl font-black tracking-tight text-primary">Quản lý người dùng</h1>
-        <p className="text-muted-foreground mt-1 font-medium">Hệ thống quản lý tài khoản và phân quyền người dùng.</p>
+        <h1 className="text-4xl font-black tracking-tight text-primary">{t('admin.users.title')}</h1>
+        <p className="text-muted-foreground mt-1 font-medium">{t('admin.users.subtitle')}</p>
       </div>
 
       <Card className="rounded-[2.5rem] border-none shadow-2xl shadow-secondary/5 overflow-hidden bg-white">
@@ -128,22 +147,29 @@ export default function AdminUsersPage() {
             <div className="relative w-full md:w-96">
               <Search className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Tìm theo tên, email, SĐT..." 
+                placeholder={t('admin.users.search')} 
                 value={params.search}
                 onChange={e => setParams({...params, search: e.target.value, page: 0})}
                 className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
               />
             </div>
             <div className="flex items-center gap-4 w-full md:w-auto">
-              <Select 
-                value={params.role} 
-                onValueChange={val => setParams({...params, role: val, page: 0})}
+              <Select
+                value={params.role || "all"}
+                onValueChange={(val) =>
+                  setParams({
+                    ...params,
+                    role: val === "all" ? "" : val,
+                    page: 0,
+                  })
+                }
               >
-                <SelectTrigger className="rounded-2xl h-12 bg-secondary/5 border-none min-w-[140px]">
-                  <SelectValue placeholder="Vai trò" />
+                <SelectTrigger className="rounded-2xl h-12 bg-secondary border-none min-w-[140px]">
+                  <SelectValue placeholder={t('admin.users.all_roles')} />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-none shadow-xl">
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
+
+                <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
+                  <SelectItem value="all">{t('admin.users.all_roles')}</SelectItem>
                   <SelectItem value="ADMIN">ADMIN</SelectItem>
                   <SelectItem value="MANAGER">MANAGER</SelectItem>
                   <SelectItem value="STAFF">STAFF</SelectItem>
@@ -158,11 +184,11 @@ export default function AdminUsersPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-secondary/5 border-b border-secondary/5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  <th className="p-6 pl-8">Người dùng</th>
-                  <th className="p-6">Liên hệ</th>
-                  <th className="p-6">Vai trò</th>
-                  <th className="p-6">Trạng thái</th>
-                  <th className="p-6 pr-8 text-right">Thao tác</th>
+                  <th className="p-6 pl-8">{t('admin.users.col_user')}</th>
+                  <th className="p-6">{t('admin.users.col_contact')}</th>
+                  <th className="p-6">{t('admin.users.col_role')}</th>
+                  <th className="p-6">{t('admin.users.col_status')}</th>
+                  <th className="p-6 pr-8 text-right">{t('admin.users.col_action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-secondary/5">
@@ -204,7 +230,7 @@ export default function AdminUsersPage() {
                         'rounded-full px-3 py-0.5 text-[10px] font-bold border-none',
                         user.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                       )}>
-                        {user.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã khóa'}
+                        {user.status === 'ACTIVE' ? t('admin.users.active') : t('admin.users.inactive')}
                       </Badge>
                     </td>
                     <td className="p-6 pr-8 text-right">
@@ -214,24 +240,24 @@ export default function AdminUsersPage() {
                             <MoreHorizontal size={20} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2">
+                        <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2 bg-background opacity-100">
                           <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => {
                             setSelectedUser(user)
                             setNewRole(user.role)
                             setIsRoleDialogOpen(true)
                           }}>
-                            <UserCog size={16} className="mr-2" /> Đổi vai trò
+                            <UserCog size={16} className="mr-2" /> {t('admin.users.change_role')}
                           </DropdownMenuItem>
                           <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => handleToggleStatus(user)}>
                             {user.status === 'ACTIVE' ? (
-                              <><UserMinus size={16} className="mr-2" /> Khóa tài khoản</>
+                              <><UserMinus size={16} className="mr-2" /> {t('admin.users.lock')}</>
                             ) : (
-                              <><UserCheck size={16} className="mr-2" /> Kích hoạt</>
+                              <><UserCheck size={16} className="mr-2" /> {t('admin.users.activate')}</>
                             )}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="bg-secondary/5" />
                           <DropdownMenuItem className="rounded-xl text-red-500 focus:text-red-500 cursor-pointer" onClick={() => handleDelete(user.userId, user.fullName)}>
-                            <Trash2 size={16} className="mr-2" /> Xóa tài khoản
+                            <Trash2 size={16} className="mr-2" /> {t('admin.users.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -245,7 +271,7 @@ export default function AdminUsersPage() {
           {/* Pagination */}
           <div className="p-8 border-t border-secondary/5 flex items-center justify-between">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Trang {params.page + 1} / {usersPage?.totalPages || 1} ({usersPage?.totalElements || 0} người dùng)
+              {t('admin.users.page_info').replace('{page}', String(params.page + 1)).replace('{total}', String(usersPage?.totalPages || 1)).replace('{count}', String(usersPage?.totalElements || 0))}
             </p>
             <div className="flex gap-2">
               <Button 
@@ -275,20 +301,20 @@ export default function AdminUsersPage() {
       <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
         <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white max-w-sm">
           <DialogHeader className="p-8 bg-secondary/5 border-b">
-            <DialogTitle className="text-xl font-black text-primary">Thay đổi vai trò</DialogTitle>
+            <DialogTitle className="text-xl font-black text-primary">{t('admin.users.role_dialog_title')}</DialogTitle>
             <DialogDescription className="font-medium text-xs">
-              Chọn vai trò mới cho người dùng {selectedUser?.fullName}.
+              {t('admin.users.role_dialog_desc').replace('{name}', selectedUser?.fullName || '')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateRole}>
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">Chọn vai trò</label>
+                <label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('admin.users.role_select')}</label>
                 <Select value={newRole} onValueChange={setNewRole}>
                   <SelectTrigger className="rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20">
-                    <SelectValue placeholder="Chọn vai trò" />
+                    <SelectValue placeholder={t('admin.users.role_select')} />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-xl">
+                  <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
                     <SelectItem value="ADMIN" className="rounded-xl">ADMIN</SelectItem>
                     <SelectItem value="MANAGER" className="rounded-xl">MANAGER</SelectItem>
                     <SelectItem value="STAFF" className="rounded-xl">STAFF</SelectItem>
@@ -300,7 +326,7 @@ export default function AdminUsersPage() {
               <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-3">
                 <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0" />
                 <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tighter">
-                  Cẩn trọng: Thay đổi vai trò có thể ảnh hưởng đến quyền truy cập của người dùng này vào hệ thống.
+                  {t('admin.users.role_warning')}
                 </p>
               </div>
             </div>
@@ -311,15 +337,15 @@ export default function AdminUsersPage() {
                 onClick={() => setIsRoleDialogOpen(false)}
                 className="rounded-2xl h-12 px-6 font-bold flex-1"
               >
-                Hủy
+                {t('admin.users.cancel')}
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={updateUser.isPending}
                 className="rounded-2xl h-12 px-8 font-bold flex-1 gap-2 shadow-lg shadow-primary/20"
               >
                 {updateUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Xác nhận
+                {t('admin.users.confirm')}
               </Button>
             </DialogFooter>
           </form>

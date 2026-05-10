@@ -34,7 +34,7 @@ public class VendorOrderController {
     private final VendorService vendorService;
 
     @GetMapping("/notifications")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getOrderNotifications(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -54,8 +54,22 @@ public class VendorOrderController {
         }
     }
 
+    @PostMapping("/{vendorOrderId}/confirm")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
+    public ResponseEntity<ApiResponse<VendorOrderNotification>> confirmOrder(
+            @PathVariable String vendorOrderId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            VendorOrderNotification updated = vendorOrderStatusService.confirmOrder(vendorOrderId, userDetails.getId());
+            return ResponseEntity.ok(new ApiResponse<>(200, "Order confirmed", updated));
+        } catch (RuntimeException e) {
+            log.error("Failed to confirm order: {}", vendorOrderId, e);
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        }
+    }
+
     @PostMapping("/{vendorOrderId}/mark-finished")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<VendorOrderNotification>> markFinished(
             @PathVariable String vendorOrderId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -78,7 +92,7 @@ public class VendorOrderController {
     }
 
     @GetMapping("/get-vendor-order")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','STAFF')")
     public ResponseEntity<ApiResponse<List<VendorOrderNotification>>> getVendorOrders(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {

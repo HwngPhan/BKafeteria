@@ -1,21 +1,23 @@
 'use client'
 
-import { useMyOrders } from '@/features/order/data-access/order.queries'
-import { OrderCard } from '@/features/order/components/OrderCard'
-import { Loader2, ClipboardList, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
-import { useState, useMemo } from 'react'
+import { OrderCard } from '@/features/order/components/OrderCard'
+import { useMyOrders } from '@/features/order/data-access/order.queries'
+import { useLanguage } from '@/providers/LanguageProvider'
+import { ClipboardList, Loader2, RefreshCcw } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 export default function OrdersPage() {
   const { data: orders, isLoading, refetch } = useMyOrders()
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+  const { t } = useLanguage()
 
   const sortedOrders = useMemo(() => {
     if (!orders) return []
@@ -30,8 +32,8 @@ export default function OrdersPage() {
     <div className="space-y-8 pb-20">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Đơn hàng của tôi</h1>
-          <p className="text-muted-foreground mt-2">Theo dõi trạng thái đơn hàng của bạn theo thời gian thực.</p>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('orders.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('orders.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
@@ -71,13 +73,11 @@ export default function OrdersPage() {
             <ClipboardList className="h-16 w-16 text-muted-foreground/30" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-primary">Chưa có đơn hàng nào</h3>
-            <p className="text-muted-foreground max-w-xs">
-              Khi bạn đặt món, chúng sẽ xuất hiện ở đây để bạn có thể theo dõi tiến độ.
-            </p>
+            <h3 className="text-xl font-bold text-primary">{t('orders.empty')}</h3>
+            <p className="text-muted-foreground max-w-xs">{t('orders.empty_desc')}</p>
           </div>
           <Button asChild className="rounded-2xl h-12 px-8 font-bold">
-            <a href="/vendors">Đặt món ngay</a>
+            <a href="/vendors">{t('orders.order_now')}</a>
           </Button>
         </div>
       )}

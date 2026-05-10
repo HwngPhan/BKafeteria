@@ -39,4 +39,6 @@ public class UpdateUserRequestAdmin {
     // Assign role
     @NotNull
     private String role;
+
+    private String status;
 }

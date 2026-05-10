@@ -7,6 +7,7 @@ import { Product } from "@/lib/mock-data"
 import { ShoppingCart, Trash2 } from "lucide-react"
 import React, { createContext, useContext, useState } from "react"
 import { toast } from "sonner"
+import { useLanguage } from "@/providers/LanguageProvider"
 
 type CartItem = Product & { quantity: number }
 
@@ -22,6 +23,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const { t } = useLanguage()
 
   const addToCart = (product: Product) => {
     setItems(prev => {
@@ -31,7 +33,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { ...product, quantity: 1 }]
     })
-    toast.success(`Đã thêm ${product.name} vào giỏ`)
+    toast.success(t('cart.providers.added').replace('{name}', product.name))
   }
 
   const removeFromCart = (productId: string) => {
@@ -54,9 +56,9 @@ export const useCart = () => {
   return context
 }
 
-// UI Nút Giỏ Hàng Nổi (Floating Button)
 export function CartFloatingButton() {
   const { items, total, count, removeFromCart } = useCart()
+  const { t } = useLanguage()
 
   return (
     <Sheet>
@@ -75,7 +77,7 @@ export function CartFloatingButton() {
       <SheetContent className="w-full sm:max-w-md flex flex-col h-full">
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold text-primary flex items-center gap-2">
-             <ShoppingCart /> Giỏ hàng của bạn
+             <ShoppingCart /> {t('cart.providers.title')}
           </SheetTitle>
         </SheetHeader>
         
@@ -83,7 +85,7 @@ export function CartFloatingButton() {
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-4 mt-20">
                <ShoppingCart size={64} className="opacity-20"/>
-               <p>Chưa có món ăn nào</p>
+               <p>{t('cart.providers.empty')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -113,13 +115,13 @@ export function CartFloatingButton() {
 
         <div className="border-t pt-4 space-y-4">
            <div className="flex justify-between items-center text-lg font-bold">
-              <span>Tổng cộng:</span>
+              <span>{t('cart.providers.total')}</span>
               <span className="text-primary text-xl">
                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total)}
               </span>
            </div>
            <Button className="w-full h-14 text-lg font-bold rounded-xl" disabled={items.length === 0}>
-             Thanh toán ngay
+             {t('cart.providers.checkout')}
            </Button>
         </div>
       </SheetContent>

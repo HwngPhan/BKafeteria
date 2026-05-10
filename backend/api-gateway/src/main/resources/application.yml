@@ -21,7 +21,9 @@ spring:
                 - Path=/api/iam/**
               filters:
                 - StripPrefix=1
-                
+                - RemoveResponseHeader=Access-Control-Allow-Origin
+                - RemoveResponseHeader=Access-Control-Allow-Credentials
+
             - id: vendor-service
 #              uri: http://localhost:${VENDOR_SERVICE}
               uri: http://vendor-service:${VENDOR_SERVICE}
@@ -29,6 +31,8 @@ spring:
                 - Path=/api/vendor/**
               filters:
                 - StripPrefix=1
+                - RemoveResponseHeader=Access-Control-Allow-Origin
+                - RemoveResponseHeader=Access-Control-Allow-Credentials
 
             - id: menu-service
 #              uri: http://localhost:${MENU_SERVICE}
@@ -37,6 +41,8 @@ spring:
                 - Path=/api/menu/**
               filters:
                 - StripPrefix=1
+                - RemoveResponseHeader=Access-Control-Allow-Origin
+                - RemoveResponseHeader=Access-Control-Allow-Credentials
 
             - id: order-service
 #              uri: http://localhost:${ORDER_SERVICE}
@@ -45,6 +51,8 @@ spring:
                 - Path=/api/order/**
               filters:
                 - StripPrefix=1
+                - RemoveResponseHeader=Access-Control-Allow-Origin
+                - RemoveResponseHeader=Access-Control-Allow-Credentials
 
             # API Documentation Routes (no StripPrefix — services use context-path)
             - id: iam-service-api-docs

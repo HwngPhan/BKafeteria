@@ -84,11 +84,11 @@ export const DeleteUserApi = async (id: string, softDelete = true): Promise<void
   if (!response.ok) await throwApiError(response);
 };
 
-export const AssignVendorApi = async (vendorId: string, email: string): Promise<UserDto> => {
+export const AssignVendorApi = async (vendorId: string, email: string, role: string = 'STAFF'): Promise<UserDto> => {
   const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/assign-vendor/${vendorId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, role }),
   });
   if (!response.ok) await throwApiError(response);
   const responseDTO = await handleResponse<{ data: UserDto }>(response);

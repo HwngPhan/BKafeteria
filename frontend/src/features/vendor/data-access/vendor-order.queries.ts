@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  GetVendorOrderNotificationsApi, 
-  GetVendorOrdersApi, 
-  MarkOrderFinishedApi 
-} from "./vendor-order.api";
 import { USE_POLLING } from "@/lib/constants";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  GetVendorOrderNotificationsApi,
+  GetVendorOrdersApi,
+  MarkOrderFinishedApi
+} from "./vendor-order.api";
 
 export const vendorOrderKeys = {
   all: ['vendor-orders'] as const,

@@ -5,9 +5,18 @@ import { Card, CardContent } from "@/components/ui/card"
 import { motion } from "framer-motion"
 import { Clock, ShoppingBag, Smile, Soup, Utensils } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "@/providers/LanguageProvider"
 
 export default function LandingPage() {
-  const router = useRouter();
+  const router = useRouter()
+  const { t } = useLanguage()
+
+  const features = [
+    { titleKey: 'landing.feature_preorder', descKey: 'landing.feature_preorder_desc', icon: ShoppingBag },
+    { titleKey: 'landing.feature_food',     descKey: 'landing.feature_food_desc',     icon: Utensils },
+    { titleKey: 'landing.feature_time',     descKey: 'landing.feature_time_desc',     icon: Clock },
+    { titleKey: 'landing.feature_easy',     descKey: 'landing.feature_easy_desc',     icon: Smile },
+  ]
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -21,13 +30,15 @@ export default function LandingPage() {
         >
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             BKAFETERIA
-            <span className="block text-secondary">Nhanh – Ngon – Tiện lợi</span>
+            <span className="block text-secondary">{t('landing.tagline')}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
-            Đặt món từ căn tin Bách Khoa ngay trên trình duyệt. Tiết kiệm thời gian, tận hưởng bữa ăn ngon miệng trước và sau giờ học căng thẳng.
+            {t('landing.description')}
           </p>
           <div className="mt-8 flex justify-center gap-4">
-            <Button size="lg" className="mt-6 rounded-full" onClick={() => router.push('/login')}>Gọi món ngay</Button>
+            <Button size="lg" className="mt-6 rounded-full" onClick={() => router.push('/login')}>
+              {t('landing.order_now')}
+            </Button>
           </div>
         </motion.div>
       </section>
@@ -37,7 +48,7 @@ export default function LandingPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={f.titleKey}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -48,8 +59,8 @@ export default function LandingPage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-white">
                     <f.icon className="h-7 w-7" />
                   </div>
-                  <h3 className="font-semibold">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">{f.desc}</p>
+                  <h3 className="font-semibold">{t(f.titleKey)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(f.descKey)}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -61,11 +72,11 @@ export default function LandingPage() {
       <section className="px-6 py-20">
         <div className="mx-auto max-w-4xl rounded-[3rem] border-4 border-dashed border-secondary bg-secondary/10 p-12 text-center">
           <Soup className="mx-auto mb-4 h-12 w-12 text-secondary" />
-          <h2 className="text-3xl font-bold">Sẵn sàng đặt món chưa?</h2>
-          <p className="mt-4 text-muted-foreground">
-            Mỗi bữa ăn là một niềm vui nhỏ trong ngày học tập của bạn.
-          </p>
-          <Button size="lg" className="mt-6 rounded-full" onClick={() => router.push('/login')}>Bắt đầu ngay</Button>
+          <h2 className="text-3xl font-bold">{t('landing.cta_title')}</h2>
+          <p className="mt-4 text-muted-foreground">{t('landing.cta_desc')}</p>
+          <Button size="lg" className="mt-6 rounded-full" onClick={() => router.push('/login')}>
+            {t('landing.cta_btn')}
+          </Button>
         </div>
       </section>
 
@@ -76,26 +87,3 @@ export default function LandingPage() {
     </div>
   )
 }
-
-const features = [
-  {
-    title: "Đặt trước",
-    desc: "Chọn món trước giờ nghỉ, không cần xếp hàng.",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Món ngon",
-    desc: "Thực đơn đa dạng phong phú, giá phải chăng.",
-    icon: Utensils,
-  },
-  {
-    title: "Đúng giờ",
-    desc: "Biết được khi nào món ăn sẵn sàng để lấy.",
-    icon: Clock,
-  },
-  {
-    title: "Dễ dùng",
-    desc: "Giao diện thân thiện, dùng là thích ngay.",
-    icon: Smile,
-  },
-]

@@ -16,6 +16,7 @@ import { useLogout } from '@/features/auth/data-access/auth.queries'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { useVendorOrderNotifications } from '@/features/vendor/data-access/vendor-order.queries'
 import { useAuth } from '@/providers/AuthProvider'
+import { useLanguage } from '@/providers/LanguageProvider'
 import { Bell, Info, Settings, ShoppingBag, User as UserIcon, Wallet } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -24,6 +25,7 @@ export function TopBar() {
   const { user } = useAuth()
   const { mutateAsync: logout } = useLogout()
   const router = useRouter()
+  const { lang, setLang, t } = useLanguage()
 
   const isManager = user?.role === 'MANAGER' || user?.role === 'STAFF'
   const { data: notifications } = useVendorOrderNotifications(isManager)
@@ -40,6 +42,17 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Language Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
+          className="rounded-full h-9 px-3 font-bold text-xs gap-1.5 hover:bg-secondary/10"
+        >
+          <span className="text-base leading-none">{lang === 'vi' ? '🇻🇳' : '🇬🇧'}</span>
+          {lang === 'vi' ? 'VI' : 'EN'}
+        </Button>
+
         {/* Cart */}
         <CartSheet />
 
@@ -59,8 +72,8 @@ export function TopBar() {
           <DropdownMenuContent className="w-80 bg-white p-0 overflow-hidden" align="end">
             <DropdownMenuLabel className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <span className="font-bold">Thông báo</span>
-                {isManager && <Badge variant="secondary" className="text-[10px] uppercase tracking-tighter">Nhà bán hàng</Badge>}
+                <span className="font-bold">{t('topbar.notifications')}</span>
+                {isManager && <Badge variant="secondary" className="text-[10px] uppercase tracking-tighter">{t('topbar.vendor_badge')}</Badge>}
               </div>
             </DropdownMenuLabel>
             <ScrollArea className="h-[300px]">
@@ -73,8 +86,8 @@ export function TopBar() {
                           <ShoppingBag size={18} className="text-primary" />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-bold leading-none text-primary">Đơn hàng mới!</p>
-                          <p className="text-xs text-muted-foreground">Đơn #{notif.orderId.substring(0, 8)} đang chờ xử lý.</p>
+                          <p className="text-sm font-bold leading-none text-primary">{t('topbar.new_order')}</p>
+                          <p className="text-xs text-muted-foreground">#{notif.orderId.substring(0, 8)} {t('topbar.order_pending')}</p>
                           <p className="text-[10px] text-muted-foreground/60">{new Date(notif.createdAt).toLocaleTimeString()}</p>
                         </div>
                       </div>
@@ -86,13 +99,13 @@ export function TopBar() {
                   <div className="p-3 rounded-full bg-secondary/10">
                     <Info size={24} className="text-muted-foreground/40" />
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground">Không có thông báo mới nào</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('topbar.no_notifications')}</p>
                 </div>
               )}
             </ScrollArea>
             <div className="p-2 border-t bg-secondary/5">
               <Button variant="ghost" size="sm" className="w-full text-xs font-bold text-primary hover:bg-white" asChild>
-                <Link href={isManager ? "/manager/vendor" : "/orders"}>Xem tất cả</Link>
+                <Link href={isManager ? "/manager/vendor" : "/orders"}>{t('topbar.view_all')}</Link>
               </Button>
             </div>
           </DropdownMenuContent>
@@ -122,19 +135,19 @@ export function TopBar() {
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
               <Link href="/wallet" className="flex items-center w-full">
                 <Wallet size={16} className="mr-2 text-primary" />
-                Ví tiền
+                {t('topbar.wallet')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
               <Link href="/profile" className="flex items-center w-full">
                 <UserIcon size={16} className="mr-2 text-primary" />
-                Hồ sơ
+                {t('topbar.profile')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
               <Link href="/profile" className="flex items-center w-full">
                 <Settings size={16} className="mr-2 text-primary" />
-                Cài đặt
+                {t('topbar.settings')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -142,7 +155,7 @@ export function TopBar() {
               className="rounded-lg cursor-pointer text-red-500 focus:text-red-500"
               onClick={handleLogout}
             >
-              Đăng xuất
+              {t('topbar.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

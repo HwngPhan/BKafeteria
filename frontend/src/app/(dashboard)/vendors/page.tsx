@@ -5,12 +5,14 @@ import { VendorCard } from '@/features/vendor/components/VendorCard'
 import { Loader2, Store, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function VendorsPage() {
   const { data: vendors, isLoading } = useActiveVendors()
   const [searchQuery, setSearchQuery] = useState('')
+  const { t } = useLanguage()
 
-  const filteredVendors = vendors?.filter(v => 
+  const filteredVendors = vendors?.filter(v =>
     v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     v.description?.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -19,13 +21,13 @@ export default function VendorsPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Tất cả cửa hàng</h1>
-          <p className="text-muted-foreground mt-2">Chọn cửa hàng yêu thích của bạn và đặt món ngay.</p>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('vendors.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('vendors.subtitle')}</p>
         </div>
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Tìm kiếm cửa hàng..." 
+          <Input
+            placeholder={t('vendors.search')}
             className="pl-10 h-12 rounded-2xl border-none bg-white shadow-lg shadow-secondary/5"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -48,7 +50,7 @@ export default function VendorsPage() {
           <div className="p-6 rounded-full bg-secondary/5">
             <Store className="h-12 w-12 text-muted-foreground/30" />
           </div>
-          <p className="text-muted-foreground font-medium">Không tìm thấy cửa hàng nào.</p>
+          <p className="text-muted-foreground font-medium">{t('vendors.not_found')}</p>
         </div>
       )}
     </div>
