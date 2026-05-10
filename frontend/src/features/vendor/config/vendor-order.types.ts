@@ -2,7 +2,7 @@ export interface VendorOrderNotification {
   vendorOrderId: string;
   orderId: string;
   vendorId: string;
-  status: 'PENDING' | 'PROCESSING' | 'FINISHED' | 'CANCELLED';
+  status: 'PURCHASED' | 'PROCESSING' | 'COMPLETED' | 'CANCELED';
   createdAt: string;
   updatedAt: string;
 }

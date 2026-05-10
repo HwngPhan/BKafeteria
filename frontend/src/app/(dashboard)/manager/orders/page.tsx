@@ -10,8 +10,8 @@ import { toast } from 'sonner'
 import { Separator } from '@/components/ui/separator'
 import { useLanguage } from '@/providers/LanguageProvider'
 
-const ACTIVE_STATUSES = ['PENDING', 'PROCESSING']
-const HISTORY_STATUSES = ['FINISHED', 'CANCELLED']
+const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
+const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
 
 export default function ManagerOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0)
