@@ -37,11 +37,17 @@ public class OrderController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> getOrderById(@PathVariable String id) {
         try {
+            Order order = orderService.getOrderById(id);
+            if (order == null) {
+                return new ResponseEntity<>(
+                        new ApiResponse<>(404, "Order not found", null),
+                        HttpStatus.NOT_FOUND);
+            }
             List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
                     .stream()
                     .map(vendorOrderDtoConverter::convert)
                     .collect(Collectors.toList());
-            OrderDto orderDto = orderDtoConverter.convert(orderService.getOrderById(id), vendorOrders);
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Order retrieved successfully", orderDto));
         } catch (Exception e) {

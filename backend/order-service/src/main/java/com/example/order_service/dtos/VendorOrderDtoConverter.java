@@ -12,6 +12,7 @@ public class VendorOrderDtoConverter {
         return new VendorOrderDto(
                 from.getVendorOrderId(),
                 from.getVendorId(),
+                from.getVendorName(),
                 from.getOrderId(),
                 from.getStatus(),
                 from.getVendorPrice(),
