@@ -117,10 +117,27 @@ export default function ManagerOrdersPage() {
                     {order.status}
                   </Badge>
                 </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-muted-foreground">{t('manager.orders.vendor_order_id')}</span>
-                    <span className="text-xs font-mono bg-secondary/5 px-2 py-1 rounded-lg">{order.vendorOrderId}</span>
+                <CardContent className="p-6 space-y-3">
+                  <div className="space-y-2">
+                    {(order.menuItems || []).map((item, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
+                            {item.quantity}x
+                          </span>
+                          <span className="text-sm font-medium">{item.itemName}</span>
+                        </div>
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {(item.price * item.quantity).toLocaleString()}đ
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-secondary/5">
+                    <span className="text-xs text-muted-foreground font-mono">{order.vendorOrderId.substring(0, 12)}…</span>
+                    <span className="text-sm font-black text-primary">
+                      {(order.menuItems || []).reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString()}đ
+                    </span>
                   </div>
                 </CardContent>
                 <Separator className="bg-secondary/5" />

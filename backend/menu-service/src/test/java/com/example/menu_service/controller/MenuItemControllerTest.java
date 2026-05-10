@@ -4,6 +4,7 @@ import com.example.menu_service.dtos.MenuItemDto;
 import com.example.menu_service.dtos.MenuItemDtoConverter;
 import com.example.menu_service.dtos.Request.CreateMenuItemRequest;
 import com.example.menu_service.dtos.Request.UpdateImageRequest;
+import com.example.menu_service.dtos.Request.UpdateMenuItemRequest;
 import com.example.menu_service.dtos.Request.UpdateRemainingRequest;
 import com.example.menu_service.helper.IamClient;
 import com.example.menu_service.model.MenuItem;
@@ -91,13 +92,14 @@ public class MenuItemControllerTest {
 
     @Test
     void updateMenuItem_Success() {
-        CreateMenuItemRequest request = new CreateMenuItemRequest();
+        UpdateMenuItemRequest request = new UpdateMenuItemRequest();
+        request.setName("Updated Item");
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("manager1");
 
         MenuItem menuItem = new MenuItem();
 
-        when(menuItemService.createMenuItem(any(CreateMenuItemRequest.class), eq("manager1"))).thenReturn(menuItem);
+        when(menuItemService.updateMenuItem(eq("item1"), any(UpdateMenuItemRequest.class), eq("manager1"))).thenReturn(menuItem);
         when(menuItemDtoConverter.convert(menuItem)).thenReturn(null);
 
         ResponseEntity<ApiResponse<MenuItemDto>> response = menuItemController.updateMenuItem(request, userDetails, "item1");

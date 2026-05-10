@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import com.example.menu_service.model.MenuItem;
 import com.example.menu_service.dtos.UserInfoDto;
 import com.example.menu_service.dtos.Request.CreateMenuItemRequest;
+import com.example.menu_service.dtos.Request.UpdateMenuItemRequest;
 // import com.example.menu_service.exception.UnauthorizedException;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -72,7 +73,7 @@ public class MenuItemService {
   }
 
   @Transactional
-  public MenuItem updateMenuItem(String itemId, CreateMenuItemRequest updateMenuItemRequest, String userId) {
+  public MenuItem updateMenuItem(String itemId, UpdateMenuItemRequest updateMenuItemRequest, String userId) {
     // Validate token and get user info
     UserInfoDto userInfo = iamClient.getUserInfo(userId);
 

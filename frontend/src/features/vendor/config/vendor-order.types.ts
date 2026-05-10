@@ -1,10 +1,19 @@
+export interface OrderMenuItem {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+  price: number;
+}
+
 export interface VendorOrderNotification {
   vendorOrderId: string;
   orderId: string;
   vendorId: string;
-  status: 'PENDING' | 'PROCESSING' | 'FINISHED' | 'CANCELLED' | 'PURCHASED';
+  customerId: string;
+  status: 'PURCHASED' | 'PROCESSING' | 'COMPLETED' | 'CANCELED';
+  menuItems: OrderMenuItem[];
   createdAt: string;
-  updatedAt: string;
+  readyAt: string | null;
 }
 
 export interface PageDto<T> {

@@ -120,7 +120,7 @@ export default function MenuPage() {
                   </Badge>
                   <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
                     <Star size={12} className="fill-white" />
-                    {product.rating || '5.0'}
+                    {product.rating}
                   </div>
                   {product.remaining !== undefined && product.remaining <= 5 && (
                     <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[10px] font-bold py-0.5 text-center">
