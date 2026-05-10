@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   GetVendorOrderNotificationsApi,
   GetVendorOrdersApi,
+  ConfirmOrderApi,
   MarkOrderFinishedApi
 } from "./vendor-order.api";
 
@@ -26,6 +27,16 @@ export const useVendorOrders = (page = 0, size = 10, statuses?: string[]) => {
     queryKey: [...vendorOrderKeys.list(), page, size, statuses],
     queryFn: () => GetVendorOrdersApi(page, size, statuses),
     refetchInterval: USE_POLLING ? 5000 : false,
+  });
+};
+
+export const useConfirmOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => ConfirmOrderApi(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vendorOrderKeys.all });
+    },
   });
 };
 

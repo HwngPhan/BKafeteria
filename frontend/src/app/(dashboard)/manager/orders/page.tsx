@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useVendorOrders, useMarkOrderFinished } from '@/features/vendor/data-access/vendor-order.queries'
+import { useVendorOrders, useConfirmOrder, useMarkOrderFinished } from '@/features/vendor/data-access/vendor-order.queries'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,8 +21,18 @@ export default function ManagerOrdersPage() {
   const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
   const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
 
+  const confirmOrder = useConfirmOrder()
   const markFinished = useMarkOrderFinished()
   const { t } = useLanguage()
+
+  const handleConfirm = async (id: string) => {
+    try {
+      await confirmOrder.mutateAsync(id)
+      toast.success('Đơn hàng đang được xử lý')
+    } catch (error: any) {
+      toast.error(error?.message || 'Có lỗi xảy ra')
+    }
+  }
 
   const handleMarkFinished = async (id: string) => {
     try {
@@ -114,15 +124,28 @@ export default function ManagerOrdersPage() {
                   </div>
                 </CardContent>
                 <Separator className="bg-secondary/5" />
-                <div className="p-6 bg-secondary/5 flex justify-end">
-                  <Button
-                    onClick={() => handleMarkFinished(order.vendorOrderId)}
-                    disabled={markFinished.isPending}
-                    className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2"
-                  >
-                    {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                    {t('manager.orders.finish')}
-                  </Button>
+                <div className="p-6 bg-secondary/5 flex justify-end gap-3">
+                  {order.status === 'PURCHASED' && (
+                    <Button
+                      onClick={() => handleConfirm(order.vendorOrderId)}
+                      disabled={confirmOrder.isPending}
+                      variant="outline"
+                      className="rounded-xl h-10 px-6 font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      {confirmOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
+                      Xử lý
+                    </Button>
+                  )}
+                  {order.status === 'PROCESSING' && (
+                    <Button
+                      onClick={() => handleMarkFinished(order.vendorOrderId)}
+                      disabled={markFinished.isPending}
+                      className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2"
+                    >
+                      {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                      {t('manager.orders.finish')}
+                    </Button>
+                  )}
                 </div>
               </Card>
             ))

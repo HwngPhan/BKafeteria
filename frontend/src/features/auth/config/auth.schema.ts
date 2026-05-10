@@ -52,6 +52,7 @@ export interface UserDto {
   updatedAt: string;
   lastLogin: string | null;
   balance: number;
+  points: number;
   isDeleted: boolean;
   role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
   avatarUrl: string | null;

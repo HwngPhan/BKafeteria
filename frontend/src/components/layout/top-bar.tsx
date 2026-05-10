@@ -17,7 +17,7 @@ import { CartSheet } from '@/features/cart/components/CartSheet'
 import { useVendorOrderNotifications } from '@/features/vendor/data-access/vendor-order.queries'
 import { useAuth } from '@/providers/AuthProvider'
 import { useLanguage } from '@/providers/LanguageProvider'
-import { Bell, Info, Settings, ShoppingBag, User as UserIcon, Wallet } from 'lucide-react'
+import { Bell, Info, Settings, ShoppingBag, User as UserIcon, Wallet, Star } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -42,6 +42,24 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Balance & Points */}
+        {user && (
+          <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-primary/5 hover:bg-primary/10 transition-colors rounded-full px-3 py-1.5 cursor-default">
+              <Wallet size={13} className="text-primary" />
+              <span className="text-xs font-bold text-primary">
+                {(user.balance ?? 0).toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 transition-colors rounded-full px-3 py-1.5 cursor-default">
+              <Star size={13} className="text-amber-500 fill-amber-500" />
+              <span className="text-xs font-bold text-amber-600">
+                {(user.points ?? 0).toLocaleString('vi-VN')}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Language Toggle */}
         <Button
           variant="ghost"
