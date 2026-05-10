@@ -1,0 +1,41 @@
+'use client'
+
+import { BalanceCard } from '@/features/wallet/components/BalanceCard'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { History, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+
+export default function WalletPage() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-black tracking-tight text-primary">Ví của tôi</h1>
+        <p className="text-muted-foreground mt-2">Quản lý số dư và xem lịch sử giao dịch của bạn.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+          <BalanceCard />
+        </div>
+
+        <div className="lg:col-span-2">
+          <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 bg-white h-full">
+            <CardHeader className="p-8 border-b border-secondary/5">
+              <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                <History className="text-primary" />
+                Giao dịch gần đây
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 flex items-center justify-center min-h-[300px]">
+              <div className="text-center space-y-4">
+                <div className="p-6 rounded-full bg-secondary/5 inline-block">
+                  <History className="h-12 w-12 text-muted-foreground/30" />
+                </div>
+                <p className="text-muted-foreground font-medium">Chưa có giao dịch nào.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}

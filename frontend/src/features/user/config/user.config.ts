@@ -23,6 +23,9 @@ export const UserSchema = z.object({
     status: z.string(),
     isDeleted: z.boolean(),
     role: z.string(),
+    avatarUrl: z.string().nullable().optional(),
+    balance: z.number().optional(),
+    points: z.number().optional(),
 }).extend(BaseUserEntitySchema.shape)
 
 export type User = z.infer<typeof UserSchema> //When get user info, password will not be included

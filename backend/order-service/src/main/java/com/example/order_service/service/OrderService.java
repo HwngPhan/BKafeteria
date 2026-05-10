@@ -69,7 +69,8 @@ public class OrderService {
             for (VendorOrderRequest vendorReq : orderRequest.getVendorOrders()) {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setVendorId(vendorReq.getVendorId());
-
+                VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(orderItem.getVendorId());
+                orderItem.setVendorName(vendorInfoDto.getName());
                 List<MenuItem> menuItems = new ArrayList<>();
                 Double vendorItemPrice = 0.0;
 
@@ -166,6 +167,7 @@ public class OrderService {
 
             VendorOrder vendorOrder = new VendorOrder();
             vendorOrder.setVendorId(orderItem.getVendorId());
+            vendorOrder.setVendorName(orderItem.getVendorName());
             vendorOrder.setMenuItems(orderItem.getMenuItems());
             vendorOrder.setVendorPrice(orderItem.getVendorPrice());
             vendorOrder.setOrderId(orderId);

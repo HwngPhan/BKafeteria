@@ -7,12 +7,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
+        hostname: 'pub-92f23d47ab254e928ba4a52636074446.r2.dev',
         port: '',
-        pathname: '**',
-      },
+      }
     ],
-  },
+  }
 };
 
 export default nextConfig;

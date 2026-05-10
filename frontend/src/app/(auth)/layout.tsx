@@ -1,9 +1,9 @@
 "use client";
 
-import { PageLoading } from "@/components/loading";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Loading from "../loading";
 
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -16,10 +16,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     }
   }, [isAuthenticated, isLoading, router])
 
-  if (isLoading || isAuthenticated) {
+  if (isLoading) {
     return (
-      <PageLoading/>
-    )
+      <Loading />
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
   }
 
   return children;

@@ -147,9 +147,12 @@ public class UserService {
         if (requestedRole != null && !Objects.equals(requestedRole, currentTargetRole)) {
             user.setRole(requestedRole);
         }
+        if (req.getStatus() != null) {
+            user.setStatus(UserStatus.valueOf(req.getStatus()));
+        }
         user.setUpdatedAt(LocalDateTime.now());
 
-        return user;
+        return userRepository.save(user);
     }
 
     private String normalizeRole(String role) {

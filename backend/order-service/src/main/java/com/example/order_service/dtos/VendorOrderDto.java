@@ -8,6 +8,7 @@ import java.util.List;
 public record VendorOrderDto(
                 String vendorOrderId,
                 String vendorId,
+                String vendorName,
                 String orderId,
                 OrderStatus status,
                 Double vendorPrice,

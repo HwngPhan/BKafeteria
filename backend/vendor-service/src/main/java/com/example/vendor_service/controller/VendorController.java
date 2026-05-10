@@ -19,6 +19,7 @@ import com.example.shared.dtos.ApiResponse;
 import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
 import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
+import com.example.vendor_service.dtos.VendorDtos.Request.UpdateVendorRequest;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.repository.VendorRepository;
@@ -136,6 +137,27 @@ public class VendorController {
         return ResponseEntity.ok(
                 new ApiResponse<>(200, "Active vendors retrieved successfully", vendors)
         );
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    public ResponseEntity<ApiResponse<VendorDto>> updateVendor(@PathVariable String id,
+                                                               @RequestBody @Valid UpdateVendorRequest request,
+                                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            VendorDto vendorDto = vendorDtoConverter.convert(
+                    vendorService.updateVendor(id, request, userDetails.getId()));
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor updated successfully", vendorDto));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to update vendor", null));
+        }
     }
 
     @GetMapping("/{id}")

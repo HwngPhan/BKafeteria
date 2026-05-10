@@ -2,87 +2,69 @@ import { API_GATEWAY_BASE_URL, TokenType } from "@/lib/constants";
 import { fetchWithToken } from "@/lib/fetchWithToken";
 import { handleResponse } from "@/lib/handle-response";
 import { throwApiError } from "@/lib/throwApiError";
-import { VendorDto, VendorEntity } from "../config/vendor.config";
+import { VendorDto } from "../config/vendor.types";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/vendor/vendors`;
 
-export const getAllVendorsApi = async () => {
-    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
+export const GetActiveVendorsApi = async (): Promise<VendorDto[]> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/active`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto[] }>(response);
+  return responseDTO.data;
+};
 
-    if (!response.ok) {
-        await throwApiError(response);
-    }
+export const GetVendorByIdApi = async (id: string): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};
 
-    const responseDTO = await handleResponse<{ message: string, data: VendorEntity[] }>(response);
-    return responseDTO.data;
-}
+export const GetMyVendorApi = async (): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-vendor`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};
+export const GetAllVendorsApi = async (): Promise<VendorDto[]> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto[] }>(response);
+  return responseDTO.data;
+};
 
-export const getActiveVendorsApi = async () => {
-    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/active`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
+export const RegisterVendorApi = async (vendorData: Partial<VendorDto>): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/register`, {
+    method: 'POST',
+    body: JSON.stringify(vendorData),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};
 
-    if (!response.ok) {
-        await throwApiError(response);
-    }
+export const ApproveVendorApi = async (id: string): Promise<void> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/approve/${id}`, {
+    method: 'PUT',
+  });
+  if (!response.ok) await throwApiError(response);
+};
 
-    const responseDTO = await handleResponse<{ message: string, data: VendorEntity[] }>(response);
-    return responseDTO.data;
-}
-
-export const getMyVendorApi = async () => {
-    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/get-my-vendor`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-
-    if (!response.ok) {
-        await throwApiError(response);
-    }
-
-    const responseDTO = await handleResponse<{ message: string, data: VendorEntity }>(response);
-    return responseDTO.data;
-}
-
-export const registerVendorApi = async (vendorData: VendorDto) => {
-    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/register`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(vendorData),
-    })
-
-    if (!response.ok) {
-        await throwApiError(response);
-    }
-
-    const responseDTO = await handleResponse<{ message: string, data: VendorEntity }>(response);
-    return responseDTO.data;
-}
-
-export const approveVendorApi = async (vendorId: string) => {
-    const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/approve/${vendorId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    })
-
-    if (!response.ok) {
-        await throwApiError(response);
-    }
-
-    const responseDTO = await handleResponse<{ message: string, data: VendorEntity }>(response);
-    return responseDTO.data;
-}
+export const UpdateVendorApi = async (id: string, vendorData: Partial<VendorDto>): Promise<VendorDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(vendorData),
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorDto }>(response);
+  return responseDTO.data;
+};

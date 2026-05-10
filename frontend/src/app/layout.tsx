@@ -1,5 +1,8 @@
 import { AuthProvider } from "@/providers/AuthProvider";
+import { CartProvider } from "@/components/cart/cart-providers";
 import QueryProvider from "@/providers/QueryProvider";
+import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner"; // ⬅️ thêm dòng này
@@ -30,12 +33,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster richColors position="top-right" />   {/* ⬅️ đặt ở đây */}
+        <Toaster richColors position="bottom-right" />   {/* ⬅️ đặt ở đây */}
         <QueryProvider>
-          {/* Global toast handler */}
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <AuthProvider>
+                <WebSocketProvider>
+                  {children}
+                </WebSocketProvider>
+              </AuthProvider>
+            </CartProvider>
+          </LanguageProvider>
         </QueryProvider>
       </body>
     </html>
