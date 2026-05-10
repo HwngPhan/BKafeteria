@@ -13,6 +13,8 @@ import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.repository.VendorOrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.order_service.dtos.Request.ItemRequest;
@@ -22,7 +24,6 @@ import com.example.order_service.dtos.KafkaMessage.VendorNotificationMessage;
 import com.example.order_service.model.MenuItem;
 import com.example.order_service.model.OrderItem;
 import com.example.shared.enums.OrderStatus;
-import com.example.shared.enums.VendorStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +55,8 @@ public class OrderService {
         return orderRepository.findById(id).orElse(null);
     }
 
-    public List<Order> getOrders(String customerId) {
-        return orderRepository.findByCustomerId(customerId);
+    public Page<Order> getOrders(String customerId, Pageable pageable) {
+        return orderRepository.findByCustomerId(customerId, pageable);
     }
 
     public Order createOrder(OrderRequest orderRequest, String customerId) throws RuntimeException {
