@@ -58,7 +58,8 @@ export default function ProfilePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    updateMe.mutate(formData, {
+    if (!user) return
+    updateMe.mutate({ ...formData, email: user.email, studentId: user.studentId }, {
       onSuccess: () => {
         toast.success('Cập nhật hồ sơ thành công')
       },
