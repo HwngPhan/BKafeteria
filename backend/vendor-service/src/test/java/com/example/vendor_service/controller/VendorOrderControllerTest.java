@@ -2,8 +2,6 @@ package com.example.vendor_service.controller;
 
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
-import com.example.shared.dtos.PageDtos.PageDto;
-import com.example.shared.dtos.PageDtos.PageDtoConverter;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.model.VendorOrderNotification;
 import com.example.vendor_service.repository.VendorOrderNotificationRepository;
@@ -14,8 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -23,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,8 +31,6 @@ public class VendorOrderControllerTest {
     private VendorOrderStatusService vendorOrderStatusService;
     @Mock
     private VendorService vendorService;
-    @Mock
-    private PageDtoConverter pageDtoConverter;
 
     @InjectMocks
     private VendorOrderController vendorOrderController;
@@ -111,27 +105,21 @@ public class VendorOrderControllerTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void getVendorOrders_Success() {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("manager1");
 
         Vendor vendor = new Vendor();
         vendor.setVendorId("v1");
-
+        
         VendorOrderNotification notification = new VendorOrderNotification();
 
         when(vendorService.getVendorsByManagerId("manager1")).thenReturn(Collections.singletonList(vendor));
-        when(notificationRepository.findByVendorIdIn(anyList(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(Collections.singletonList(notification)));
-        PageDto<VendorOrderNotification> pageDto = new PageDto<>(
-                Collections.singletonList(notification), 0, 10, 1, 1, true, false, false);
-        doReturn(pageDto).when(pageDtoConverter).convert(any(PageImpl.class));
+        when(notificationRepository.findByVendorId("v1")).thenReturn(Collections.singletonList(notification));
 
-        ResponseEntity<ApiResponse<PageDto<VendorOrderNotification>>> response =
-                vendorOrderController.getVendorOrders(userDetails, 0, 10, "createdAt", "desc", null);
+        ResponseEntity<ApiResponse<List<VendorOrderNotification>>> response = vendorOrderController.getVendorOrders(userDetails);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, response.getBody().getData().content().size());
+        assertEquals(1, response.getBody().getData().size());
     }
 }
