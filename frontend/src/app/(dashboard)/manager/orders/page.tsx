@@ -7,28 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { useConfirmOrder, useMarkOrderFinished, useVendorOrders } from '@/features/vendor/data-access/vendor-order.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
-import { AlertCircle, ArrowUpDown, CheckCircle2, Clock, Loader2, ShoppingBag } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { AlertCircle, ArrowUpDown, CheckCircle2, ChevronLeft, ChevronRight, Clock, Loader2, ShoppingBag } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
+
+const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
+const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
 
 export default function ManagerOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
 
   const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
   const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
 
   const confirmOrder = useConfirmOrder()
   const markFinished = useMarkOrderFinished()
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
-
-  const sortedOrders = useMemo(() => {
-    if (!orders) return []
-    return [...orders].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime()
-      const dateB = new Date(b.createdAt).getTime()
-      return sortBy === 'newest' ? dateB - dateA : dateA - dateB
-    })
-  }, [orders, sortBy])
   const { t } = useLanguage()
 
   const handleConfirm = async (id: string) => {
@@ -49,7 +43,9 @@ export default function ManagerOrdersPage() {
     }
   }
 
-  if (isLoading) {
+  const isLoading = activeLoading || historyLoading
+
+  if (isLoading && !activePage && !historyPageData) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 text-primary animate-spin" />
@@ -57,9 +53,15 @@ export default function ManagerOrdersPage() {
     )
   }
 
-  const pendingOrders = orders?.filter(o => o.status === 'PENDING' || o.status === 'PROCESSING') || []
-  const historyOrders = orders?.filter(o => o.status === 'FINISHED' || o.status === 'CANCELLED') || []
+  const pendingOrders = activePage?.content ?? []
+  const historyOrders = historyPageData?.content ?? []
+  const totalHistoryPages = historyPageData?.totalPages ?? 0
 
+  const sortedOrders = [...pendingOrders].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
+    return sortBy === 'newest' ? dateB - dateA : dateA - dateB
+  })
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -160,26 +162,54 @@ export default function ManagerOrdersPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-primary">{t('manager.orders.history')}</h2>
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden h-full min-h-[500px]">
-            <CardContent className="p-8">
+            <CardContent className="p-8 flex flex-col h-full">
               {historyOrders.length > 0 ? (
-                <div className="space-y-4">
-                  {historyOrders.map((order) => (
-                    <div key={order.vendorOrderId} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                          <CheckCircle2 size={16} />
+                <>
+                  <div className="space-y-4 flex-1">
+                    {historyOrders.map((order) => (
+                      <div key={order.vendorOrderId} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <CheckCircle2 size={16} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">#{order.orderId.substring(0, 8)}</p>
+                            <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">#{order.orderId.substring(0, 8)}</p>
-                          <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
-                        </div>
+                        <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
+                          {order.status}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
-                        {order.status}
-                      </Badge>
+                    ))}
+                  </div>
+
+                  {totalHistoryPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => p - 1)}
+                        disabled={!historyPageData?.hasPreviousPage}
+                        className="rounded-xl h-9 gap-1 border-secondary/20 hover:bg-secondary/5"
+                      >
+                        <ChevronLeft size={14} />
+                      </Button>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {historyPage + 1} / {totalHistoryPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHistoryPage((p) => p + 1)}
+                        disabled={!historyPageData?.hasNextPage}
+                        className="rounded-xl h-9 gap-1 border-secondary/20 hover:bg-secondary/5"
+                      >
+                        <ChevronRight size={14} />
+                      </Button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-4">
                   <AlertCircle size={40} className="text-muted-foreground/20" />
