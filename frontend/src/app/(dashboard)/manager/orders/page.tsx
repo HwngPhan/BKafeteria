@@ -28,9 +28,9 @@ export default function ManagerOrdersPage() {
   const handleConfirm = async (id: string) => {
     try {
       await confirmOrder.mutateAsync(id)
-      toast.success('Đơn hàng đang được xử lý')
+      toast.success(t('manager.orders.toast_processing'))
     } catch (error: any) {
-      toast.error(error?.message || 'Có lỗi xảy ra')
+      toast.error(error?.message || 'Error occurred')
     }
   }
 
@@ -39,7 +39,7 @@ export default function ManagerOrdersPage() {
       await markFinished.mutateAsync(id)
       toast.success(t('manager.orders.toast_finished'))
     } catch (error: any) {
-      toast.error(error?.message || 'Có lỗi xảy ra')
+      toast.error(error?.message || 'Error occurred')
     }
   }
 
@@ -75,12 +75,12 @@ export default function ManagerOrdersPage() {
             <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
               <div className="flex items-center gap-2">
                 <ArrowUpDown size={14} className="text-muted-foreground" />
-                <SelectValue placeholder="Sắp xếp" />
+                <SelectValue placeholder={t('manager.orders.sort')} />
               </div>
             </SelectTrigger>
             <SelectContent className="rounded-xl border-none shadow-xl">
-              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
-              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">{t('manager.orders.newest')}</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">{t('manager.orders.oldest')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -150,7 +150,7 @@ export default function ManagerOrdersPage() {
                       className="rounded-xl h-10 px-6 font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5"
                     >
                       {confirmOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
-                      Xử lý
+                      {t('manager.orders.process')}
                     </Button>
                   )}
                   {order.status === 'PROCESSING' && (

@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import Loading from "../loading";
 
 
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -26,5 +28,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     return null;
   }
 
-  return children;
+  return (
+    <div className="relative min-h-screen">
+      <div className="absolute top-4 right-6 z-50">
+        <LanguageSwitcher />
+      </div>
+      {children}
+    </div>
+  );
 }

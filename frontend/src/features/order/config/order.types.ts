@@ -8,8 +8,11 @@ export interface OrderItem {
 }
 
 export interface VendorOrder {
+  vendorOrderId: string;
+  orderId: string;
   vendorId: string;
   vendorName: string;
+  status: OrderStatus;
   orderItems: OrderItem[];
   vendorPrice: number;
 }

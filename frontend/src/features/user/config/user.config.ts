@@ -23,6 +23,7 @@ export const UserSchema = z.object({
     status: z.string(),
     isDeleted: z.boolean(),
     role: z.string(),
+    vendorId: z.string().nullable().optional(),
     avatarUrl: z.string().nullable().optional(),
     balance: z.number().optional(),
     points: z.number().optional(),

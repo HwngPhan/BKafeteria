@@ -1,30 +1,30 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/providers/AuthProvider'
+import { useLanguage } from '@/providers/LanguageProvider'
 import {
-  Home,
-  Store,
-  Utensils,
-  Wallet,
-  ClipboardList,
   ChevronLeft,
   ChevronRight,
-  Users,
+  ClipboardList,
+  Home,
   Settings,
   ShieldCheck,
+  Store,
+  Users,
+  Utensils,
+  Wallet,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/providers/AuthProvider'
-import { useLanguage } from '@/providers/LanguageProvider'
 
 export function SideNav() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { user } = useAuth()
-  const { t } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
 
   const navItems = [
     { href: '/dashboard', icon: Home, labelKey: 'nav.overview', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
@@ -37,7 +37,7 @@ export function SideNav() {
     { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER', 'STAFF'] },
     { href: '/manager/vendor', icon: Settings, labelKey: 'nav.manage_store', roles: ['MANAGER'] },
     { href: '/manager/menu', icon: Utensils, labelKey: 'nav.manage_menu', roles: ['MANAGER'] },
-    { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
+    // { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
 
     // Admin routes
     { href: '/admin/users', icon: Users, labelKey: 'nav.manage_users', roles: ['ADMIN'] },
@@ -107,6 +107,25 @@ export function SideNav() {
           )
         })}
       </nav>
+
+      <div className="p-4 border-t mt-auto">
+        <Button
+          variant="ghost"
+          onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
+          className={cn(
+            "w-full flex items-center rounded-xl transition-colors hover:bg-secondary/10",
+            isCollapsed ? "justify-center px-0 h-12" : "justify-start gap-3 px-4 py-6"
+          )}
+        >
+          <span className="text-2xl leading-none">{lang === 'vi' ? '🇻🇳' : '🇬🇧'}</span>
+          {!isCollapsed && (
+            <div className="flex flex-col items-start text-left">
+              <span className="text-sm font-bold text-foreground">{lang === 'vi' ? 'Tiếng Việt' : 'English'}</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{lang === 'vi' ? 'Đổi sang Tiếng Anh' : 'Switch to Vietnamese'}</span>
+            </div>
+          )}
+        </Button>
+      </div>
     </aside>
   )
 }

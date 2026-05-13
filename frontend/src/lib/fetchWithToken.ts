@@ -1,10 +1,10 @@
-import { getCookie, setCookie, deleteCookie } from "cookies-next";
 import { RefreshTokenApi } from "@/features/auth/data-access/auth.api";
+import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { TokenType } from "./constants";
 
 function prepareHeaders(init?: RequestInit, token?: string | null): Headers {
   const headers = new Headers(init?.headers || {});
-  
+
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -20,7 +20,7 @@ function prepareHeaders(init?: RequestInit, token?: string | null): Headers {
 export async function fetchWithToken(tokenType: string, input: RequestInfo, init?: RequestInit): Promise<Response> {
   const token = getCookie(tokenType) as string | null;
   const headers = prepareHeaders(init, token);
-  
+
   const requestInit: RequestInit = {
     ...init,
     headers,
@@ -50,7 +50,7 @@ export async function fetchWithToken(tokenType: string, input: RequestInfo, init
       console.info("Retrying original request with refreshed token...");
       return fetch(input, retryInit);
     } catch (err) {
-      console.error("Refresh token failed → forcing logout");
+      // console.error("Refresh token failed → forcing logout");
 
       deleteCookie(TokenType.authToken);
 

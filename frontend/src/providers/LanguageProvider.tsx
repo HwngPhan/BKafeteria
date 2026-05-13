@@ -31,6 +31,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'topbar.profile': 'Hồ sơ',
     'topbar.settings': 'Cài đặt',
     'topbar.logout': 'Đăng xuất',
+    'topbar.balance': 'Số dư khả dụng',
+    'topbar.points': 'Điểm thưởng',
+    'topbar.topup': 'Nạp tiền ngay',
+    'topbar.topup_short': 'Nạp thêm',
 
     // Side nav
     'nav.overview': 'Tổng quan',
@@ -191,6 +195,19 @@ const translations: Record<Lang, Record<string, string>> = {
     'orders.empty': 'Chưa có đơn hàng nào',
     'orders.empty_desc': 'Khi bạn đặt món, chúng sẽ xuất hiện ở đây để bạn có thể theo dõi tiến độ.',
     'orders.order_now': 'Đặt món ngay',
+    'orders.status_changed': 'Trạng thái đơn hàng: {status}',
+
+    // Order statuses
+    'order_status.pending': 'Chờ thanh toán',
+    'order_status.purchased': 'Đã thanh toán',
+    'order_status.processing': 'Đang chế biến',
+    'order_status.completed': 'Hoàn thành',
+    'order_status.delivered': 'Đã giao',
+    'order_status.canceled': 'Đã hủy',
+
+    // Vendor WebSocket
+    'vendor_ws.new_order': 'Có đơn hàng mới!',
+    'vendor_ws.new_order_desc': 'Đơn hàng #{id} vừa được đặt.',
 
     // Order detail
     'order_detail.title': 'Theo dõi đơn hàng',
@@ -204,6 +221,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'wallet.subtitle': 'Quản lý số dư và xem lịch sử giao dịch của bạn.',
     'wallet.recent_tx': 'Giao dịch gần đây',
     'wallet.no_tx': 'Chưa có giao dịch nào.',
+    'wallet.balance': 'Số dư hiện tại',
+    'wallet.deposit': 'Nạp tiền',
+    'wallet.withdraw': 'Rút tiền',
+    'wallet.toast_deposit': 'Tính năng nạp tiền sẽ sớm ra mắt qua VNPay/Momo!',
+    'wallet.toast_withdraw': 'Tính năng rút tiền đang được phát triển',
+
+
 
     // Loading / Not found
     'loading.text': 'Đang tải dữ liệu...',
@@ -325,6 +349,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'manager.orders.empty_active': 'Không có đơn hàng nào đang chờ.',
     'manager.orders.empty_history': 'Chưa có lịch sử đơn hàng.',
     'manager.orders.toast_finished': 'Đã xác nhận hoàn thành đơn hàng!',
+    'manager.orders.process': 'Xử lý',
+    'manager.orders.sort': 'Sắp xếp',
+    'manager.orders.newest': 'Mới nhất',
+    'manager.orders.oldest': 'Cũ nhất',
+    'manager.orders.toast_processing': 'Đơn hàng đang được xử lý',
 
     // Manager - Staff
     'manager.staff.title': 'Quản lý nhân viên',
@@ -558,6 +587,19 @@ const translations: Record<Lang, Record<string, string>> = {
     'orders.empty': 'No orders yet',
     'orders.empty_desc': 'When you place orders they will appear here so you can track progress.',
     'orders.order_now': 'Order Now',
+    'orders.status_changed': 'Order status: {status}',
+
+    // Order statuses
+    'order_status.pending': 'Pending payment',
+    'order_status.purchased': 'Paid',
+    'order_status.processing': 'Preparing',
+    'order_status.completed': 'Completed',
+    'order_status.delivered': 'Delivered',
+    'order_status.canceled': 'Canceled',
+
+    // Vendor WebSocket
+    'vendor_ws.new_order': 'New order received!',
+    'vendor_ws.new_order_desc': 'Order #{id} has been placed.',
 
     // Order detail
     'order_detail.title': 'Track Order',
@@ -571,6 +613,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'wallet.subtitle': 'Manage your balance and view transaction history.',
     'wallet.recent_tx': 'Recent Transactions',
     'wallet.no_tx': 'No transactions yet.',
+    'wallet.balance': 'Current Balance',
+    'wallet.deposit': 'Deposit',
+    'wallet.withdraw': 'Withdraw',
+    'wallet.toast_deposit': 'Deposit feature coming soon via VNPay/Momo!',
+    'wallet.toast_withdraw': 'Withdrawal feature is under development',
 
     // Loading / Not found
     'loading.text': 'Loading...',
@@ -692,6 +739,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'manager.orders.empty_active': 'No pending orders.',
     'manager.orders.empty_history': 'No order history yet.',
     'manager.orders.toast_finished': 'Order marked as completed!',
+    'manager.orders.process': 'Process',
+    'manager.orders.sort': 'Sort',
+    'manager.orders.newest': 'Newest',
+    'manager.orders.oldest': 'Oldest',
+    'manager.orders.toast_processing': 'Order is being processed',
 
     // Manager - Staff
     'manager.staff.title': 'Manage Staff',

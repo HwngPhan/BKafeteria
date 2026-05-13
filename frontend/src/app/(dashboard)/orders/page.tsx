@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { OrderCard } from '@/features/order/components/OrderCard'
 import { OrderDto } from '@/features/order/config/order.types'
 import { useMyOrders } from '@/features/order/data-access/order.queries'
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { ChevronLeft, ChevronRight, ClipboardList, Loader2, RefreshCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -16,14 +17,23 @@ export default function OrdersPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const { data: ordersPage, isLoading, refetch } = useMyOrders(page)
   const { t } = useLanguage()
+  const applyUpdates = useRealtimeOrders(state => state.applyUpdates)
+  const updates = useRealtimeOrders(state => state.updates)
 
-  // Update orders and totalPages when ordersPage changes
+  // Sync fetched data into local state
   useEffect(() => {
     if (ordersPage) {
       setOrders(ordersPage.content)
       setTotalPages(ordersPage.totalPages)
     }
   }, [ordersPage])
+
+  // Apply WebSocket updates to local state in real-time
+  useEffect(() => {
+    if (orders.length > 0 && updates.size > 0) {
+      setOrders(prev => applyUpdates(prev))
+    }
+  }, [updates])
 
   return (
     <div className="space-y-8 pb-20">
@@ -35,11 +45,11 @@ export default function OrdersPage() {
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
             <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
-              <SelectValue placeholder="Sắp xếp" />
+              <SelectValue placeholder={t('manager.orders.sort')} />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-none shadow-xl">
-              <SelectItem value="newest" className="rounded-lg cursor-pointer">Mới nhất</SelectItem>
-              <SelectItem value="oldest" className="rounded-lg cursor-pointer">Cũ nhất</SelectItem>
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">{t('manager.orders.newest')}</SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">{t('manager.orders.oldest')}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -49,7 +59,7 @@ export default function OrdersPage() {
             className="rounded-xl h-10 gap-2 border-secondary/20 hover:bg-secondary/5"
           >
             <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
-            Làm mới
+            {t('orders.refresh')}
           </Button>
         </div>
       </div>

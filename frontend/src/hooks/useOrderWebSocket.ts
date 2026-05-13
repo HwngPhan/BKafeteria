@@ -1,26 +1,19 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { useWebSocket } from '@/providers/WebSocketProvider'
 import { useAuth } from '@/providers/AuthProvider'
-import { orderKeys } from '@/features/order/data-access/order.queries'
-import { OrderDto } from '@/features/order/config/order.types'
+import { useLanguage } from '@/providers/LanguageProvider'
 import { toast } from 'sonner'
-
-const statusLabels: Record<string, string> = {
-  PENDING: 'Chờ thanh toán',
-  PURCHASED: 'Đã thanh toán',
-  PROCESSING: 'Đang chế biến',
-  COMPLETED: 'Hoàn thành',
-  DELIVERED: 'Đã giao',
-  CANCELED: 'Đã hủy',
-}
+import { useCustomerNotifications } from './useCustomerNotifications'
+import { useRealtimeOrders } from './useRealtimeOrders'
 
 export function useOrderWebSocket() {
   const { orderClient, isOrderConnected } = useWebSocket()
   const { user } = useAuth()
-  const queryClient = useQueryClient()
+  const { t } = useLanguage()
+  const addNotification = useCustomerNotifications(state => state.addNotification)
+  const pushUpdate = useRealtimeOrders(state => state.pushUpdate)
 
   useEffect(() => {
     if (!isOrderConnected || !orderClient || !user) return
@@ -32,56 +25,32 @@ export function useOrderWebSocket() {
         const update = JSON.parse(message.body)
         console.log('WebSocket received order update:', update)
 
-        // Optimistic UI Update for my orders list
-        queryClient.setQueryData<OrderDto[]>(orderKeys.mine(), (oldData) => {
-          if (!oldData) return oldData
-          
-          return oldData.map((order) => {
-            if (order.orderId === update.orderId) {
-              // Update the specific vendor order status inside the order
-              // Or the overall order status if that is what the update represents
-              // Depending on backend logic, if it's overall order status:
-              let overallStatusUpdated = false
-              const updatedOrderItems = order.orderItems?.map(vo => {
-                if (vo.vendorId === update.vendorId) {
-                  return { ...vo, status: update.status }
-                }
-                return vo
-              })
-
-              return {
-                ...order,
-                status: update.status, 
-                orderItems: updatedOrderItems
-              }
-            }
-            return order
-          })
+        // Push into the realtime Zustand store — pages will pick this up
+        pushUpdate({
+          orderId: update.orderId,
+          vendorOrderId: update.vendorOrderId,
+          vendorId: update.vendorId,
+          customerId: update.customerId,
+          status: update.status,
+          message: update.message,
+          timestamp: update.timestamp || new Date().toISOString(),
         })
 
-        // Also update the specific order detail cache if it's loaded
-        queryClient.setQueryData<OrderDto>(orderKeys.detail(update.orderId), (oldOrder) => {
-          if (!oldOrder) return oldOrder
+        // Show toast with translated status
+        const statusKey = `order_status.${update.status?.toLowerCase()}`
+        const statusLabel = t(statusKey) !== statusKey ? t(statusKey) : update.status
+        toast.info(
+          t('orders.status_changed').replace('{status}', statusLabel),
+          { duration: 5000 }
+        )
 
-          const updatedOrderItems = oldOrder.orderItems?.map(vo => {
-            if (vo.vendorId === update.vendorId) {
-              return { ...vo, status: update.status }
-            }
-            return vo
-          })
-
-          return {
-            ...oldOrder,
-            status: update.status,
-            orderItems: updatedOrderItems
-          }
+        // Add to persistent notification store
+        addNotification({
+          orderId: update.orderId,
+          status: update.status,
+          message: update.message || t('orders.status_changed').replace('{status}', statusLabel),
+          timestamp: new Date().toISOString()
         })
-
-        toast.info(`Trạng thái đơn hàng: ${statusLabels[update.status] || update.status}`)
-
-        // Trigger a background refetch to ensure absolute data consistency
-        queryClient.invalidateQueries({ queryKey: orderKeys.mine() })
-        queryClient.invalidateQueries({ queryKey: orderKeys.detail(update.orderId) })
 
       } catch (err) {
         console.error('Error parsing WebSocket message', err)
@@ -92,5 +61,5 @@ export function useOrderWebSocket() {
       console.log('Unsubscribing from /topic/customer/' + user.userId)
       subscription.unsubscribe()
     }
-  }, [orderClient, isOrderConnected, user, queryClient])
+  }, [orderClient, isOrderConnected, user])
 }

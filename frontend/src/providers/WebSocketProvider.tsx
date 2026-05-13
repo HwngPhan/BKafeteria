@@ -1,10 +1,10 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Client } from '@stomp/stompjs'
-import SockJS from 'sockjs-client'
-import { getCookie } from 'cookies-next'
 import { API_GATEWAY_BASE_URL, TokenType, USE_WEBSOCKET } from '@/lib/constants'
+import { Client } from '@stomp/stompjs'
+import { getCookie } from 'cookies-next'
+import { createContext, useContext, useEffect, useState } from 'react'
+import SockJS from 'sockjs-client'
 
 interface WebSocketContextType {
   orderClient: Client | null
@@ -36,9 +36,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Order Service WebSocket
     const oClient = new Client({
-      webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/order/ws`),
+      brokerURL: 'ws://localhost:8080/api/order/ws',
       // webSocketFactory: () => new SockJS(`https://api.bkafeteria.site/api/order/ws`),
-      connectHeaders: { Authorization: `Bearer ${token}` },
+      // connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -76,11 +76,11 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <WebSocketContext.Provider value={{ 
-      orderClient, 
-      vendorClient, 
-      isOrderConnected, 
-      isVendorConnected 
+    <WebSocketContext.Provider value={{
+      orderClient,
+      vendorClient,
+      isOrderConnected,
+      isVendorConnected
     }}>
       {children}
     </WebSocketContext.Provider>

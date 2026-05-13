@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/providers/AuthProvider'
-
+import { useLanguage } from '@/providers/LanguageProvider'
 import { toast } from 'sonner'
 
 export function BalanceCard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
 
   return (
     <Card className="relative overflow-hidden rounded-[2.5rem] border-none bg-primary text-white shadow-2xl shadow-primary/30">
@@ -18,7 +19,7 @@ export function BalanceCard() {
       <CardHeader className="relative flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-medium opacity-80 flex items-center gap-2">
           <Wallet size={20} />
-          Số dư hiện tại
+          {t('wallet.balance')}
         </CardTitle>
         <TrendingUp size={24} className="opacity-50" />
       </CardHeader>
@@ -35,16 +36,16 @@ export function BalanceCard() {
           <Button 
             variant="secondary" 
             className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md"
-            onClick={() => toast.info('Tính năng nạp tiền sẽ sớm ra mắt qua VNPay/Momo!')}
+            onClick={() => toast.info(t('wallet.toast_deposit'))}
           >
-            <ArrowUpRight className="mr-2 h-5 w-5" /> Nạp tiền
+            <ArrowUpRight className="mr-2 h-5 w-5" /> {t('wallet.deposit')}
           </Button>
           <Button 
             variant="secondary" 
             className="flex-1 h-14 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md"
-            onClick={() => toast.info('Tính năng rút tiền đang được phát triển')}
+            onClick={() => toast.info(t('wallet.toast_withdraw'))}
           >
-            <ArrowDownLeft className="mr-2 h-5 w-5" /> Rút tiền
+            <ArrowDownLeft className="mr-2 h-5 w-5" /> {t('wallet.withdraw')}
           </Button>
         </div>
       </CardContent>
