@@ -1,6 +1,6 @@
 'use client'
 
-import { API_GATEWAY_BASE_URL, TokenType, USE_WEBSOCKET } from '@/lib/constants'
+import { ORDER_WS_URL, TokenType, USE_WEBSOCKET, VENDOR_WS_URL } from '@/lib/constants'
 import { Client } from '@stomp/stompjs'
 import { getCookie } from 'cookies-next'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -31,39 +31,47 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!USE_WEBSOCKET) return
 
+
     const token = getCookie(TokenType.authToken)
     if (!token) return
 
-    // 1. Order Service WebSocket
+    // 1. Order Service WebSocket dùng SockJS
     const oClient = new Client({
-      brokerURL: 'ws://localhost:8080/api/order/ws',
-      // webSocketFactory: () => new SockJS(`https://api.bkafeteria.site/api/order/ws`),
-      // connectHeaders: { Authorization: `Bearer ${token}` },
+      // Dùng webSocketFactory thay vì brokerURL
+      webSocketFactory: () => new SockJS(ORDER_WS_URL || ''),
+      connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
+      debug: (str) => console.log('[Order STOMP]', str),
     })
 
     oClient.onConnect = () => {
       console.log('Connected to Order WebSocket')
       setIsOrderConnected(true)
+
+      // Bạn có thể test subscribe tại đây nếu cần thiết
+      // oClient.subscribe(`/topic/customer/${CUSTOMER_ID}`, (msg) => { ... })
     }
     oClient.onWebSocketClose = () => setIsOrderConnected(false)
     oClient.activate()
     setOrderClient(oClient)
 
-    // 2. Vendor Service WebSocket
+    // 2. Vendor Service WebSocket dùng SockJS
     const vClient = new Client({
-      webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/vendor/ws`),
+      webSocketFactory: () => new SockJS(VENDOR_WS_URL || ''),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
+      debug: (str) => console.log('[Vendor STOMP]', str),
     })
 
     vClient.onConnect = () => {
       console.log('Connected to Vendor WebSocket')
       setIsVendorConnected(true)
+
+      // vClient.subscribe(`/topic/vendor/${VENDOR_ID}`, (msg) => { ... })
     }
     vClient.onWebSocketClose = () => setIsVendorConnected(false)
     vClient.activate()
