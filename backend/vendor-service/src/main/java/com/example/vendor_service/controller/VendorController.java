@@ -58,7 +58,7 @@ public class VendorController {
                     "Vendor registered successfully",
                     vendorDto);
 
-//            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail());
+            iamClient.assignVendor(vendorDto.vendorId(), userDetails.getEmail(), "MANAGER");
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e) {
@@ -161,7 +161,7 @@ public class VendorController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('MANAGER')")
     public ResponseEntity<ApiResponse<VendorDto>> getVendorById(@PathVariable String id) {
         try{
             Vendor vendor = vendorService.getVendorById(id);

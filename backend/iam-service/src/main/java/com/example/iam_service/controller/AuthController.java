@@ -10,7 +10,6 @@ import com.example.iam_service.dtos.AuthDtos.Response.TokenResponse;
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UserDto;
 import com.example.iam_service.dtos.UserDtos.UserDtoConverter;
-import com.example.iam_service.model.User;
 import com.example.iam_service.service.*;
 import com.example.shared.dtos.ApiResponse;
 import com.example.shared.config.CustomUserDetails;
@@ -30,9 +29,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
