@@ -161,7 +161,7 @@ public class VendorController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<VendorDto>> getVendorById(@PathVariable String id) {
         try{
             Vendor vendor = vendorService.getVendorById(id);

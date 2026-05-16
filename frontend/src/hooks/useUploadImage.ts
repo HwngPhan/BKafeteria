@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { uploadImageAction } from '@/actions/upload';
+import { uploadImageAction } from '@/lib/upload';
 
 export function useUploadImage() {
   const [isUploading, setIsUploading] = useState(false);

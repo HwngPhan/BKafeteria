@@ -78,6 +78,9 @@ spring:
   application:
     name: api-gateway
 
+frontend:
+  url: ${FRONTEND_URL}
+
 # SpringDoc configuration
 springdoc:
   swagger-ui:

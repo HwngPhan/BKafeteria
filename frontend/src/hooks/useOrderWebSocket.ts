@@ -47,6 +47,7 @@ export function useOrderWebSocket() {
         // Add to persistent notification store
         addNotification({
           orderId: update.orderId,
+          vendorOrderId: update.vendorOrderId,
           status: update.status,
           message: update.message || t('orders.status_changed').replace('{status}', statusLabel),
           timestamp: new Date().toISOString()

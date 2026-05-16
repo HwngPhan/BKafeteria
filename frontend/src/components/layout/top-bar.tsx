@@ -74,13 +74,14 @@ export function TopBar() {
   const isManager = user?.role === 'MANAGER' || user?.role === 'STAFF'
   const { data: notifications } = useVendorOrderNotifications(isManager)
   const pendingNotifications = notifications?.filter(n => n.status !== 'COMPLETED' && n.status !== 'CANCELED') || []
+  const { markAsRead: markManagerAsRead, isRead: isManagerRead } = useManagerNotifications()
   const unreadManagerNotifications = pendingNotifications.filter(n => !isManagerRead(n.vendorOrderId))
   
   const customerNotifs = useCustomerNotifications(state => state.notifications)
   const unreadCustomerCount = useCustomerNotifications(state => state.getUnreadCount())
   const markAsRead = useCustomerNotifications(state => state.markAsRead)
   const markAllCustomerAsRead = useCustomerNotifications(state => state.markAllAsRead)
-  const { markAsRead: markManagerAsRead, isRead: isManagerRead } = useManagerNotifications()
+
 
   const handleLogout = async () => {
     await logout()
@@ -282,7 +283,7 @@ export function TopBar() {
                         className={`p-4 border-b hover:bg-secondary/5 cursor-pointer transition-colors ${notif.isRead ? 'opacity-60' : 'bg-primary/5'}`}
                         onClick={() => {
                           markAsRead(notif.id);
-                          router.push('/orders');
+                          router.push('/orders/' + notif.orderId);
                         }}
                       >
                         <div className="flex gap-3">
@@ -291,7 +292,7 @@ export function TopBar() {
                           </div>
                           <div className="space-y-1">
                             <p className={`text-sm leading-none ${notif.isRead ? 'font-medium' : 'font-bold'}`}>{notif.message}</p>
-                            <p className="text-xs text-muted-foreground">Đơn hàng #{notif.orderId.substring(0, 8)}</p>
+                            {/* <p className="text-xs text-muted-foreground">Đơn hàng #{notif.vendorOrderId?.substring(0, 8)}</p> */}
                             <p className="text-[10px] text-muted-foreground/60">{new Date(notif.timestamp).toLocaleTimeString()}</p>
                           </div>
                         </div>

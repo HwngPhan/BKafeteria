@@ -152,9 +152,16 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                       <Store className="h-4 w-4" />
                       {vendorOrder.vendorName}
                     </h4>
-                    <Badge variant="outline" className="rounded-full bg-white border-secondary/20">
-                      {vendorOrder.vendorPrice.toLocaleString()}đ
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {vendorOrder.status && (
+                        <Badge className={cn('rounded-full px-3 py-0.5 text-[10px] font-bold border', statusColors[vendorOrder.status])}>
+                          {t(statusLabels[vendorOrder.status]) || vendorOrder.status}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="rounded-full bg-white border-secondary/20">
+                        {vendorOrder.vendorPrice.toLocaleString()}đ
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4 px-2">
                     {(vendorOrder.orderItems || []).map((item, i) => (

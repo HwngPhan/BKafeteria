@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware'
 export interface CustomerNotification {
   id: string;
   orderId: string;
+  vendorOrderId: string;
   message: string;
   status: string;
   timestamp: string;
