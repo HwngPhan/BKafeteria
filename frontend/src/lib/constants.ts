@@ -16,11 +16,11 @@ export enum TokenType {
 }
 
 export const CATEGORY_MAP: Record<string, string> = {
-  BEVERAGES: 'Đồ uống',
-  PASTRIES: 'Bánh ngọt',
-  SNACKS: 'Ăn nhẹ',
-  MEALS: 'Bữa chính',
-  DESSERTS: 'Tráng miệng',
+  BEVERAGES: 'category.beverages',
+  PASTRIES: 'category.pastries',
+  SNACKS: 'category.snacks',
+  MEALS: 'category.meals',
+  DESSERTS: 'category.desserts',
 }
 
 // Real-time updates configuration

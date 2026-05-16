@@ -12,13 +12,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed, Loader2 } from 'lucide-react'
-import { useCartStore } from '../store/cart.store'
-import { useCreateOrder } from '../../order/data-access/order.queries'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { useState } from 'react'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { Loader2, Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { useCreateOrder } from '../../order/data-access/order.queries'
+import { useCartStore } from '../store/cart.store'
 
 export function CartSheet() {
   const items = useCartStore((state) => state.items)
@@ -61,7 +61,7 @@ export function CartSheet() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 transition-colors">
+        <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
           {items.length > 0 && (
             <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in">

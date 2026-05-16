@@ -46,6 +46,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AdminUsersPage() {
   const { t } = useLanguage()
@@ -170,10 +171,10 @@ export default function AdminUsersPage() {
 
                 <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
                   <SelectItem value="all">{t('admin.users.all_roles')}</SelectItem>
-                  <SelectItem value="ADMIN">ADMIN</SelectItem>
-                  <SelectItem value="MANAGER">MANAGER</SelectItem>
-                  <SelectItem value="STAFF">STAFF</SelectItem>
-                  <SelectItem value="CUSTOMER">CUSTOMER</SelectItem>
+                  <SelectItem value="ADMIN">{t('role.admin')}</SelectItem>
+                  <SelectItem value="MANAGER">{t('role.manager')}</SelectItem>
+                  <SelectItem value="STAFF">{t('role.staff')}</SelectItem>
+                  <SelectItem value="CUSTOMER">{t('role.customer')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -192,78 +193,87 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-secondary/5">
-                {usersPage?.content.map((user) => (
-                  <tr key={user.userId} className="group hover:bg-secondary/5 transition-colors">
-                    <td className="p-6 pl-8">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12 rounded-xl border-2 border-white shadow-sm">
-                          <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-black">
-                            {user.fullName.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-bold text-sm text-primary group-hover:text-primary transition-colors">{user.fullName}</p>
-                          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">MSSV: {user.studentId}</p>
+                <AnimatePresence mode="popLayout">
+                  {usersPage?.content.map((user, index) => (
+                    <motion.tr 
+                      key={user.userId} 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="group hover:bg-secondary/5 transition-colors"
+                    >
+                      <td className="p-6 pl-8">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-12 w-12 rounded-xl border-2 border-white shadow-sm">
+                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-black">
+                              {user.fullName.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-bold text-sm text-primary group-hover:text-primary transition-colors">{user.fullName}</p>
+                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">MSSV: {user.studentId}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Mail size={12} className="text-primary/40" />
-                          {user.email}
+                      </td>
+                      <td className="p-6">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Mail size={12} className="text-primary/40" />
+                            {user.email}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Phone size={12} className="text-primary/40" />
+                            {user.phoneNumber}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Phone size={12} className="text-primary/40" />
-                          {user.phoneNumber}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <Badge className={cn('rounded-full px-3 py-0.5 text-[10px] font-bold border border-none shadow-sm', roleColors[user.role])}>
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="p-6">
-                      <Badge className={cn(
-                        'rounded-full px-3 py-0.5 text-[10px] font-bold border-none',
-                        user.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                      )}>
-                        {user.status === 'ACTIVE' ? t('admin.users.active') : t('admin.users.inactive')}
-                      </Badge>
-                    </td>
-                    <td className="p-6 pr-8 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10">
-                            <MoreHorizontal size={20} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2 bg-background opacity-100">
-                          <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => {
-                            setSelectedUser(user)
-                            setNewRole(user.role)
-                            setIsRoleDialogOpen(true)
-                          }}>
-                            <UserCog size={16} className="mr-2" /> {t('admin.users.change_role')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => handleToggleStatus(user)}>
-                            {user.status === 'ACTIVE' ? (
-                              <><UserMinus size={16} className="mr-2" /> {t('admin.users.lock')}</>
-                            ) : (
-                              <><UserCheck size={16} className="mr-2" /> {t('admin.users.activate')}</>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-secondary/5" />
-                          <DropdownMenuItem className="rounded-xl text-red-500 focus:text-red-500 cursor-pointer" onClick={() => handleDelete(user.userId, user.fullName)}>
-                            <Trash2 size={16} className="mr-2" /> {t('admin.users.delete')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-6">
+                        <Badge className={cn('rounded-full px-3 py-0.5 text-[10px] font-bold border border-none shadow-sm', roleColors[user.role])}>
+                          {t(`role.${user.role.toLowerCase()}`)}
+                        </Badge>
+                      </td>
+                      <td className="p-6">
+                        <Badge className={cn(
+                          'rounded-full px-3 py-0.5 text-[10px] font-bold border-none',
+                          user.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        )}>
+                          {user.status === 'ACTIVE' ? t('admin.users.active') : t('admin.users.inactive')}
+                        </Badge>
+                      </td>
+                      <td className="p-6 pr-8 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10">
+                              <MoreHorizontal size={20} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl w-48 p-2 bg-background opacity-100">
+                            <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => {
+                              setSelectedUser(user)
+                              setNewRole(user.role)
+                              setIsRoleDialogOpen(true)
+                            }}>
+                              <UserCog size={16} className="mr-2" /> {t('admin.users.change_role')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="rounded-xl cursor-pointer" onClick={() => handleToggleStatus(user)}>
+                              {user.status === 'ACTIVE' ? (
+                                <><UserMinus size={16} className="mr-2" /> {t('admin.users.lock')}</>
+                              ) : (
+                                <><UserCheck size={16} className="mr-2" /> {t('admin.users.activate')}</>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-secondary/5" />
+                            <DropdownMenuItem className="rounded-xl text-red-500 focus:text-red-500 cursor-pointer" onClick={() => handleDelete(user.userId, user.fullName)}>
+                              <Trash2 size={16} className="mr-2" /> {t('admin.users.delete')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
@@ -315,10 +325,10 @@ export default function AdminUsersPage() {
                     <SelectValue placeholder={t('admin.users.role_select')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-none shadow-xl bg-background opacity-100">
-                    <SelectItem value="ADMIN" className="rounded-xl">ADMIN</SelectItem>
-                    <SelectItem value="MANAGER" className="rounded-xl">MANAGER</SelectItem>
-                    <SelectItem value="STAFF" className="rounded-xl">STAFF</SelectItem>
-                    <SelectItem value="CUSTOMER" className="rounded-xl">CUSTOMER</SelectItem>
+                    <SelectItem value="ADMIN" className="rounded-xl">{t('role.admin')}</SelectItem>
+                    <SelectItem value="MANAGER" className="rounded-xl">{t('role.manager')}</SelectItem>
+                    <SelectItem value="STAFF" className="rounded-xl">{t('role.staff')}</SelectItem>
+                    <SelectItem value="CUSTOMER" className="rounded-xl">{t('role.customer')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

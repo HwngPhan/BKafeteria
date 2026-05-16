@@ -9,6 +9,7 @@ import { CATEGORY_MAP } from '@/lib/constants'
 import { Minus, Plus, ShoppingCart, Star, UtensilsCrossed } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useLanguage } from '@/providers/LanguageProvider'
 import { MenuItemDto } from '../config/menu.types'
 
 interface MenuCardProps {
@@ -20,6 +21,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
   const addItem = useCartStore((state) => state.addItem)
   const [isOpen, setIsOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
+  const { t } = useLanguage()
 
   const handleAddToCart = () => {
     addItem({
@@ -31,7 +33,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
       vendorName: vendorName,
       imageUrl: item.imageUrl,
     })
-    toast.success(`Đã thêm ${quantity} x ${item.name} vào giỏ hàng`)
+    toast.success(t('menu.added_n_items').replace('{n}', String(quantity)).replace('{name}', item.name))
     setIsOpen(false)
     setQuantity(1)
   }
@@ -47,7 +49,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
       vendorName: vendorName,
       imageUrl: item.imageUrl,
     })
-    toast.success(`Đã thêm ${item.name} vào giỏ hàng`)
+    toast.success(t('menu.added_to_cart').replace('{name}', item.name))
   }
 
   return (
@@ -83,14 +85,14 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
           <div className="space-y-1">
             <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.name}</CardTitle>
             <CardDescription className="line-clamp-2 text-xs min-h-[32px]">
-              {item.description || 'Được chế biến tươi ngon mỗi ngày.'}
+              {item.description || t('menu.fresh_daily')}
             </CardDescription>
           </div>
         </CardContent>
 
         <CardFooter className="p-5 flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground font-medium">Giá</span>
+            <span className="text-xs text-muted-foreground font-medium">{t('manager.menu.price')}</span>
             <span className="text-lg font-black text-primary">{item.price.toLocaleString()}đ</span>
           </div>
 
@@ -105,7 +107,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
 
         {item.remaining !== undefined && item.remaining <= 5 && (
           <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[10px] font-bold py-0.5 text-center">
-            Chỉ còn {item.remaining} phần!
+            {t('menu.remaining').replace('{n}', String(item.remaining))}
           </div>
         )}
       </Card>
@@ -132,15 +134,15 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
 
           <div className="p-8 space-y-8">
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Mô tả món ăn</h3>
+              <h3 className="text-sm font-bold text-primary uppercase tracking-widest">{t('menu.desc_title')}</h3>
               <p className="text-muted-foreground leading-relaxed">
-                {item.description || 'Món ăn được chế biến từ những nguyên liệu tươi ngon nhất, đảm bảo vệ sinh an toàn thực phẩm và hương vị đậm đà khó quên.'}
+                {item.description || t('menu.desc_default')}
               </p>
             </div>
 
             <div className="flex items-center justify-between bg-secondary/5 p-6 rounded-[2rem]">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Giá mỗi phần</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('menu.price_per_unit')}</p>
                 <p className="text-2xl font-black text-primary">{item.price.toLocaleString()}đ</p>
               </div>
 
@@ -171,14 +173,14 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
                 onClick={() => setIsOpen(false)}
                 className="h-14 rounded-2xl font-bold flex-1"
               >
-                Hủy bỏ
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleAddToCart}
                 className="h-14 rounded-2xl font-bold flex-[2] gap-2 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 <ShoppingCart size={20} />
-                Thêm vào giỏ • {(item.price * quantity).toLocaleString()}đ
+                {t('menu.add_to_cart_btn')} • {(item.price * quantity).toLocaleString()}đ
               </Button>
             </div>
           </div>

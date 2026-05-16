@@ -4,14 +4,15 @@ import { useOrderById } from '@/features/order/data-access/order.queries'
 import { OrderDetails } from '@/features/order/components/OrderDetails'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
-import { useParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function OrderDetailPage() {
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
   const { data: order, isLoading } = useOrderById(orderId)
+  const { t } = useLanguage()
 
   if (isLoading) {
     return (
@@ -28,13 +29,13 @@ export default function OrderDetailPage() {
           <ArrowLeft className="h-16 w-16 text-muted-foreground/30" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-bold text-primary">Không tìm thấy đơn hàng</h3>
+          <h3 className="text-xl font-bold text-primary">{t('order_detail.not_found')}</h3>
           <p className="text-muted-foreground max-w-xs">
-            Đơn hàng bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+            {t('order_detail.not_found_desc')}
           </p>
         </div>
         <Button onClick={() => router.push('/orders')} className="rounded-2xl h-12 px-8 font-bold">
-          Quay lại danh sách
+          {t('order_detail.back')}
         </Button>
       </div>
     )
@@ -52,8 +53,8 @@ export default function OrderDetailPage() {
           <ArrowLeft size={24} />
         </Button>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Theo dõi đơn hàng</h1>
-          <p className="text-muted-foreground mt-1">Thông tin chi tiết và trạng thái đơn hàng của bạn.</p>
+          <h1 className="text-4xl font-black tracking-tight text-primary">{t('order_detail.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('order_detail.subtitle')}</p>
         </div>
       </div>
 

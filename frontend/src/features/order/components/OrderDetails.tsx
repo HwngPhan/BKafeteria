@@ -16,17 +16,18 @@ import {
   Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 interface OrderDetailsProps {
   order: OrderDto
 }
 
-const statusSteps: { status: OrderStatus; label: string; icon: any }[] = [
-  { status: 'PENDING', label: 'Chờ thanh toán', icon: Clock },
-  { status: 'PURCHASED', label: 'Đã thanh toán', icon: ClipboardList },
-  { status: 'PROCESSING', label: 'Đang chế biến', icon: UtensilsCrossed },
-  { status: 'COMPLETED', label: 'Đã chuẩn bị', icon: Package },
-  { status: 'DELIVERED', label: 'Đã giao hàng', icon: CheckCircle2 },
+const statusSteps: { status: OrderStatus; labelKey: string; icon: any }[] = [
+  { status: 'PENDING', labelKey: 'order_details.status_pending', icon: Clock },
+  { status: 'PURCHASED', labelKey: 'order_details.status_purchased', icon: ClipboardList },
+  { status: 'PROCESSING', labelKey: 'order_details.status_processing', icon: UtensilsCrossed },
+  { status: 'COMPLETED', labelKey: 'order_details.status_completed', icon: Package },
+  { status: 'DELIVERED', labelKey: 'order_details.status_delivered', icon: CheckCircle2 },
 ]
 
 const statusColors: Record<string, string> = {
@@ -39,15 +40,16 @@ const statusColors: Record<string, string> = {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: 'Chờ thanh toán',
-  PURCHASED: 'Đã thanh toán',
-  PROCESSING: 'Đang chế biến',
-  COMPLETED: 'Hoàn thành',
-  DELIVERED: 'Đã giao',
-  CANCELED: 'Đã hủy',
+  PENDING: 'order_status.pending',
+  PURCHASED: 'order_status.purchased',
+  PROCESSING: 'order_status.processing',
+  COMPLETED: 'order_status.completed',
+  DELIVERED: 'order_status.delivered',
+  CANCELED: 'order_status.canceled',
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
+  const { t } = useLanguage()
   const currentStatusIndex = statusSteps.findIndex(s => s.status === order.status)
   const isCanceled = order.status === 'CANCELED'
 
@@ -66,15 +68,15 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                 <ClipboardList size={28} />
               </div>
               <div>
-                <CardTitle className="text-xl font-black">Chi tiết đơn hàng #{order.orderId.substring(0, 8)}</CardTitle>
+                <CardTitle className="text-xl font-black">{t('order_card.id')}{order.orderId.substring(0, 8)}</CardTitle>
                 <p className="text-sm text-muted-foreground font-medium mt-1 flex items-center gap-2">
                   <Clock size={14} />
-                  Đặt lúc: {new Date(order.createdAt).toLocaleString()}
+                  {t('order_details.ordered_at').replace('{time}', new Date(order.createdAt).toLocaleString())}
                 </p>
               </div>
             </div>
             <Badge className={cn('rounded-full px-6 py-1.5 text-xs font-bold border self-start md:self-center', statusColors[order.status])}>
-              {statusLabels[order.status] || order.status}
+              {t(statusLabels[order.status]) || order.status}
             </Badge>
           </div>
         </CardHeader>
@@ -110,7 +112,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                         "text-[10px] font-bold uppercase tracking-wider transition-colors duration-300",
                         isCompleted ? "text-primary" : "text-muted-foreground"
                       )}>
-                        {step.label}
+                        {t(step.labelKey)}
                       </span>
                       <Icon size={16} className={cn(
                         "mt-1 transition-colors duration-300",
@@ -126,9 +128,9 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <div className="p-6 rounded-full bg-red-50 text-red-500 mb-4">
                 <UtensilsCrossed size={48} />
               </div>
-              <h3 className="text-xl font-bold text-red-600">Đơn hàng đã bị hủy</h3>
+              <h3 className="text-xl font-bold text-red-600">{t('order_details.canceled_title')}</h3>
               <p className="text-muted-foreground mt-2 max-w-xs">
-                Đơn hàng này đã được hủy và không còn được xử lý.
+                {t('order_details.canceled_desc')}
               </p>
             </div>
           )}
@@ -140,7 +142,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         <div className="lg:col-span-2 space-y-6">
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 overflow-hidden bg-white">
             <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-lg font-bold">Món đã đặt</CardTitle>
+              <CardTitle className="text-lg font-bold">{t('order_details.order_items')}</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-8">
               {(order.vendorOrders || []).map((vendorOrder, idx) => (
@@ -163,7 +165,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                           </div>
                           <div>
                             <p className="font-bold text-sm group-hover:text-primary transition-colors">{item.itemName}</p>
-                            <p className="text-[10px] text-muted-foreground font-medium">{item.price.toLocaleString()}đ / món</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">{t('order_details.unit_price').replace('{price}', item.price.toLocaleString())}</p>
                           </div>
                         </div>
                         <span className="font-black text-sm">{(item.price * item.quantity).toLocaleString()}đ</span>
@@ -183,23 +185,23 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                   <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600">
                     <Tag size={18} />
                   </div>
-                  <h3 className="font-bold text-emerald-700">Ưu đãi thành viên</h3>
+                  <h3 className="font-bold text-emerald-700">{t('order_details.member_offer')}</h3>
                   <Badge className="ml-auto rounded-full bg-emerald-100 text-emerald-700 border-none font-bold text-xs px-3">
                     -{discountPercent}%
                   </Badge>
                 </div>
                 <div className="space-y-3 pt-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Giá gốc</span>
+                    <span className="text-muted-foreground">{t('order_details.original_price')}</span>
                     <span className="font-medium line-through text-muted-foreground">{originalPrice.toLocaleString()}đ</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-emerald-600 font-medium">Giảm giá</span>
+                    <span className="text-emerald-600 font-medium">{t('order_details.discount')}</span>
                     <span className="font-bold text-emerald-600">-{discount.toLocaleString()}đ</span>
                   </div>
                   <Separator className="bg-emerald-100" />
                   <div className="flex justify-between">
-                    <span className="font-bold text-sm">Thành tiền</span>
+                    <span className="font-bold text-sm">{t('order_details.subtotal')}</span>
                     <span className="font-black text-primary">{order.totalPrice.toLocaleString()}đ</span>
                   </div>
                 </div>
@@ -211,11 +213,11 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         <div className="space-y-6">
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 overflow-hidden bg-primary text-primary-foreground h-fit">
             <CardHeader className="p-8">
-              <CardTitle className="text-lg font-bold opacity-80">Tổng thanh toán</CardTitle>
+              <CardTitle className="text-lg font-bold opacity-80">{t('order_details.total_payment')}</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="flex justify-between items-end">
-                <span className="text-sm font-medium opacity-70">Thành tiền</span>
+                <span className="text-sm font-medium opacity-70">{t('order_details.subtotal')}</span>
                 <span className="text-3xl font-black">{order.totalPrice.toLocaleString()}đ</span>
               </div>
               <Separator className="bg-white/20" />
@@ -224,8 +226,8 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                   <Truck size={20} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold">Địa điểm nhận món</p>
-                  <p className="text-[10px] opacity-70">Vui lòng đến quầy khi có thông báo "Hoàn thành"</p>
+                  <p className="text-xs font-bold">{t('order_details.pickup_location')}</p>
+                  <p className="text-[10px] opacity-70">{t('order_details.pickup_desc')}</p>
                 </div>
               </div>
             </CardContent>

@@ -14,6 +14,15 @@ import { toast } from 'sonner'
 const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
 const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
 
+const statusLabels: Record<string, string> = {
+  PENDING: 'order_status.pending',
+  PURCHASED: 'order_status.purchased',
+  PROCESSING: 'order_status.processing',
+  COMPLETED: 'order_status.completed',
+  DELIVERED: 'order_status.delivered',
+  CANCELED: 'order_status.canceled',
+}
+
 export default function ManagerOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
@@ -114,7 +123,7 @@ export default function ManagerOrdersPage() {
                     </div>
                   </div>
                   <Badge className="rounded-full px-3 py-0.5 text-[10px] font-bold bg-yellow-100 text-yellow-700 border-yellow-200 uppercase">
-                    {order.status}
+                    {t(statusLabels[order.status]) || order.status}
                   </Badge>
                 </CardHeader>
                 <CardContent className="p-6 space-y-3">
@@ -195,7 +204,7 @@ export default function ManagerOrdersPage() {
                           </div>
                         </div>
                         <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
-                          {order.status}
+                          {t(statusLabels[order.status]) || order.status}
                         </Badge>
                       </div>
                     ))}

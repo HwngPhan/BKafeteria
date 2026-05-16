@@ -98,8 +98,8 @@ export default function ManagerStaffPage() {
                           </div>
                           <p className="text-xs text-muted-foreground font-medium">{staff.email}</p>
                           <div className="flex gap-2 mt-1">
-                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[8px] font-bold uppercase tracking-widest border-secondary/20 text-secondary">{staff.role}</Badge>
-                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[8px] font-bold uppercase tracking-widest border-emerald-200 text-emerald-600 bg-emerald-50">{staff.status}</Badge>
+                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[8px] font-bold uppercase tracking-widest border-secondary/20 text-secondary">{t('role.' + staff.role.toLowerCase())}</Badge>
+                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[8px] font-bold uppercase tracking-widest border-emerald-200 text-emerald-600 bg-emerald-50">{t('status.' + staff.status.toLowerCase())}</Badge>
                           </div>
                         </div>
                       </div>

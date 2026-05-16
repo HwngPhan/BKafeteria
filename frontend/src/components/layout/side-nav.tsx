@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/AuthProvider'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { ViFlag, EnFlag } from './language-switcher'
 import {
   ChevronLeft,
   ChevronRight,
@@ -59,7 +60,7 @@ export function SideNav() {
             </span>
             {user && (
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-                {user.role}
+                {t(`role.${user.role.toLowerCase()}`)}
               </span>
             )}
           </div>
@@ -117,11 +118,11 @@ export function SideNav() {
             isCollapsed ? "justify-center px-0 h-12" : "justify-start gap-3 px-4 py-6"
           )}
         >
-          <span className="text-2xl leading-none">{lang === 'vi' ? '🇻🇳' : '🇬🇧'}</span>
+          {lang === 'vi' ? <ViFlag className={isCollapsed ? "h-6 w-9" : ""} /> : <EnFlag className={isCollapsed ? "h-6 w-9" : ""} />}
           {!isCollapsed && (
             <div className="flex flex-col items-start text-left">
-              <span className="text-sm font-bold text-foreground">{lang === 'vi' ? 'Tiếng Việt' : 'English'}</span>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{lang === 'vi' ? 'Đổi sang Tiếng Anh' : 'Switch to Vietnamese'}</span>
+              <span className="text-sm font-bold text-foreground">{lang === 'vi' ? t('common.vi') : t('common.en')}</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{lang === 'vi' ? t('common.change_to_en') : t('common.change_to_vi')}</span>
             </div>
           )}
         </Button>

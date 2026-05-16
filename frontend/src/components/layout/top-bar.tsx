@@ -12,38 +12,40 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from '@/components/ui/sheet'
 import { useLogout } from '@/features/auth/data-access/auth.queries'
 import { CartSheet } from '@/features/cart/components/CartSheet'
 import { useVendorOrderNotifications } from '@/features/vendor/data-access/vendor-order.queries'
+import { useCustomerNotifications } from '@/hooks/useCustomerNotifications'
+import { useManagerNotifications } from '@/hooks/useManagerNotifications'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/AuthProvider'
 import { useLanguage } from '@/providers/LanguageProvider'
-import { useCustomerNotifications } from '@/hooks/useCustomerNotifications'
-import { 
-  Bell, 
-  Info, 
-  Settings, 
-  ShoppingBag, 
-  User as UserIcon, 
-  Wallet, 
-  Star,
-  Menu,
-  Home,
-  Store,
-  Utensils,
+import {
+  Bell,
   ClipboardList,
+  Home,
+  Info,
+  Menu,
+  Settings,
   ShieldCheck,
-  Users
+  ShoppingBag,
+  Star,
+  Store,
+  User as UserIcon,
+  Users,
+  Utensils,
+  Wallet
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger 
-} from '@/components/ui/sheet'
-import { cn } from '@/lib/utils'
+import { usePathname, useRouter } from 'next/navigation'
+import { EnFlag, ViFlag } from './language-switcher'
 
 export function TopBar() {
   const { user } = useAuth()
@@ -71,11 +73,14 @@ export function TopBar() {
 
   const isManager = user?.role === 'MANAGER' || user?.role === 'STAFF'
   const { data: notifications } = useVendorOrderNotifications(isManager)
-  const pendingNotifications = notifications?.filter(n => n.status !== 'FINISHED' && n.status !== 'CANCELLED') || []
+  const pendingNotifications = notifications?.filter(n => n.status !== 'COMPLETED' && n.status !== 'CANCELED') || []
+  const unreadManagerNotifications = pendingNotifications.filter(n => !isManagerRead(n.vendorOrderId))
   
   const customerNotifs = useCustomerNotifications(state => state.notifications)
   const unreadCustomerCount = useCustomerNotifications(state => state.getUnreadCount())
   const markAsRead = useCustomerNotifications(state => state.markAsRead)
+  const markAllCustomerAsRead = useCustomerNotifications(state => state.markAllAsRead)
+  const { markAsRead: markManagerAsRead, isRead: isManagerRead } = useManagerNotifications()
 
   const handleLogout = async () => {
     await logout()
@@ -100,7 +105,7 @@ export function TopBar() {
               {user && (
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-primary/10 text-primary border-none">
-                    {user.role}
+                    {t(`role.${user.role.toLowerCase()}`)}
                   </Badge>
                 </div>
               )}
@@ -144,10 +149,10 @@ export function TopBar() {
                   className="w-full h-14 justify-between rounded-2xl border-secondary/20 hover:bg-white hover:shadow-xl transition-all gap-3 px-5 group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl leading-none">{lang === 'vi' ? '🇻🇳' : '🇬🇧'}</span>
+                    {lang === 'vi' ? <ViFlag /> : <EnFlag />}
                     <div className="flex flex-col items-start text-left">
-                      <span className="text-sm font-bold text-foreground">{lang === 'vi' ? 'Tiếng Việt' : 'English'}</span>
-                      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{lang === 'vi' ? 'Đổi ngôn ngữ' : 'Change language'}</span>
+                      <span className="text-sm font-bold text-foreground">{lang === 'vi' ? t('common.vi') : t('common.en')}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('common.switch_lang')}</span>
                     </div>
                   </div>
                   <div className="h-2 w-2 rounded-full bg-primary opacity-20 group-hover:opacity-100 transition-opacity" />
@@ -166,11 +171,11 @@ export function TopBar() {
         {isManager && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary/10">
+              <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-secondary/10">
                 <Bell size={22} className="text-foreground/80" />
-                {pendingNotifications.length > 0 && (
+                {unreadManagerNotifications.length > 0 && (
                   <Badge className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-red-500 text-white border-2 border-background">
-                    {pendingNotifications.length}
+                    {unreadManagerNotifications.length}
                   </Badge>
                 )}
               </Button>
@@ -185,20 +190,38 @@ export function TopBar() {
               <ScrollArea className="h-[300px]">
                 {pendingNotifications.length > 0 ? (
                   <div className="flex flex-col">
-                    {pendingNotifications.map((notif) => (
-                      <div key={notif.vendorOrderId} className="p-4 border-b hover:bg-secondary/5 cursor-pointer transition-colors">
-                        <div className="flex gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                            <ShoppingBag size={18} className="text-primary" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-sm font-bold leading-none text-primary">{t('topbar.new_order')}</p>
-                            <p className="text-xs text-muted-foreground">#{notif.orderId.substring(0, 8)} {t('topbar.order_pending')}</p>
-                            <p className="text-[10px] text-muted-foreground/60">{new Date(notif.createdAt).toLocaleTimeString()}</p>
+                    {pendingNotifications.map((notif) => {
+                      const isRead = isManagerRead(notif.vendorOrderId)
+                      return (
+                        <div 
+                          key={notif.vendorOrderId} 
+                          className={cn(
+                            "p-4 border-b hover:bg-secondary/5 cursor-pointer transition-colors",
+                            isRead ? "opacity-60" : "bg-primary/5"
+                          )}
+                          onClick={() => {
+                            markManagerAsRead(notif.vendorOrderId)
+                            router.push('/manager/orders')
+                          }}
+                        >
+                          <div className="flex gap-3">
+                            <div className={cn(
+                              "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                              isRead ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"
+                            )}>
+                              <ShoppingBag size={18} />
+                            </div>
+                            <div className="space-y-1">
+                              <p className={cn("text-sm leading-none", isRead ? "font-medium" : "font-bold text-primary")}>
+                                {t('topbar.new_order')}
+                              </p>
+                              <p className="text-xs text-muted-foreground">#{notif.orderId.substring(0, 8)} {t('topbar.order_pending')}</p>
+                              <p className="text-[10px] text-muted-foreground/60">{new Date(notif.createdAt).toLocaleTimeString()}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[300px] text-center p-6 space-y-2">
@@ -222,7 +245,7 @@ export function TopBar() {
         {!isManager && user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-secondary/10">
+              <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-secondary/10">
                 <Bell size={22} className="text-foreground/80" />
                 {unreadCustomerCount > 0 && (
                   <Badge className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-red-500 text-white border-2 border-background">
@@ -235,6 +258,19 @@ export function TopBar() {
               <DropdownMenuLabel className="p-4 border-b">
                 <div className="flex items-center justify-between">
                   <span className="font-bold">{t('topbar.notifications')}</span>
+                  {unreadCustomerCount > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-[10px] h-6 px-2 font-bold text-primary hover:bg-primary/10"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        markAllCustomerAsRead()
+                      }}
+                    >
+                      {t('topbar.mark_all_read')}
+                    </Button>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <ScrollArea className="h-[300px]">
@@ -349,12 +385,12 @@ export function TopBar() {
                     {t('topbar.profile')}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
+                {/* <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
                   <Link href="/profile" className="flex items-center w-full">
                     <Settings size={16} className="mr-2 text-primary" />
                     {t('topbar.settings')}
                   </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
               </div>
 
               <DropdownMenuSeparator className="my-2" />

@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -37,37 +38,11 @@ import { useRegister } from '@/features/auth/data-access/auth.queries'
 
 /* ---------------- SCHEMA ---------------- */
 
-const formSchema = z
-  .object({
-    fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
-    email: z.email('Email không hợp lệ'),
-    studentId: z.string().length(7, 'Mã số sinh viên phải có đúng 7 ký tự'),
-
-    // Thêm validate số điện thoại: chỉ chứa số, min 10
-    phoneNumber: z.string()
-      .min(10, 'SĐT tối thiểu 10 số')
-      .regex(/^[0-9]+$/, 'SĐT chỉ được chứa số'),
-
-    gender: z.enum(['MALE', 'FEMALE'], { error: 'Vui lòng chọn giới tính' }),
-
-    // 3 trường rời rạc cho Date
-    day: z.string({ error: "Chọn ngày" }).min(1, "Chọn ngày"),
-    month: z.string({ error: "Chọn tháng" }).min(1, "Chọn tháng"),
-    year: z.string({ error: "Chọn năm" }).min(1, "Chọn năm"),
-
-    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'],
-    message: 'Mật khẩu nhập lại không khớp',
-  })
-
 // Định nghĩa kiểu dữ liệu gửi lên API (RegisterObject)
 type RegisterObject = {
   fullName: string;
   email: string;
-  phoneNumber: string; // Thêm field này
+  phoneNumber: string;
   studentId: string;
   gender: "MALE" | "FEMALE";
   dateOfBirth: Date;
@@ -91,13 +66,32 @@ function AbsoluteFormMessage() {
 /* ---------------- PAGE ---------------- */
 
 export default function RegisterPage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  // Mock mutation (Thay bằng hook thật của bạn)
+  const formSchema = useMemo(() => z
+    .object({
+      fullName: z.string().min(2, t('register.fullname_error')),
+      email: z.string().email(t('register.email_invalid')),
+      studentId: z.string().length(7, t('register.student_id_error')),
+      phoneNumber: z.string()
+        .min(10, t('register.phone_min'))
+        .regex(/^[0-9]+$/, t('register.phone_digits')),
+      gender: z.enum(['MALE', 'FEMALE'], { error: t('register.gender_error') }),
+      day: z.string().min(1, t('register.day_error')),
+      month: z.string().min(1, t('register.month_error')),
+      year: z.string().min(1, t('register.year_error')),
+      password: z.string().min(6, t('register.password_min')),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      path: ['confirmPassword'],
+      message: t('register.confirm_mismatch'),
+    }), [t])
+
   const { mutateAsync: registerMutation } = useRegister();
 
-  // Data cho Date Picker
   const currentYear = new Date().getFullYear()
   const years = useMemo(() => range(1950, currentYear - 5).reverse(), [currentYear])
   const months = useMemo(() => range(1, 12), [])
@@ -108,7 +102,7 @@ export default function RegisterPage() {
     defaultValues: {
       fullName: '',
       email: '',
-      phoneNumber: '', // Default value
+      phoneNumber: '',
       studentId: '',
       password: '',
       confirmPassword: '',
@@ -118,41 +112,33 @@ export default function RegisterPage() {
     },
   })
 
-  // Logic Submit
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // 1. Kiểm tra password match 
     if (values.password !== values.confirmPassword) {
-      toast.error("Mật khẩu không khớp");
+      toast.error(t('register.password_mismatch'));
       return;
     }
 
-    // 2. Xử lý gộp ngày tháng năm
-    const { day, month, year, ...rest } = values;
-
+    const { day, month, year, confirmPassword, ...rest } = values;
     const dob = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
     if (dob.getMonth() !== parseInt(month) - 1) {
-      form.setError("day", { message: "Ngày không hợp lệ" })
-      toast.error("Ngày sinh không hợp lệ");
+      form.setError("day", { message: t('register.dob_invalid') })
+      toast.error(t('register.dob_invalid'));
       return;
     }
 
-    // 3. Chuẩn bị data chuẩn để gửi API
-    // `rest` đã bao gồm phoneNumber do schema đã define
     const apiData: RegisterObject = {
       ...rest,
       dateOfBirth: dob,
-    }
+    } as RegisterObject;
 
-    // 4. Gọi API 
     try {
       setIsLoading(true);
       await registerMutation(apiData);
-
-      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
+      toast.success(t('register.success'));
       router.push('/verify');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Đăng ký thất bại";
+      const errorMessage = err instanceof Error ? err.message : t('register.failed');
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -173,10 +159,10 @@ export default function RegisterPage() {
               <Utensils className="h-10 w-10 text-secondary" />
             </div>
             <CardTitle className="text-3xl font-bold text-primary">
-              Đăng ký tài khoản
+              {t('register.title')}
             </CardTitle>
             <CardDescription className="mt-2 text-base">
-              Trở thành thành viên{' '}
+              {t('register.subtitle')}{' '}
               <span className="font-semibold text-secondary">
                 BKAFETERIA
               </span>
@@ -189,17 +175,16 @@ export default function RegisterPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-8 w-full"
               >
-                {/* Row 1: Full Name */}
                 <FormField
                   control={form.control}
                   name="fullName"
                   render={({ field }) => (
                     <FormItem className="w-full relative">
-                      <FormLabel>Họ và tên <RequiredMark /></FormLabel>
+                      <FormLabel>{t('register.fullname')} <RequiredMark /></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="Nguyễn Văn A"
+                          placeholder={t('register.fullname_placeholder')}
                           className="h-12 w-full rounded-xl border-secondary/20 bg-secondary/5 focus:bg-background transition-colors"
                         />
                       </FormControl>
@@ -208,18 +193,17 @@ export default function RegisterPage() {
                   )}
                 />
 
-                {/* Row 2: Student ID & Gender */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                   <FormField
                     control={form.control}
                     name="studentId"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Mã số sinh viên <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.student_id')} <RequiredMark /></FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="XXXXXXX"
+                            placeholder={t('register.student_id_placeholder')}
                             className="h-12 w-full rounded-xl border-secondary/20"
                           />
                         </FormControl>
@@ -233,16 +217,16 @@ export default function RegisterPage() {
                     name="gender"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Giới tính <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.gender')} <RequiredMark /></FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                              <SelectValue placeholder="Chọn giới tính" />
+                              <SelectValue placeholder={t('register.gender_select')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent position="popper" className="bg-background z-50">
-                            <SelectItem value="MALE">Nam</SelectItem>
-                            <SelectItem value="FEMALE">Nữ</SelectItem>
+                            <SelectItem value="MALE">{t('register.gender_male')}</SelectItem>
+                            <SelectItem value="FEMALE">{t('register.gender_female')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <AbsoluteFormMessage />
@@ -251,11 +235,9 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Row 3: Date of Birth */}
                 <div className="w-full">
-                  <FormLabel>Ngày sinh <RequiredMark /></FormLabel>
+                  <FormLabel>{t('register.dob')} <RequiredMark /></FormLabel>
                   <div className="grid grid-cols-3 gap-4 w-full mt-2">
-                    {/* Day */}
                     <FormField
                       control={form.control}
                       name="day"
@@ -264,7 +246,7 @@ export default function RegisterPage() {
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                <SelectValue placeholder="Ngày" />
+                                <SelectValue placeholder={t('register.day')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent position="popper" className="h-[200px] bg-background z-50">
@@ -278,7 +260,6 @@ export default function RegisterPage() {
                       )}
                     />
 
-                    {/* Month */}
                     <FormField
                       control={form.control}
                       name="month"
@@ -287,20 +268,20 @@ export default function RegisterPage() {
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                <SelectValue placeholder="Tháng" />
+                                <SelectValue placeholder={t('register.month')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent position="popper" className="h-[200px] bg-background z-50">
                               {months.map((m) => (
-                                <SelectItem key={m} value={m.toString()}>Tháng {m}</SelectItem>
+                                <SelectItem key={m} value={m.toString()}>{t('register.month_prefix')}{m}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
+                          <AbsoluteFormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Year */}
                     <FormField
                       control={form.control}
                       name="year"
@@ -309,7 +290,7 @@ export default function RegisterPage() {
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="h-12 w-full rounded-xl border-secondary/20">
-                                <SelectValue placeholder="Năm" />
+                                <SelectValue placeholder={t('register.year')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent position="popper" className="h-[200px] bg-background z-50">
@@ -318,25 +299,24 @@ export default function RegisterPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <AbsoluteFormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
                 </div>
 
-                {/* Row 4: Phone & Email (Gom nhóm) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                  {/* Phone Number */}
                   <FormField
                     control={form.control}
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Số điện thoại <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.phone')} <RequiredMark /></FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            type="tel" // Dùng type tel cho bàn phím số trên mobile
+                            type="tel"
                             placeholder="0xxxxxxxxx"
                             className="h-12 w-full rounded-xl border-secondary/20"
                           />
@@ -346,18 +326,17 @@ export default function RegisterPage() {
                     )}
                   />
 
-                  {/* Email */}
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Email <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.email')} <RequiredMark /></FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="email"
-                            placeholder="email@example.com"
+                            placeholder={t('register.email_placeholder')}
                             className="h-12 w-full rounded-xl border-secondary/20"
                           />
                         </FormControl>
@@ -367,14 +346,13 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Row 5: Passwords */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Mật khẩu <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.password')} <RequiredMark /></FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -393,7 +371,7 @@ export default function RegisterPage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem className="w-full relative">
-                        <FormLabel>Nhập lại mật khẩu <RequiredMark /></FormLabel>
+                        <FormLabel>{t('register.confirm_password')} <RequiredMark /></FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -408,7 +386,6 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Submit */}
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -417,19 +394,18 @@ export default function RegisterPage() {
                   {isLoading && (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   )}
-                  Đăng ký
+                  {t('register.submit')}
                 </Button>
 
-                {/* Footer */}
                 <div className="text-center text-sm text-muted-foreground">
-                  Đã có tài khoản?{' '}
+                  {t('register.already_account')}{' '}
                   <Button
                     type="button"
                     variant="link"
                     className="px-1 font-bold text-secondary text-base"
                     onClick={() => router.push('/login')}
                   >
-                    Đăng nhập
+                    {t('register.login')}
                   </Button>
                 </div>
               </form>
