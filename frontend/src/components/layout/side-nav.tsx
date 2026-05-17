@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/providers/AuthProvider'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { useSidebar } from '@/providers/SidebarProvider'
 import { ViFlag, EnFlag } from './language-switcher'
 import {
   ChevronLeft,
@@ -19,11 +20,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 
 export function SideNav() {
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { isCollapsed, toggle } = useSidebar()
   const { user } = useAuth()
   const { lang, setLang, t } = useLanguage()
 
@@ -68,7 +68,7 @@ export function SideNav() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggle}
           className="ml-auto"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

@@ -51,7 +51,7 @@ export default function VendorDetailPage({ params }: { params: Promise<{ id: str
             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md">
               {vendor.status}
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-black">{vendor.name}</h1>
+            <h1 className="text-2xl md:text-5xl font-black">{vendor.name}</h1>
             <div className="flex items-center gap-6 text-white/90 text-sm mt-4">
               <div className="flex items-center gap-2">
                 <Clock size={18} />

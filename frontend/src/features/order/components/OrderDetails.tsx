@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useMyFeedbacks } from '@/features/menu/data-access/feedback.queries'
@@ -32,8 +33,7 @@ const statusSteps: { status: OrderStatus; labelKey: string; icon: any }[] = [
   { status: 'PENDING', labelKey: 'order_details.status_pending', icon: Clock },
   { status: 'PURCHASED', labelKey: 'order_details.status_purchased', icon: ClipboardList },
   { status: 'PROCESSING', labelKey: 'order_details.status_processing', icon: UtensilsCrossed },
-  { status: 'COMPLETED', labelKey: 'order_details.status_completed', icon: Package },
-  { status: 'DELIVERED', labelKey: 'order_details.status_delivered', icon: CheckCircle2 },
+  { status: 'COMPLETED', labelKey: 'order_details.status_completed', icon: CheckCircle2 },
 ]
 
 const statusColors: Record<string, string> = {
@@ -56,13 +56,25 @@ const statusLabels: Record<string, string> = {
 
 export function OrderDetails({ order }: OrderDetailsProps) {
   const { t } = useLanguage()
+  const isMobile = useIsMobile()
   const { data: myFeedbacks } = useMyFeedbacks()
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
   const [selectedMenuItemId, setSelectedMenuItemId] = useState('')
   const [selectedItemName, setSelectedItemName] = useState('')
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackDto | null>(null)
 
-  const currentStatusIndex = statusSteps.findIndex(s => s.status === order.status)
+  const getStatusIndex = (status: OrderStatus): number => {
+    switch (status) {
+      case 'PENDING': return 0
+      case 'PURCHASED': return 1
+      case 'PROCESSING': return 2
+      case 'COMPLETED':
+      case 'DELIVERED':
+        return 3
+      default: return -1
+    }
+  }
+  const currentStatusIndex = getStatusIndex(order.status)
   const isCanceled = order.status === 'CANCELED'
 
   const originalPrice = (order.vendorOrders || []).reduce((sum, vo) => sum + (vo.vendorPrice || 0), 0)
@@ -97,12 +109,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
               {/* Progress Line */}
               <div className="absolute left-[15px] md:left-0 md:top-[15px] h-full w-[2px] md:h-[2px] md:w-full bg-secondary/10 -z-10" />
-              <div 
-                className="absolute left-[15px] md:left-0 md:top-[15px] h-full w-[2px] md:h-[2px] bg-primary transition-all duration-1000 -z-10" 
-                style={{ 
-                  height: typeof window !== 'undefined' && window.innerWidth < 768 ? `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` : '2px',
-                  width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` : '2px'
-                }} 
+              <div
+                className="absolute left-[15px] md:left-0 md:top-[15px] h-full w-[2px] md:h-[2px] bg-primary transition-all duration-1000 -z-10"
+                style={isMobile
+                  ? { height: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%`, width: '2px' }
+                  : { width: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%`, height: '2px' }
+                }
               />
 
               {statusSteps.map((step, index) => {

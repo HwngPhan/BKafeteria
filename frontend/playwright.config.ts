@@ -20,11 +20,21 @@ export default defineConfig({
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+    },
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 5'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+      // Only run navigation and dashboard tests on mobile to keep CI fast
+      testMatch: /navigation\.spec\.ts|dashboard\.spec\.ts/,
     },
   ],
   webServer: {

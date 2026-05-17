@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-4xl font-black tracking-tight text-primary">{t('admin.users.title')}</h1>
+        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('admin.users.title')}</h1>
         <p className="text-muted-foreground mt-1 font-medium">{t('admin.users.subtitle')}</p>
       </div>
 

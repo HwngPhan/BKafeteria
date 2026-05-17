@@ -65,18 +65,18 @@ export default function MenuPage() {
   return (
     <div className="space-y-8 pb-20">
       <div>
-        <h1 className="text-4xl font-black tracking-tight text-primary">{t('menu.title')}</h1>
-        <p className="text-muted-foreground mt-2">{t('menu.subtitle')}</p>
+        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('menu.title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">{t('menu.subtitle')}</p>
       </div>
 
       {/* Category Filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
         {CATEGORIES.map((cat) => (
           <Button
             key={cat.key}
             variant={activeCatKey === cat.key ? "default" : "outline"}
             onClick={() => setActiveCatKey(cat.key)}
-            className={`rounded-full px-6 h-10 font-semibold transition-all ${
+            className={`rounded-full px-4 md:px-6 h-8 md:h-10 text-xs md:text-sm font-semibold transition-all shrink-0 ${
               activeCatKey === cat.key
                 ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25"
                 : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
@@ -88,7 +88,7 @@ export default function MenuPage() {
       </div>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
         {products.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-24 space-y-4">
             <div className="p-6 rounded-full bg-secondary/5">

@@ -27,7 +27,7 @@ export function VendorCard({ vendor }: VendorCardProps) {
       <div className="absolute top-0 h-2 w-full bg-gradient-to-r from-primary to-secondary opacity-0 transition-opacity group-hover:opacity-100" />
 
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full overflow-hidden">
+        <div className="relative h-32 sm:h-48 w-full overflow-hidden">
           <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center">
             <Store className="h-16 w-16 text-secondary/30" />
           </div>
@@ -41,25 +41,25 @@ export function VendorCard({ vendor }: VendorCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
+            <CardTitle className="text-base sm:text-xl font-bold group-hover:text-primary transition-colors leading-tight">
               {vendor.name}
             </CardTitle>
-            <CardDescription className="line-clamp-2 mt-2">
+            <CardDescription className="line-clamp-1 sm:line-clamp-2 mt-1 sm:mt-2 text-xs sm:text-sm">
               {vendor.description || t('vendor_card.no_desc')}
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Clock size={16} className="text-secondary" />
+              <Clock size={14} className="text-secondary" />
               <span>{vendor.workingHourFrom?.substring(0, 5)} - {vendor.workingHourTo?.substring(0, 5)}</span>
             </div>
           </div>
 
-          <Button asChild className="w-full rounded-2xl h-12 font-bold transition-all group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/20">
+          <Button asChild className="w-full rounded-xl sm:rounded-2xl h-10 sm:h-12 font-bold text-sm transition-all group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/20">
             <Link href={`/vendors/${vendor.vendorId}`}>
               {t('vendor_card.view_menu')} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

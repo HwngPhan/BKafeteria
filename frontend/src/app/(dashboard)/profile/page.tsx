@@ -80,7 +80,7 @@ export default function ProfilePage() {
         transition={{ duration: 0.5 }}
         className="flex flex-col gap-2"
       >
-        <h1 className="text-4xl font-black tracking-tight text-primary">{t('profile.title')}</h1>
+        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('profile.title')}</h1>
         <p className="text-muted-foreground font-medium">{t('profile.subtitle')}</p>
       </motion.div>
 

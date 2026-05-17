@@ -21,7 +21,7 @@ export default function VendorsPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">{t('vendors.title')}</h1>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('vendors.title')}</h1>
           <p className="text-muted-foreground mt-2">{t('vendors.subtitle')}</p>
         </div>
         <div className="relative w-full max-w-sm">

@@ -207,6 +207,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'orders.empty_desc': 'Khi bạn đặt món, chúng sẽ xuất hiện ở đây để bạn có thể theo dõi tiến độ.',
     'orders.order_now': 'Đặt món ngay',
     'orders.status_changed': 'Trạng thái đơn hàng: {status}',
+    'orders.active_orders': 'Đơn đang xử lý',
+    'orders.history': 'Lịch sử đơn hàng',
+    'orders.no_active': 'Không có đơn hàng nào đang xử lý.',
+    'orders.no_history': 'Chưa có lịch sử đơn hàng.',
+    'orders.load_more': 'Tải thêm đơn hàng',
 
     // Order card
     'order_card.id': 'Đơn hàng #',
@@ -232,7 +237,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'order_details.status_pending': 'Chờ thanh toán',
     'order_details.status_purchased': 'Đã thanh toán',
     'order_details.status_processing': 'Đang chế biến',
-    'order_details.status_completed': 'Đã chuẩn bị',
+    'order_details.status_completed': 'Hoàn thành',
     'order_details.status_delivered': 'Đã giao hàng',
 
     // Order statuses
@@ -264,6 +269,20 @@ const translations: Record<Lang, Record<string, string>> = {
     'wallet.withdraw': 'Rút tiền',
     'wallet.toast_deposit': 'Tính năng nạp tiền sẽ sớm ra mắt qua VNPay/Momo!',
     'wallet.toast_withdraw': 'Tính năng rút tiền đang được phát triển',
+    'wallet.deposit_title': 'Nạp tiền vào ví',
+    'wallet.deposit_subtitle': 'Chọn mệnh giá hoặc nhập số tiền muốn nạp',
+    'wallet.quick_amounts': 'Chọn nhanh',
+    'wallet.custom_amount': 'Hoặc nhập số tiền khác',
+    'wallet.bank_info': 'Thông tin chuyển khoản',
+    'wallet.bank_name_label': 'Ngân hàng',
+    'wallet.account_number': 'Số tài khoản',
+    'wallet.account_name': 'Chủ tài khoản',
+    'wallet.transfer_content': 'Nội dung CK',
+    'wallet.amount_label': 'Số tiền',
+    'wallet.qr_hint': 'Quét mã QR để chuyển khoản nhanh · Tự động xác nhận khi nhận được tiền',
+    'wallet.confirm_deposit': 'Xác nhận nạp tiền',
+    'wallet.min_amount': 'Số tiền tối thiểu là 10.000đ',
+    'wallet.scanning': 'Đã ghi nhận! Số dư sẽ được cập nhật sau khi nhận tiền.',
 
 
 
@@ -719,6 +738,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'orders.empty_desc': 'When you place orders they will appear here so you can track progress.',
     'orders.order_now': 'Order Now',
     'orders.status_changed': 'Order status: {status}',
+    'orders.active_orders': 'Active Orders',
+    'orders.history': 'Order History',
+    'orders.no_active': 'No active orders right now.',
+    'orders.no_history': 'No order history yet.',
+    'orders.load_more': 'Load more orders',
 
     // Order card
     'order_card.id': 'Order #',
@@ -744,7 +768,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'order_details.status_pending': 'Pending Payment',
     'order_details.status_purchased': 'Paid',
     'order_details.status_processing': 'Processing',
-    'order_details.status_completed': 'Prepared',
+    'order_details.status_completed': 'Completed',
     'order_details.status_delivered': 'Delivered',
 
     // Order statuses
@@ -776,6 +800,20 @@ const translations: Record<Lang, Record<string, string>> = {
     'wallet.withdraw': 'Withdraw',
     'wallet.toast_deposit': 'Deposit feature coming soon via VNPay/Momo!',
     'wallet.toast_withdraw': 'Withdrawal feature is under development',
+    'wallet.deposit_title': 'Top Up Wallet',
+    'wallet.deposit_subtitle': 'Choose a preset or enter a custom amount',
+    'wallet.quick_amounts': 'Quick Select',
+    'wallet.custom_amount': 'Or enter a custom amount',
+    'wallet.bank_info': 'Bank Transfer Info',
+    'wallet.bank_name_label': 'Bank',
+    'wallet.account_number': 'Account Number',
+    'wallet.account_name': 'Account Name',
+    'wallet.transfer_content': 'Transfer Content',
+    'wallet.amount_label': 'Amount',
+    'wallet.qr_hint': 'Scan QR code to transfer · Balance updates automatically once received',
+    'wallet.confirm_deposit': 'Confirm Top Up',
+    'wallet.min_amount': 'Minimum amount is 10,000đ',
+    'wallet.scanning': 'Noted! Balance will update once payment is received.',
 
     // Loading / Not found
     'loading.text': 'Loading...',

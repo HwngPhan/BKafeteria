@@ -85,7 +85,7 @@ export default function ManagerMenuPage() {
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">{t('manager.menu.title')}</h1>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('manager.menu.title')}</h1>
           <p className="text-muted-foreground mt-1 font-medium flex items-center gap-2">
             {t('manager.menu.subtitle')}
           </p>

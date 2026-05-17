@@ -46,6 +46,7 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { EnFlag, ViFlag } from './language-switcher'
+import { useSidebar } from '@/providers/SidebarProvider'
 
 export function TopBar() {
   const { user } = useAuth()
@@ -53,6 +54,7 @@ export function TopBar() {
   const router = useRouter()
   const pathname = usePathname()
   const { lang, setLang, t } = useLanguage()
+  const { isCollapsed } = useSidebar()
 
   const navItems = [
     { href: '/dashboard', icon: Home, labelKey: 'nav.overview', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
@@ -89,7 +91,10 @@ export function TopBar() {
   }
 
   return (
-    <header className="fixed top-0 right-0 z-30 flex h-16 w-full items-center justify-between border-b bg-background/60 backdrop-blur-xl px-4 md:px-6 md:left-auto md:w-[calc(100%-16rem)] transition-all duration-300">
+    <header className={cn(
+      "fixed top-0 right-0 z-30 flex h-16 w-full items-center justify-between border-b bg-background/60 backdrop-blur-xl px-4 md:px-6 transition-all duration-300",
+      isCollapsed ? "md:w-[calc(100%-5rem)]" : "md:w-[calc(100%-16rem)]"
+    )}>
       <div className="flex flex-1 items-center gap-4">
         {/* Mobile Menu Trigger */}
         <Sheet>

@@ -53,7 +53,7 @@ export default function OrderDetailPage() {
           <ArrowLeft size={24} />
         </Button>
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">{t('order_detail.title')}</h1>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('order_detail.title')}</h1>
           <p className="text-muted-foreground mt-1">{t('order_detail.subtitle')}</p>
         </div>
       </div>
