@@ -23,12 +23,14 @@ import {
   Search,
   Trash2,
   UtensilsCrossed,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Star
 } from 'lucide-react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { MenuItemFeedbacksModal } from '@/features/menu/components/MenuItemFeedbacksModal'
 
 const categories: FoodCategory[] = ['BEVERAGES', 'PASTRIES', 'SNACKS', 'MEALS', 'DESSERTS']
 
@@ -45,6 +47,12 @@ export default function ManagerMenuPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const { uploadImage, isUploading: isUploadingImage } = useUploadImage()
+
+  // Feedback Viewer states
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false)
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState('')
+  const [selectedItemName, setSelectedItemName] = useState('')
+  const [averageRating, setAverageRating] = useState(5.0)
 
   const filteredItems = menuItems?.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -166,7 +174,21 @@ export default function ManagerMenuPage() {
 
                     <CardContent className="p-7 space-y-5">
                       <div>
-                        <h3 className="font-black text-xl text-primary leading-tight line-clamp-1">{item.name}</h3>
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-black text-xl text-primary leading-tight line-clamp-1 flex-1">{item.name}</h3>
+                          <button
+                            onClick={() => {
+                              setSelectedMenuItemId(item.menuItemId)
+                              setSelectedItemName(item.name)
+                              setAverageRating(item.rating || 5.0)
+                              setIsReviewsOpen(true)
+                            }}
+                            className="flex items-center gap-1 shrink-0 bg-amber-400/10 hover:bg-amber-400/20 active:scale-95 transition-all text-amber-600 rounded-full px-2.5 py-1 text-xs font-bold cursor-pointer"
+                          >
+                            <Star size={12} className="fill-amber-500 text-amber-500" />
+                            <span>{item.rating ? item.rating.toFixed(1) : '5.0'}</span>
+                          </button>
+                        </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-2 leading-relaxed min-h-[2.5rem]">
                           {item.description || t('manager.menu.no_desc')}
                         </p>
@@ -288,6 +310,15 @@ export default function ManagerMenuPage() {
             })
           }
         }}
+      />
+
+      {/* Review Feedbacks details modal */}
+      <MenuItemFeedbacksModal
+        open={isReviewsOpen}
+        onOpenChange={setIsReviewsOpen}
+        menuItemId={selectedMenuItemId}
+        itemName={selectedItemName}
+        averageRating={averageRating}
       />
     </div>
   )

@@ -11,6 +11,7 @@ import { Minus, Plus, ShoppingCart, Star, UtensilsCrossed } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { MenuItemDto } from '../config/menu.types'
+import { MenuItemFeedbacksModal } from './MenuItemFeedbacksModal'
 
 interface MenuCardProps {
   item: MenuItemDto
@@ -22,6 +23,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const { t } = useLanguage()
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false)
 
   const handleAddToCart = () => {
     addItem({
@@ -74,9 +76,16 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
             <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none">
               {t(CATEGORY_MAP[item.category]) || item.category}
             </Badge>
-            <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2 py-1 text-xs font-bold text-white shadow-lg">
+            <div
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                setIsReviewsOpen(true)
+              }}
+              className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 hover:bg-primary active:scale-95 transition-all px-2.5 py-1 text-xs font-bold text-white shadow-lg cursor-pointer z-20"
+            >
               <Star size={12} className="fill-white" />
-              {item.rating || '5.0'}
+              {item.rating ? item.rating.toFixed(1) : '5.0'}
             </div>
           </div>
         </CardHeader>
@@ -123,18 +132,40 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-6 left-8 right-8">
-              <Badge className="bg-white/20 text-white backdrop-blur-md border-none mb-2">
-                {CATEGORY_MAP[item.category] || item.category}
-              </Badge>
-              <h2 className="text-3xl font-black text-white">{item.name}</h2>
-              <p className="text-white/80 text-sm font-medium">{vendorName}</p>
+            <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between w-[calc(100%-4rem)] gap-4">
+              <div>
+                <Badge className="bg-white/20 text-white backdrop-blur-md border-none mb-2">
+                  {t(CATEGORY_MAP[item.category]) || item.category}
+                </Badge>
+                <h2 className="text-3xl font-black text-white leading-tight line-clamp-1">{item.name}</h2>
+                <p className="text-white/80 text-sm font-medium mt-0.5">{vendorName}</p>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsReviewsOpen(true)
+                }}
+                className="flex items-center gap-1 shrink-0 bg-white/25 hover:bg-white/40 active:scale-95 transition-all text-white rounded-full px-3 py-1.5 text-xs font-extrabold shadow-lg shadow-black/10 cursor-pointer"
+              >
+                <Star size={12} className="fill-white text-white" />
+                <span>{item.rating ? item.rating.toFixed(1) : '5.0'} ({t('feedback.view_reviews')})</span>
+              </button>
             </div>
           </div>
 
           <div className="p-8 space-y-8">
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-primary uppercase tracking-widest">{t('menu.desc_title')}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-primary uppercase tracking-widest">{t('menu.desc_title')}</h3>
+                <button
+                  onClick={() => setIsReviewsOpen(true)}
+                  className="flex items-center gap-1.5 text-xs font-black text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/75 transition px-3.5 py-2 rounded-2xl cursor-pointer"
+                >
+                  <Star size={12} className="fill-amber-500 text-amber-500" />
+                  <span>{item.rating ? item.rating.toFixed(1) : '5.0'} • {t('feedback.view_reviews')}</span>
+                </button>
+              </div>
               <p className="text-muted-foreground leading-relaxed">
                 {item.description || t('menu.desc_default')}
               </p>
@@ -186,6 +217,14 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <MenuItemFeedbacksModal
+        open={isReviewsOpen}
+        onOpenChange={setIsReviewsOpen}
+        menuItemId={item.menuItemId}
+        itemName={item.name}
+        averageRating={item.rating || 5.0}
+      />
     </>
   )
 }

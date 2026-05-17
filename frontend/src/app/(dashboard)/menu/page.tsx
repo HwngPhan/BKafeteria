@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/features/cart/store/cart.store"
 import { MenuItemDto } from "@/features/menu/config/menu.types"
 import { useMenuItems } from "@/features/menu/data-access/menu.queries"
+import { MenuCard } from "@/features/menu/components/MenuCard"
 import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries"
 import { CATEGORY_MAP } from "@/lib/constants"
 import { useLanguage } from "@/providers/LanguageProvider"
@@ -103,56 +104,7 @@ export default function MenuPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04, duration: 0.3 }}
             >
-              <div className="group relative overflow-hidden rounded-3xl bg-white border-none shadow-lg shadow-secondary/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5">
-                <div className="relative h-44 w-full overflow-hidden">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-secondary/5 to-primary/5 flex items-center justify-center">
-                      <UtensilsCrossed className="h-10 w-10 text-muted-foreground/15" />
-                    </div>
-                  )}
-                  <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none font-semibold text-xs">
-                    {t(CATEGORY_MAP[product.category])}
-                  </Badge>
-                  <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
-                    <Star size={12} className="fill-white" />
-                    {product.rating}
-                  </div>
-                  {product.remaining !== undefined && product.remaining <= 5 && (
-                    <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[10px] font-bold py-0.5 text-center">
-                      {t('menu.remaining').replace('{n}', String(product.remaining))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-5 pb-0 space-y-1">
-                  <h3 className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2 min-h-[32px]">
-                    {product.description || t('menu.fresh_daily')}
-                  </p>
-                </div>
-
-                <div className="p-5 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground font-medium">{getVendorName(product.vendorId)}</span>
-                    <span className="text-lg font-black text-primary">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
-                    </span>
-                  </div>
-                  <Button
-                    size="icon"
-                    onClick={() => handleAddToCart(product)}
-                    className="h-10 w-10 rounded-2xl shadow-lg shadow-primary/20 hover:scale-110 transition-transform"
-                  >
-                    <Plus size={20} />
-                  </Button>
-                </div>
-              </div>
+              <MenuCard item={product} vendorName={getVendorName(product.vendorId)} />
             </motion.div>
           ))
         )}

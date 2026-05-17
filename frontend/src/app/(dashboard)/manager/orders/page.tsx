@@ -108,8 +108,8 @@ export default function ManagerOrdersPage() {
 
           {sortedOrders.length > 0 ? (
             sortedOrders.map((order) => (
-              <Card key={order.vendorOrderId} className="rounded-[2rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden group hover:shadow-2xl transition-all duration-300">
-                <CardHeader className="p-6 bg-secondary/5 border-b flex flex-row items-center justify-between">
+              <Card key={order.vendorOrderId} className="rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100/50 bg-white overflow-hidden group hover:shadow-2xl hover:border-slate-200 transition-all duration-300">
+                <CardHeader className="p-6 bg-slate-50/80 border-b border-slate-100 flex flex-row items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-primary/10 text-primary">
                       <ShoppingBag size={20} />
@@ -150,13 +150,13 @@ export default function ManagerOrdersPage() {
                   </div>
                 </CardContent>
                 <Separator className="bg-secondary/5" />
-                <div className="p-6 bg-secondary/5 flex justify-end gap-3">
+                <div className="p-6 bg-slate-50/80 border-t border-slate-100 flex justify-end gap-3">
                   {order.status === 'PURCHASED' && (
                     <Button
                       onClick={() => handleConfirm(order.vendorOrderId)}
                       disabled={confirmOrder.isPending}
                       variant="outline"
-                      className="rounded-xl h-10 px-6 font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                      className="rounded-xl h-10 px-6 font-bold gap-2 border border-primary/30 text-primary hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 cursor-pointer"
                     >
                       {confirmOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
                       {t('manager.orders.process')}
@@ -166,7 +166,7 @@ export default function ManagerOrdersPage() {
                     <Button
                       onClick={() => handleMarkFinished(order.vendorOrderId)}
                       disabled={markFinished.isPending}
-                      className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2"
+                      className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2 cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
                     >
                       {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                       {t('manager.orders.finish')}

@@ -13,10 +13,16 @@ import {
   Truck,
   UtensilsCrossed,
   Store,
-  Tag
+  Tag,
+  Star
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { useMyFeedbacks } from '@/features/menu/data-access/feedback.queries'
+import { FeedbackModal } from '@/features/menu/components/FeedbackModal'
+import { FeedbackDto } from '@/features/menu/config/feedback.types'
 
 interface OrderDetailsProps {
   order: OrderDto
@@ -50,6 +56,12 @@ const statusLabels: Record<string, string> = {
 
 export function OrderDetails({ order }: OrderDetailsProps) {
   const { t } = useLanguage()
+  const { data: myFeedbacks } = useMyFeedbacks()
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState('')
+  const [selectedItemName, setSelectedItemName] = useState('')
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackDto | null>(null)
+
   const currentStatusIndex = statusSteps.findIndex(s => s.status === order.status)
   const isCanceled = order.status === 'CANCELED'
 
@@ -164,20 +176,73 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     </div>
                   </div>
                   <div className="space-y-4 px-2">
-                    {(vendorOrder.orderItems || []).map((item, i) => (
-                      <div key={i} className="flex items-center justify-between group">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-secondary/5 flex items-center justify-center text-primary font-bold">
-                            {item.quantity}x
+                    {(vendorOrder.orderItems || []).map((item, i) => {
+                      const isOrderFinished = order.status === 'COMPLETED' || order.status === 'DELIVERED'
+                      const feedback = myFeedbacks?.find(fb => fb.menuItemId === item.itemId)
+
+                      return (
+                        <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2 rounded-2xl transition-all duration-300 hover:bg-secondary/5">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="w-12 h-12 rounded-xl bg-secondary/5 flex items-center justify-center text-primary font-bold shrink-0">
+                              {item.quantity}x
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-sm group-hover:text-primary transition-colors">{item.itemName}</p>
+                              <p className="text-[10px] text-muted-foreground font-medium">{t('order_details.unit_price').replace('{price}', item.price.toLocaleString())}</p>
+                              
+                              {/* Render feedback rating if already rated */}
+                              {isOrderFinished && feedback && (
+                                <div className="mt-2 p-2 bg-amber-50/50 border border-amber-100/50 rounded-xl max-w-xs sm:max-w-md">
+                                  <div className="flex items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star 
+                                        key={star} 
+                                        size={12} 
+                                        className={cn(
+                                          star <= feedback.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/20"
+                                        )} 
+                                      />
+                                    ))}
+                                    <span className="text-[10px] font-black text-amber-600 ml-1">{feedback.rating}/5</span>
+                                  </div>
+                                  {feedback.comment && (
+                                    <p className="text-[10px] text-muted-foreground italic mt-1 pl-1 line-clamp-2">
+                                      "{feedback.comment}"
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-sm group-hover:text-primary transition-colors">{item.itemName}</p>
-                            <p className="text-[10px] text-muted-foreground font-medium">{t('order_details.unit_price').replace('{price}', item.price.toLocaleString())}</p>
+
+                          <div className="flex items-center gap-4 justify-between sm:justify-end shrink-0">
+                            <span className="font-black text-sm">{(item.price * item.quantity).toLocaleString()}đ</span>
+                            
+                            {/* Render feedback actions */}
+                            {isOrderFinished && (
+                              <Button
+                                size="sm"
+                                variant={feedback ? "ghost" : "outline"}
+                                onClick={() => {
+                                  setSelectedMenuItemId(item.itemId)
+                                  setSelectedItemName(item.itemName)
+                                  setSelectedFeedback(feedback || null)
+                                  setIsFeedbackOpen(true)
+                                }}
+                                className={cn(
+                                  "rounded-xl h-8 text-[10px] font-extrabold px-3 transition-all cursor-pointer",
+                                  feedback 
+                                    ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50/50"
+                                    : "border-primary/20 text-primary hover:bg-primary hover:text-white"
+                                )}
+                              >
+                                {feedback ? t('feedback.edit_rate') : t('feedback.rate_item')}
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        <span className="font-black text-sm">{(item.price * item.quantity).toLocaleString()}đ</span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                   {idx < (order.vendorOrders?.length || 0) - 1 && <Separator className="bg-secondary/5" />}
                 </div>
@@ -241,6 +306,15 @@ export function OrderDetails({ order }: OrderDetailsProps) {
           </Card>
         </div>
       </div>
+
+      {/* Feedback Dialog */}
+      <FeedbackModal
+        open={isFeedbackOpen}
+        onOpenChange={setIsFeedbackOpen}
+        menuItemId={selectedMenuItemId}
+        itemName={selectedItemName}
+        existingFeedback={selectedFeedback}
+      />
     </div>
   )
 }
