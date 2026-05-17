@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { useCartStore } from '@/features/cart/store/cart.store'
 import { CATEGORY_MAP } from '@/lib/constants'
+import { useLanguage } from '@/providers/LanguageProvider'
 import { Minus, Plus, ShoppingCart, Star, UtensilsCrossed } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { useLanguage } from '@/providers/LanguageProvider'
 import { MenuItemDto } from '../config/menu.types'
 
 interface MenuCardProps {
@@ -72,7 +72,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
               </div>
             )}
             <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none">
-              {CATEGORY_MAP[item.category] || item.category}
+              {t(CATEGORY_MAP[item.category]) || item.category}
             </Badge>
             <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2 py-1 text-xs font-bold text-white shadow-lg">
               <Star size={12} className="fill-white" />

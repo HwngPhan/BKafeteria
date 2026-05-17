@@ -19,7 +19,7 @@ export default function DashboardPage() {
     <div className="h-[80vh] flex flex-col items-center justify-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="p-6">
         <h1 className="text-6xl font-black tracking-tight text-primary">
-          {t(greetingKey)}, {firstName}! 👋
+          {t(greetingKey)}, {firstName}!
         </h1>
       </div>
       <p className="text-muted-foreground text-xl font-medium">{t('dashboard.question')}</p>

@@ -5,8 +5,11 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
 } from '@/components/ui/dialog'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -83,169 +86,129 @@ export function VendorFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 overflow-hidden border-none bg-transparent shadow-none max-w-3xl sm:rounded-[2.5rem]">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-950 shadow-2xl rounded-[2.5rem] overflow-hidden border border-white/20"
-        >
-          <div className="flex flex-col md:flex-row h-full min-h-[500px]">
-            {/* Left Section */}
-            <div className="md:w-5/12 bg-gradient-to-br from-indigo-500/10 via-primary/5 to-purple-500/10 p-8 flex flex-col border-r border-secondary/10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-primary/10 blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-secondary/10 blur-2xl"></div>
-              
-              <div className="relative z-10 space-y-6">
-                <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-                  <Building2 size={28} />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black tracking-tight text-primary">
-                    {initialData ? t('manager.vendor.edit_title') || 'Cập nhật' : t('manager.vendor.add_title') || 'Đăng ký'}
-                  </h2>
-                  <p className="text-muted-foreground font-medium text-sm mt-1 leading-relaxed">
-                    {t('manager.vendor.dialog_desc') || 'Xây dựng thương hiệu và quản lý vận hành cửa hàng của bạn một cách chuyên nghiệp.'}
-                  </p>
-                </div>
+      <DialogContent className="p-0 overflow-hidden border-none bg-white shadow-2xl sm:max-w-2xl sm:rounded-[2rem]" showCloseButton={true}>
+        <form onSubmit={handleSubmit} className="flex flex-col bg-white text-zinc-950">
+          {/* Header */}
+          <DialogHeader className="px-8 pt-8 pb-4">
+            <DialogTitle className="text-2xl font-black text-primary">
+              {initialData ? t('manager.vendor.edit_title') || 'Cập nhật' : t('manager.vendor.add_title') || 'Đăng ký'}
+            </DialogTitle>
+            <DialogDescription className="font-semibold text-xs text-muted-foreground mt-1">
+              {t('manager.vendor.dialog_desc') || 'Xây dựng thương hiệu và quản lý vận hành cửa hàng của bạn một cách chuyên nghiệp.'}
+            </DialogDescription>
+          </DialogHeader>
 
-                <div className="space-y-4 pt-6">
-                  <div className="flex items-start gap-3 p-4 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60">
-                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <Sparkles size={16} />
-                    </div>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed tracking-wider">
-                      {t('manager.vendor.dialog_hint')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto relative z-10">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 w-fit">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-                  <span className="text-[10px] font-black text-primary uppercase tracking-widest">Store Management</span>
-                </div>
+          {/* Form Fields Container */}
+          <div className="px-8 pb-6 space-y-6">
+            {/* Tên cửa hàng (Full width) */}
+            <div className="group space-y-2">
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                {t('manager.vendor.name')}
+              </label>
+              <div className="relative">
+                <Store size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
+                <Input 
+                  value={formData.name} 
+                  onChange={e => setFormData({...formData, name: e.target.value})} 
+                  className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
+                  placeholder={t('manager.vendor.name_placeholder')}
+                  required
+                />
               </div>
             </div>
 
-            {/* Right Section */}
-            <div className="md:w-7/12 p-8 md:p-10 flex flex-col">
-              <div className="flex justify-between items-center mb-8 md:hidden">
-                <h2 className="text-xl font-bold">{initialData ? t('manager.vendor.edit_title') || 'Cập nhật' : t('manager.vendor.add_title') || 'Đăng ký'}</h2>
-                <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}><X size={20}/></Button>
+            {/* 2 Cột: Left (Description) và Right (Cert & Working Hours) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+              {/* Cột trái: Mô tả cửa hàng */}
+              <div className="group space-y-2 flex flex-col h-full">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                  {t('manager.vendor.desc')}
+                </label>
+                <Textarea 
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                  className="rounded-2xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 p-5 text-sm font-medium leading-relaxed resize-none text-zinc-950 flex-1 min-h-[160px] h-full"
+                  placeholder={t('manager.vendor.desc_placeholder')}
+                />
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-8">
-                <div className="space-y-6">
-                  {/* Name Input */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.vendor.name')}
-                    </label>
-                    <div className="relative">
-                      <Store size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                      <Input 
-                        value={formData.name} 
-                        onChange={e => setFormData({...formData, name: e.target.value})} 
-                        className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5"
-                        placeholder={t('manager.vendor.name_placeholder')}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Certification */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.vendor.cert')}
-                    </label>
-                    <div className="relative">
-                      <FileText size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                      <Input 
-                        value={formData.certification} 
-                        onChange={e => setFormData({...formData, certification: e.target.value})} 
-                        className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5"
-                        placeholder={t('manager.vendor.cert_placeholder')}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Working Hours Row */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="group space-y-2">
-                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                        {t('manager.vendor.open')}
-                      </label>
-                      <div className="relative">
-                        <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
-                        <Input 
-                          type="time"
-                          step="1"
-                          value={formData.workingHourFrom} 
-                          onChange={e => setFormData({...formData, workingHourFrom: e.target.value})} 
-                          className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="group space-y-2">
-                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                        {t('manager.vendor.close')}
-                      </label>
-                      <div className="relative">
-                        <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
-                        <Input 
-                          type="time"
-                          step="1"
-                          value={formData.workingHourTo} 
-                          onChange={e => setFormData({...formData, workingHourTo: e.target.value})} 
-                          className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.vendor.desc')}
-                    </label>
-                    <Textarea 
-                      value={formData.description} 
-                      onChange={e => setFormData({...formData, description: e.target.value})} 
-                      className="rounded-3xl min-h-[140px] bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 p-5 text-sm font-medium leading-relaxed resize-none"
-                      placeholder={t('manager.vendor.desc_placeholder')}
+              {/* Cột phải: Chứng nhận & Giờ hoạt động */}
+              <div className="space-y-4 flex flex-col justify-between">
+                {/* Chứng nhận */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.vendor.cert')}
+                  </label>
+                  <div className="relative">
+                    <FileText size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
+                    <Input 
+                      value={formData.certification} 
+                      onChange={e => setFormData({...formData, certification: e.target.value})} 
+                      className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
+                      placeholder={t('manager.vendor.cert_placeholder')}
                     />
                   </div>
                 </div>
 
-                <div className="mt-auto flex gap-4 pt-6">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    onClick={() => onOpenChange(false)}
-                    className="h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground bg-secondary/5 hover:bg-secondary/10 flex-1"
-                  >
-                    {t('manager.menu.cancel')}
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isPending}
-                    className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest gap-3 shadow-xl shadow-primary/25 flex-[1.5]"
-                  >
-                    {isPending ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      initialData ? <Save size={18} /> : <Sparkles size={18} />
-                    )}
-                    {initialData ? t('manager.vendor.save') : t('manager.vendor.submit') || 'Đăng ký ngay'}
-                  </Button>
+                {/* Giờ mở cửa */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.vendor.open')}
+                  </label>
+                  <div className="relative">
+                    <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
+                    <Input 
+                      type="time"
+                      step="1"
+                      value={formData.workingHourFrom} 
+                      onChange={e => setFormData({...formData, workingHourFrom: e.target.value})} 
+                      className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
+                      required
+                    />
+                  </div>
                 </div>
-              </form>
+
+                {/* Giờ đóng cửa */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.vendor.close')}
+                  </label>
+                  <div className="relative">
+                    <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
+                    <Input 
+                      type="time"
+                      step="1"
+                      value={formData.workingHourTo} 
+                      onChange={e => setFormData({...formData, workingHourTo: e.target.value})} 
+                      className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </motion.div>
+
+          {/* Footer Buttons */}
+          <DialogFooter className="px-8 pb-8 pt-0 flex gap-4">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => onOpenChange(false)}
+              className="h-12 px-6 rounded-xl font-bold flex-1 text-muted-foreground bg-secondary/5 hover:bg-secondary/10"
+            >
+              {t('manager.menu.cancel')}
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isPending}
+              className="h-12 px-8 rounded-xl font-bold flex-1 shadow-lg shadow-primary/20"
+            >
+              {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {initialData ? t('manager.vendor.save') : t('manager.vendor.submit') || 'Đăng ký ngay'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

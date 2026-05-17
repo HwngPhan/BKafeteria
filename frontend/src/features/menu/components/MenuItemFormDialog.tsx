@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
@@ -21,19 +23,10 @@ import { FoodCategory } from '@/features/menu/config/menu.types'
 import { CATEGORY_MAP } from '@/lib/constants'
 import { useLanguage } from '@/providers/LanguageProvider'
 import {
-  DollarSign,
-  Layers,
   Loader2,
-  Package,
-  Plus,
-  UtensilsCrossed,
-  X,
-  Sparkles,
-  Info
+  Package
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
 
 interface MenuItemFormData {
   name: string
@@ -108,176 +101,149 @@ export function MenuItemFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 overflow-hidden border-none bg-transparent shadow-none max-w-4xl sm:rounded-[2.5rem]">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-950 shadow-2xl rounded-[2.5rem] overflow-hidden border border-white/20"
-        >
-          <div className="flex flex-col md:flex-row h-full min-h-[600px]">
-            {/* Left Section: Visual & Header Integration */}
-            <div className="md:w-5/12 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 p-8 flex flex-col border-r border-secondary/10">
-              <div className="space-y-4 mb-8">
-                <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-                  <UtensilsCrossed size={24} />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black tracking-tight text-primary">
-                    {initialData ? t('manager.menu.edit_title') : t('manager.menu.add_title')}
-                  </h2>
-                  <p className="text-muted-foreground font-medium text-sm mt-1 leading-relaxed">
-                    {t('manager.menu.dialog_desc')}
-                  </p>
-                </div>
-              </div>
+      <DialogContent className="p-0 overflow-hidden border-none bg-white shadow-2xl sm:max-w-2xl sm:rounded-[2rem]" showCloseButton={true}>
+        <form onSubmit={handleSubmit} className="flex flex-col bg-white text-zinc-950">
+          {/* Header */}
+          <DialogHeader className="px-8 pt-8 pb-4">
+            <DialogTitle className="text-2xl font-black text-primary">
+              {initialData ? t('manager.menu.edit_title') : t('manager.menu.add_title')}
+            </DialogTitle>
+            <DialogDescription className="font-semibold text-xs text-muted-foreground mt-1">
+              {t('manager.menu.dialog_desc')}
+            </DialogDescription>
+          </DialogHeader>
 
-              <div className="flex-1 flex flex-col justify-center items-center gap-6">
-                <div className="w-full space-y-2">
-                  <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2 opacity-70">
-                    {t('manager.menu.form_image')}
-                  </label>
-                  <div className="aspect-[3/4] w-full rounded-[2rem] overflow-hidden bg-white/50 backdrop-blur-sm border-2 border-dashed border-primary/20 p-2 group transition-all hover:border-primary/40 shadow-inner">
-                    <div className="h-full w-full rounded-[1.5rem] overflow-hidden relative">
-                      <ImageUpload 
-                        value={formData.imageUrl} 
-                        onChange={url => setFormData({...formData, imageUrl: url})} 
-                        onFileChange={handleFileChange}
-                        className="h-full w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/60 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-3">
-                  <Sparkles size={14} className="text-primary" />
-                  <span>{initialData ? t('manager.menu.dialog_update_hint') : t('manager.menu.dialog_add_hint')}</span>
-                </div>
-              </div>
+          {/* Form Fields Container */}
+          <div className="px-8 pb-6 space-y-6">
+            {/* Tên món ăn (Full width) */}
+            <div className="group space-y-2">
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                {t('manager.menu.field_name')}
+              </label>
+              <Input 
+                value={formData.name} 
+                onChange={e => setFormData({...formData, name: e.target.value})} 
+                className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold px-5 text-zinc-950"
+                placeholder={t('manager.menu.field_name_placeholder')}
+                required
+              />
             </div>
 
-            {/* Right Section: Form Fields */}
-            <div className="md:w-7/12 p-8 md:p-10 flex flex-col">
-              <div className="flex justify-between items-center mb-8 md:hidden">
-                <h2 className="text-xl font-bold">{initialData ? t('manager.menu.edit_title') : t('manager.menu.add_title')}</h2>
-                <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}><X size={20}/></Button>
+            {/* 2 Cột: Left (Description) và Right (Price, Remaining, Category) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+              {/* Cột trái: Mô tả món ăn */}
+              <div className="group space-y-2 flex flex-col h-full">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                  {t('manager.menu.field_desc')}
+                </label>
+                <Textarea 
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                  className="rounded-2xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 p-5 text-sm font-medium leading-relaxed resize-none text-zinc-950 flex-1 min-h-[160px] h-full"
+                  placeholder={t('manager.menu.field_desc_placeholder')}
+                />
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-8">
-                <div className="space-y-6">
-                  {/* Name Input */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.menu.field_name')}
-                    </label>
-                    <div className="relative">
-                      <Input 
-                        value={formData.name} 
-                        onChange={e => setFormData({...formData, name: e.target.value})} 
-                        className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-5 placeholder:font-medium placeholder:opacity-50"
-                        placeholder={t('manager.menu.field_name_placeholder')}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Price & Stock Row */}
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="group space-y-2">
-                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                        {t('manager.menu.field_price')}
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-primary/40 text-sm">VND</span>
-                        <Input 
-                          type="number"
-                          value={formData.price} 
-                          onChange={e => setFormData({...formData, price: e.target.value})} 
-                          className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-lg font-black pl-14 pr-5"
-                          placeholder="0"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="group space-y-2">
-                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                        {t('manager.menu.field_remaining')}
-                      </label>
-                      <div className="relative">
-                        <Package size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                        <Input 
-                          type="number"
-                          value={formData.remaining} 
-                          onChange={e => setFormData({...formData, remaining: e.target.value})} 
-                          className="h-14 rounded-2xl bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-lg font-black pl-12 pr-5"
-                          placeholder="50"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Category Selection */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.menu.field_category')}
-                    </label>
-                    <Select 
-                      value={formData.category} 
-                      onValueChange={value => setFormData({...formData, category: value as FoodCategory})}
-                    >
-                      <SelectTrigger className="h-14 rounded-2xl bg-secondary/10 border-none focus:ring-2 focus:ring-primary/20 text-base font-bold px-5">
-                        <SelectValue placeholder={t('manager.menu.field_category_select')} />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-none shadow-2xl bg-white p-2">
-                        {categories.map(cat => (
-                          <SelectItem key={cat} value={cat} className="rounded-xl py-3 cursor-pointer focus:bg-primary/5">
-                            <span className="font-bold text-sm text-primary/80">{t(CATEGORY_MAP[cat]) || cat}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Description */}
-                  <div className="group space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
-                      {t('manager.menu.field_desc')}
-                    </label>
-                    <Textarea 
-                      value={formData.description} 
-                      onChange={e => setFormData({...formData, description: e.target.value})} 
-                      className="rounded-3xl min-h-[140px] bg-secondary/10 border-none focus-visible:ring-2 focus-visible:ring-primary/20 p-5 text-sm font-medium leading-relaxed resize-none"
-                      placeholder={t('manager.menu.field_desc_placeholder')}
+              {/* Cột phải: Giá bán, Số lượng, Danh mục */}
+              <div className="space-y-4 flex flex-col justify-between">
+                {/* Giá bán */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.menu.field_price')}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-primary/40 text-xs">VND</span>
+                    <Input 
+                      type="number"
+                      value={formData.price} 
+                      onChange={e => setFormData({...formData, price: e.target.value})} 
+                      className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-black pl-14 pr-5 text-zinc-950"
+                      placeholder="0"
+                      required
                     />
                   </div>
                 </div>
 
-                <div className="mt-auto flex gap-4 pt-6">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    onClick={() => onOpenChange(false)}
-                    className="h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground bg-secondary/5 hover:bg-secondary/10 flex-1"
-                  >
-                    {t('manager.menu.cancel')}
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isPending || isUploadingImage}
-                    className="h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest gap-3 shadow-xl shadow-primary/25 flex-[1.5]"
-                  >
-                    {(isPending || isUploadingImage) ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      initialData ? <Save size={18} /> : <Plus size={18} />
-                    )}
-                    {initialData ? t('manager.menu.save') : t('manager.menu.submit')}
-                  </Button>
+                {/* Số lượng còn lại */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.menu.field_remaining')}
+                  </label>
+                  <div className="relative">
+                    <Package size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
+                    <Input 
+                      type="number"
+                      value={formData.remaining} 
+                      onChange={e => setFormData({...formData, remaining: e.target.value})} 
+                      className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-black pl-12 pr-5 text-zinc-950"
+                      placeholder="50"
+                      required
+                    />
+                  </div>
                 </div>
-              </form>
+
+                {/* Danh mục */}
+                <div className="group space-y-1.5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                    {t('manager.menu.field_category')}
+                  </label>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={value => setFormData({...formData, category: value as FoodCategory})}
+                  >
+                    <SelectTrigger className="h-12 rounded-xl bg-secondary/5 border-none focus:ring-2 focus:ring-primary/20 text-base font-bold px-5 text-zinc-950">
+                      <SelectValue placeholder={t('manager.menu.field_category_select')} />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-none shadow-2xl bg-white p-2">
+                      {categories.map(cat => (
+                        <SelectItem key={cat} value={cat} className="rounded-lg py-2 cursor-pointer focus:bg-primary/5 text-zinc-950">
+                          <span className="font-bold text-sm text-primary/80">{t(CATEGORY_MAP[cat]) || cat}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Dưới cùng: Placeholder cập nhật hình ảnh món ăn (giống post Facebook) */}
+            <div className="group space-y-2">
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+                {t('manager.menu.form_image')}
+              </label>
+              <div className="relative w-full rounded-2xl overflow-hidden bg-secondary/5 border-2 border-dashed border-primary/20 p-2 hover:border-primary/40 transition-colors">
+                <div className="w-full h-32 rounded-xl overflow-hidden relative bg-white">
+                  <ImageUpload 
+                    value={formData.imageUrl} 
+                    onChange={url => setFormData({...formData, imageUrl: url})} 
+                    onFileChange={handleFileChange}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </motion.div>
+
+          {/* Footer Buttons */}
+          <DialogFooter className="px-8 pb-8 pt-0 flex gap-4">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => onOpenChange(false)}
+              className="h-12 px-6 rounded-xl font-bold flex-1 text-muted-foreground bg-secondary/5 hover:bg-secondary/10"
+            >
+              {t('manager.menu.cancel')}
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isPending || isUploadingImage}
+              className="h-12 px-8 rounded-xl font-bold flex-1 shadow-lg shadow-primary/20"
+            >
+              {(isPending || isUploadingImage) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {initialData ? t('manager.menu.save') : t('manager.menu.submit')}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

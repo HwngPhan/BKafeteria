@@ -1,25 +1,26 @@
 "use client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import { Plus, Loader2, Star, UtensilsCrossed } from "lucide-react"
-import { useState } from "react"
-import { useMenuItems } from "@/features/menu/data-access/menu.queries"
-import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries"
 import { useCartStore } from "@/features/cart/store/cart.store"
 import { MenuItemDto } from "@/features/menu/config/menu.types"
-import { toast } from "sonner"
+import { useMenuItems } from "@/features/menu/data-access/menu.queries"
+import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries"
+import { CATEGORY_MAP } from "@/lib/constants"
 import { useLanguage } from "@/providers/LanguageProvider"
+import { motion } from "framer-motion"
+import { Loader2, Plus, Star, UtensilsCrossed } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
-// Maps translation key → backend category value
-const CATEGORIES: { key: string; backendValue: string | undefined }[] = [
-  { key: 'menu.cat_all',       backendValue: undefined },
-  { key: 'menu.cat_meals',     backendValue: 'Food' },
-  { key: 'menu.cat_beverages', backendValue: 'Drink' },
-  { key: 'menu.cat_snacks',    backendValue: 'Snack' },
-  { key: 'menu.cat_desserts',  backendValue: 'Dessert' },
+// Ensure CATEGORIES is imported and defined correctly
+const CATEGORIES = [
+  { key: 'menu.cat_all', backendValue: 'all' },
+  { key: 'menu.cat_beverages', backendValue: 'BEVERAGES' },
+  { key: 'menu.cat_pastries', backendValue: 'PASTRIES' },
+  { key: 'menu.cat_snacks', backendValue: 'SNACKS' },
+  { key: 'menu.cat_meals', backendValue: 'MEALS' },
+  { key: 'menu.cat_desserts', backendValue: 'DESSERTS' },
 ]
-
 export default function MenuPage() {
   const { t } = useLanguage()
   const [activeCatKey, setActiveCatKey] = useState('menu.cat_all')
@@ -28,7 +29,7 @@ export default function MenuPage() {
   const activeBackendValue = CATEGORIES.find(c => c.key === activeCatKey)?.backendValue
 
   const { data: menuData, isLoading: menuLoading } = useMenuItems({
-    category: activeBackendValue,
+    category: activeBackendValue === 'all' ? undefined : activeBackendValue,
     size: 100,
   })
 
@@ -116,7 +117,7 @@ export default function MenuPage() {
                     </div>
                   )}
                   <Badge className="absolute right-3 top-3 bg-white/80 text-primary backdrop-blur-md border-none font-semibold text-xs">
-                    {product.category}
+                    {t(CATEGORY_MAP[product.category])}
                   </Badge>
                   <div className="absolute left-3 bottom-3 flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
                     <Star size={12} className="fill-white" />
