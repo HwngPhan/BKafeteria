@@ -26,15 +26,13 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
     token ? 'loading' : 'error'
   )
   const { mutateAsync: activate } = useAccountActivation()
-  const activated = useRef(false)
 
   useEffect(() => {
-    if (!token || activated.current) {
+    if (!token) {
+      console.error('No activation token provided')
       return
     }
-
-    activated.current = true
-
+    console.log('Activating account with token:', token)
     activate(token)
       .then(() => setStatus('success'))
       .catch(() => setStatus('error'))
