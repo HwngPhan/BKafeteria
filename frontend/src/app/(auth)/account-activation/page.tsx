@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Loader2, Utensils, ArrowRight } from 'lucide-react'
@@ -17,14 +17,12 @@ import {
 import { useAccountActivation } from '@/features/auth/data-access/auth.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
 
-export default function AccountActivationPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
+export default function AccountActivationPage() {
   const { t } = useLanguage()
   const router = useRouter()
-  const params = use(searchParams)
-  const token = params.token
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
-    token ? 'loading' : 'error'
-  )
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') ?? undefined
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const { mutateAsync: activate } = useAccountActivation()
 
   useEffect(() => {
