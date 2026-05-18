@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useAccountActivation } from '@/features/auth/data-access/auth.queries'
-import { toast } from 'sonner'
 import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function AccountActivationPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
@@ -34,20 +33,12 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
       return
     }
 
-    const handleActivation = async () => {
-      activated.current = true
-      try {
-        await activate(token)
-        setStatus('success')
-        toast.success(t('activation.toast_success'))
-      } catch (err) {
-        setStatus('error')
-        toast.error(t('activation.toast_failed'))
-      }
-    }
+    activated.current = true
 
-    handleActivation()
-  }, [token, activate, t])
+    activate(token)
+      .then(() => setStatus('success'))
+      .catch(() => setStatus('error'))
+  }, [token])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">

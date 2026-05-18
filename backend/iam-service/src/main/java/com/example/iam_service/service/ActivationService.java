@@ -47,7 +47,7 @@ public class ActivationService {
             mimeMessageHelper.setTo(createUserRequest.getEmail());
             mimeMessageHelper.setSubject("[BKafeteria] Activate Your Account");
 			
-			String activationLink = frontendUrl + "/account-activation?token=" + token;
+			String activationLink = frontendUrl + "account-activation?token=" + token;
             String htmlContent = getActivateUserHtmlTemplate(user.getFullName(), activationLink);
             mimeMessageHelper.setText(htmlContent, true);
 
