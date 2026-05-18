@@ -10,14 +10,22 @@ function prepareHeaders(init?: RequestInit, token?: string | null): Headers {
   }
 
   // Automatically set Content-Type to application/json if there's a body and it's a string
-  if (init?.body && typeof init.body === "string" && !headers.has("Content-Type")) {
+  if (
+    init?.body &&
+    typeof init.body === "string" &&
+    !headers.has("Content-Type")
+  ) {
     headers.set("Content-Type", "application/json");
   }
 
   return headers;
 }
 
-export async function fetchWithToken(tokenType: string, input: RequestInfo, init?: RequestInit): Promise<Response> {
+export async function fetchWithToken(
+  tokenType: string,
+  input: RequestInfo,
+  init?: RequestInit,
+): Promise<Response> {
   const token = getCookie(tokenType) as string | null;
   const headers = prepareHeaders(init, token);
 
@@ -26,7 +34,7 @@ export async function fetchWithToken(tokenType: string, input: RequestInfo, init
     headers,
   };
 
-  let response = await fetch(input, requestInit);
+  const response = await fetch(input, requestInit);
 
   // If token expired (401)
   if (response.status === 401 && tokenType === TokenType.authToken) {
@@ -37,7 +45,9 @@ export async function fetchWithToken(tokenType: string, input: RequestInfo, init
       const refreshResult = await RefreshTokenApi();
 
       // 2. Save new token
-      setCookie(TokenType.authToken, refreshResult.accessToken, { maxAge: 60 * 60 * 24 * 7 });
+      setCookie(TokenType.authToken, refreshResult.accessToken, {
+        maxAge: 60 * 60 * 24 * 7,
+      });
 
       // 3. Retry original request with new token
       const retryHeaders = prepareHeaders(init, refreshResult.accessToken);

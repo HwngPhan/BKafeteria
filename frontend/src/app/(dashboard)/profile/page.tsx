@@ -18,7 +18,7 @@ import {
   Loader2,
   CheckCircle2
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { 
@@ -38,24 +38,12 @@ export default function ProfilePage() {
   const { t } = useLanguage()
   
   const [formData, setFormData] = useState({
-    fullName: '',
-    phoneNumber: '',
-    gender: 'MALE' as 'MALE' | 'FEMALE',
-    dateOfBirth: '',
-    avatarUrl: ''
+    fullName: user?.fullName || '',
+    phoneNumber: user?.phoneNumber || '',
+    gender: (user?.gender as 'MALE' | 'FEMALE') || 'MALE',
+    dateOfBirth: user?.dateOfBirth || '',
+    avatarUrl: user?.avatarUrl || ''
   })
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user.fullName || '',
-        phoneNumber: user.phoneNumber || '',
-        gender: user.gender as 'MALE' | 'FEMALE' || 'MALE',
-        dateOfBirth: user.dateOfBirth || '',
-        avatarUrl: user.avatarUrl || ''
-      })
-    }
-  }, [user])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +52,7 @@ export default function ProfilePage() {
       onSuccess: () => {
         toast.success(t('profile.toast_success'))
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         toast.error(t('profile.toast_error') + ': ' + error.message)
       }
     })
@@ -184,7 +172,7 @@ export default function ProfilePage() {
                     <Label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('profile.gender')}</Label>
                     <Select 
                       value={formData.gender}
-                      onValueChange={(v: any) => setFormData({ ...formData, gender: v })}
+                      onValueChange={(v: 'MALE' | 'FEMALE') => setFormData({ ...formData, gender: v })}
                     >
                       <SelectTrigger className="rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20">
                         <SelectValue placeholder={t('register.gender_select')} />

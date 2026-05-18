@@ -1,95 +1,139 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { useConfirmOrder, useMarkOrderFinished, useVendorOrders } from '@/features/vendor/data-access/vendor-order.queries'
-import { useLanguage } from '@/providers/LanguageProvider'
-import { AlertCircle, ArrowUpDown, CheckCircle2, ChevronLeft, ChevronRight, Clock, Loader2, ShoppingBag } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  useConfirmOrder,
+  useMarkOrderFinished,
+  useVendorOrders,
+} from "@/features/vendor/data-access/vendor-order.queries";
+import { useLanguage } from "@/providers/LanguageProvider";
+import {
+  AlertCircle,
+  ArrowUpDown,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Loader2,
+  ShoppingBag,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-const ACTIVE_STATUSES = ['PURCHASED', 'PROCESSING']
-const HISTORY_STATUSES = ['COMPLETED', 'CANCELED']
+const ACTIVE_STATUSES = ["PURCHASED", "PROCESSING"];
+const HISTORY_STATUSES = ["COMPLETED", "CANCELED"];
 
 const statusLabels: Record<string, string> = {
-  PENDING: 'order_status.pending',
-  PURCHASED: 'order_status.purchased',
-  PROCESSING: 'order_status.processing',
-  COMPLETED: 'order_status.completed',
-  DELIVERED: 'order_status.delivered',
-  CANCELED: 'order_status.canceled',
-}
+  PENDING: "order_status.pending",
+  PURCHASED: "order_status.purchased",
+  PROCESSING: "order_status.processing",
+  COMPLETED: "order_status.completed",
+  DELIVERED: "order_status.delivered",
+  CANCELED: "order_status.canceled",
+};
 
 export default function ManagerOrdersPage() {
-  const [historyPage, setHistoryPage] = useState(0)
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+  const [historyPage, setHistoryPage] = useState(0);
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
-  const { data: activePage, isLoading: activeLoading } = useVendorOrders(0, 50, ACTIVE_STATUSES)
-  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(historyPage, 10, HISTORY_STATUSES)
+  const { data: activePage, isLoading: activeLoading } = useVendorOrders(
+    0,
+    50,
+    ACTIVE_STATUSES,
+  );
+  const { data: historyPageData, isLoading: historyLoading } = useVendorOrders(
+    historyPage,
+    10,
+    HISTORY_STATUSES,
+  );
 
-  const confirmOrder = useConfirmOrder()
-  const markFinished = useMarkOrderFinished()
-  const { t } = useLanguage()
+  const confirmOrder = useConfirmOrder();
+  const markFinished = useMarkOrderFinished();
+  const { t } = useLanguage();
 
   const handleConfirm = async (id: string) => {
     try {
-      await confirmOrder.mutateAsync(id)
-      toast.success(t('manager.orders.toast_processing'))
-    } catch (error: any) {
-      toast.error(error?.message || 'Error occurred')
+      await confirmOrder.mutateAsync(id);
+      toast.success(t("manager.orders.toast_processing"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Error occurred");
     }
-  }
+  };
 
   const handleMarkFinished = async (id: string) => {
     try {
-      await markFinished.mutateAsync(id)
-      toast.success(t('manager.orders.toast_finished'))
-    } catch (error: any) {
-      toast.error(error?.message || 'Error occurred')
+      await markFinished.mutateAsync(id);
+      toast.success(t("manager.orders.toast_finished"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Error occurred");
     }
-  }
+  };
 
-  const isLoading = activeLoading || historyLoading
+  const isLoading = activeLoading || historyLoading;
 
   if (isLoading && !activePage && !historyPageData) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 text-primary animate-spin" />
       </div>
-    )
+    );
   }
 
-  const pendingOrders = activePage?.content ?? []
-  const historyOrders = historyPageData?.content ?? []
-  const totalHistoryPages = historyPageData?.totalPages ?? 0
+  const pendingOrders = activePage?.content ?? [];
+  const historyOrders = historyPageData?.content ?? [];
+  const totalHistoryPages = historyPageData?.totalPages ?? 0;
 
   const sortedOrders = [...pendingOrders].sort((a, b) => {
-    const dateA = new Date(a.createdAt).getTime()
-    const dateB = new Date(b.createdAt).getTime()
-    return sortBy === 'newest' ? dateB - dateA : dateA - dateB
-  })
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+  });
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">{t('manager.orders.title')}</h1>
-          <p className="text-muted-foreground mt-1 font-medium">{t('manager.orders.subtitle')}</p>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary">
+            {t("manager.orders.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1 font-medium">
+            {t("manager.orders.subtitle")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+          <Select
+            value={sortBy}
+            onValueChange={(v: "newest" | "oldest") => setSortBy(v)}
+          >
             <SelectTrigger className="w-40 rounded-xl border-secondary/20 h-10">
               <div className="flex items-center gap-2">
                 <ArrowUpDown size={14} className="text-muted-foreground" />
-                <SelectValue placeholder={t('manager.orders.sort')} />
+                <SelectValue placeholder={t("manager.orders.sort")} />
               </div>
             </SelectTrigger>
             <SelectContent className="rounded-xl border-none shadow-xl">
-              <SelectItem value="newest" className="rounded-lg cursor-pointer">{t('manager.orders.newest')}</SelectItem>
-              <SelectItem value="oldest" className="rounded-lg cursor-pointer">{t('manager.orders.oldest')}</SelectItem>
+              <SelectItem value="newest" className="rounded-lg cursor-pointer">
+                {t("manager.orders.newest")}
+              </SelectItem>
+              <SelectItem value="oldest" className="rounded-lg cursor-pointer">
+                {t("manager.orders.oldest")}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -99,8 +143,11 @@ export default function ManagerOrdersPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-primary flex items-center gap-2">
-              {t('manager.orders.processing')}
-              <Badge variant="secondary" className="rounded-full bg-primary/10 text-primary border-none">
+              {t("manager.orders.processing")}
+              <Badge
+                variant="secondary"
+                className="rounded-full bg-primary/10 text-primary border-none"
+              >
                 {sortedOrders.length}
               </Badge>
             </h2>
@@ -108,14 +155,19 @@ export default function ManagerOrdersPage() {
 
           {sortedOrders.length > 0 ? (
             sortedOrders.map((order) => (
-              <Card key={order.vendorOrderId} className="rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100/50 bg-white overflow-hidden group hover:shadow-2xl hover:border-slate-200 transition-all duration-300">
+              <Card
+                key={order.vendorOrderId}
+                className="rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100/50 bg-white overflow-hidden group hover:shadow-2xl hover:border-slate-200 transition-all duration-300"
+              >
                 <CardHeader className="p-6 bg-slate-50/80 border-b border-slate-100 flex flex-row items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-primary/10 text-primary">
                       <ShoppingBag size={20} />
                     </div>
                     <div>
-                      <CardTitle className="text-sm font-bold text-primary">#{order.orderId.substring(0, 8)}</CardTitle>
+                      <CardTitle className="text-sm font-bold text-primary">
+                        #{order.orderId.substring(0, 8)}
+                      </CardTitle>
                       <CardDescription className="text-[10px] flex items-center gap-1">
                         <Clock size={10} />
                         {new Date(order.createdAt).toLocaleString()}
@@ -129,12 +181,17 @@ export default function ManagerOrdersPage() {
                 <CardContent className="p-6 space-y-3">
                   <div className="space-y-2">
                     {(order.menuItems || []).map((item, i) => (
-                      <div key={i} className="flex items-center justify-between">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-2">
                           <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
                             {item.quantity}x
                           </span>
-                          <span className="text-sm font-medium">{item.itemName}</span>
+                          <span className="text-sm font-medium">
+                            {item.itemName}
+                          </span>
                         </div>
                         <span className="text-xs font-bold text-muted-foreground">
                           {(item.price * item.quantity).toLocaleString()}đ
@@ -143,33 +200,49 @@ export default function ManagerOrdersPage() {
                     ))}
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-secondary/5">
-                    <span className="text-xs text-muted-foreground font-mono">{order.vendorOrderId.substring(0, 12)}…</span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {order.vendorOrderId.substring(0, 12)}…
+                    </span>
                     <span className="text-sm font-black text-primary">
-                      {(order.menuItems || []).reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString()}đ
+                      {(order.menuItems || [])
+                        .reduce(
+                          (sum, item) => sum + item.price * item.quantity,
+                          0,
+                        )
+                        .toLocaleString()}
+                      đ
                     </span>
                   </div>
                 </CardContent>
                 <Separator className="bg-secondary/5" />
                 <div className="p-6 bg-slate-50/80 border-t border-slate-100 flex justify-end gap-3">
-                  {order.status === 'PURCHASED' && (
+                  {order.status === "PURCHASED" && (
                     <Button
                       onClick={() => handleConfirm(order.vendorOrderId)}
                       disabled={confirmOrder.isPending}
                       variant="outline"
                       className="rounded-xl h-10 px-6 font-bold gap-2 border border-primary/30 text-primary hover:bg-primary hover:text-white hover:border-primary transition-all duration-200 cursor-pointer"
                     >
-                      {confirmOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
-                      {t('manager.orders.process')}
+                      {confirmOrder.isPending ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Clock size={16} />
+                      )}
+                      {t("manager.orders.process")}
                     </Button>
                   )}
-                  {order.status === 'PROCESSING' && (
+                  {order.status === "PROCESSING" && (
                     <Button
                       onClick={() => handleMarkFinished(order.vendorOrderId)}
                       disabled={markFinished.isPending}
                       className="rounded-xl h-10 px-6 font-bold shadow-lg shadow-primary/20 gap-2 cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
                     >
-                      {markFinished.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                      {t('manager.orders.finish')}
+                      {markFinished.isPending ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <CheckCircle2 size={16} />
+                      )}
+                      {t("manager.orders.finish")}
                     </Button>
                   )}
                 </div>
@@ -180,30 +253,44 @@ export default function ManagerOrdersPage() {
               <div className="p-4 rounded-full bg-white text-muted-foreground/20">
                 <ShoppingBag size={40} />
               </div>
-              <p className="text-muted-foreground font-medium">{t('manager.orders.empty_active')}</p>
+              <p className="text-muted-foreground font-medium">
+                {t("manager.orders.empty_active")}
+              </p>
             </div>
           )}
         </div>
 
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-primary">{t('manager.orders.history')}</h2>
+          <h2 className="text-xl font-bold text-primary">
+            {t("manager.orders.history")}
+          </h2>
           <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 bg-white overflow-hidden h-full min-h-[500px]">
             <CardContent className="p-8 flex flex-col h-full">
               {historyOrders.length > 0 ? (
                 <>
                   <div className="space-y-4 flex-1">
                     {historyOrders.map((order) => (
-                      <div key={order.vendorOrderId} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5">
+                      <div
+                        key={order.vendorOrderId}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
                             <CheckCircle2 size={16} />
                           </div>
                           <div>
-                            <p className="text-sm font-bold">#{order.orderId.substring(0, 8)}</p>
-                            <p className="text-[10px] text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm font-bold">
+                              #{order.orderId.substring(0, 8)}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
-                        <Badge variant="outline" className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600">
+                        <Badge
+                          variant="outline"
+                          className="rounded-full text-[10px] font-bold border-emerald-200 text-emerald-600"
+                        >
                           {t(statusLabels[order.status]) || order.status}
                         </Badge>
                       </div>
@@ -239,7 +326,9 @@ export default function ManagerOrdersPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-4">
                   <AlertCircle size={40} className="text-muted-foreground/20" />
-                  <p className="text-muted-foreground font-medium">{t('manager.orders.empty_history')}</p>
+                  <p className="text-muted-foreground font-medium">
+                    {t("manager.orders.empty_history")}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -247,5 +336,5 @@ export default function ManagerOrdersPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

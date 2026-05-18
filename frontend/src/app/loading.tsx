@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Utensils } from "lucide-react"
-import { useLanguage } from "@/providers/LanguageProvider"
+import { useLanguage } from "@/providers/LanguageProvider";
+import { Utensils } from "lucide-react";
 
 export default function Loading() {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
@@ -14,7 +14,9 @@ export default function Loading() {
           <Utensils className="h-6 w-6 text-secondary/50" />
         </div>
       </div>
-      <p className="text-muted-foreground animate-pulse font-medium">{t('loading.text')}</p>
+      <p className="text-muted-foreground animate-pulse font-medium">
+        {t("loading.text")}
+      </p>
     </div>
-  )
+  );
 }

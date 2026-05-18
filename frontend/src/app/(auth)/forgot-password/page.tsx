@@ -27,8 +27,10 @@ import {
   useSendOtp,
   useVerifyOtp,
 } from "@/features/auth/data-access/auth.queries";
+import { useLanguage } from "@/providers/LanguageProvider";
 
 export default function ResetPasswordPage() {
+  const { t } = useLanguage();
   const { mutateAsync: sendOtp, isPending: isSendOtpPending } = useSendOtp();
   const { mutateAsync: verifyOtp, isPending: isVerifyOtpPending } = useVerifyOtp();
   const resetPassword = useResetPassword();
@@ -54,11 +56,11 @@ export default function ResetPasswordPage() {
   const handleSendOtp = async () => {
     try {
       await sendOtp(email);
-      toast.success("Mã OTP đã được gửi đến email của bạn");
+      toast.success(t("forgot.otp_sent"));
       setStep("otp");
       setCounter(60);
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : "Gửi OTP thất bại";
+      const errorMessage = e instanceof Error ? e.message : t("forgot.otp_send_failed");
       toast.error(errorMessage);
     }
   };
@@ -66,28 +68,28 @@ export default function ResetPasswordPage() {
   const handleVerifyOtp = async () => {
     try {
       await verifyOtp({ email, otp });
-      toast.success("Xác thực OTP thành công!");
+      toast.success(t("forgot.otp_verified"));
       setStep("reset");
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : "Mã OTP không đúng";
+      const errorMessage = e instanceof Error ? e.message : t("forgot.otp_wrong");
       toast.error(errorMessage);
     }
   };
 
   const handleResetPassword = async () => {
     if (password !== confirm) {
-      setError("Mật khẩu nhập lại không khớp");
-      toast.error("Mật khẩu nhập lại không khớp");
+      setError(t("forgot.password_mismatch"));
+      toast.error(t("forgot.password_mismatch"));
       return;
     }
     setError("");
 
     try {
       await resetPassword.mutateAsync({ email, newPassword: password });
-      toast.success("Đổi mật khẩu thành công");
+      toast.success(t("forgot.changed"));
       setStep("success");
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : "Đổi mật khẩu thất bại";
+      const errorMessage = e instanceof Error ? e.message : t("forgot.change_failed");
       toast.error(errorMessage);
     }
   };
@@ -99,7 +101,7 @@ export default function ResetPasswordPage() {
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
-              <Label className="font-medium">Email đăng ký</Label>
+              <Label className="font-medium">{t("forgot.email_label")}</Label>
               <Input
                 type="email"
                 placeholder="email@example.com"
@@ -115,12 +117,12 @@ export default function ResetPasswordPage() {
               disabled={!email || isSendOtpPending}
             >
               {isSendOtpPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              Gửi mã OTP
+              {t("forgot.send_otp")}
             </Button>
-            
+
             <div className="text-center">
                 <Button variant="link" asChild className="px-1 font-bold text-secondary text-base">
-                    <Link href="/login">Quay lại đăng nhập</Link>
+                    <Link href="/login">{t("forgot.back_login")}</Link>
                 </Button>
             </div>
           </div>
@@ -131,7 +133,7 @@ export default function ResetPasswordPage() {
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col items-center">
             <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                Nhập mã 6 số chúng tôi vừa gửi tới
+                {t("forgot.otp_sent_to")}
                 <br />
                 <span className="font-semibold text-foreground">{email}</span>
                 </p>
@@ -155,26 +157,26 @@ export default function ResetPasswordPage() {
               disabled={otp.length !== 6 || isVerifyOtpPending}
             >
               {isVerifyOtpPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              Xác thực
+              {t("forgot.verify")}
             </Button>
 
             <div className="text-sm text-center w-full">
               {counter > 0 ? (
                 <Badge variant="outline" className="px-3 py-1 border-secondary/30 text-muted-foreground">
-                  Gửi lại sau {counter}s
+                  {t("forgot.resend_after").replace("{s}", counter.toString())}
                 </Badge>
               ) : (
                 <div className="space-x-1">
-                    <span className="text-muted-foreground">Không nhận được mã?</span>
+                    <span className="text-muted-foreground">{t("forgot.no_code")}</span>
                     <Button variant="link" onClick={handleSendOtp} className="p-0 h-auto font-bold text-secondary">
-                    Gửi lại
+                    {t("forgot.resend")}
                     </Button>
                 </div>
               )}
             </div>
-            
+
             <Button variant="ghost" size="sm" onClick={() => setStep("email")} className="text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="w-4 h-4 mr-2"/> Chọn email khác
+                <ArrowLeft className="w-4 h-4 mr-2"/> {t("forgot.other_email")}
             </Button>
           </div>
         );
@@ -183,7 +185,7 @@ export default function ResetPasswordPage() {
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
-              <Label className="font-medium">Mật khẩu mới</Label>
+              <Label className="font-medium">{t("forgot.new_password")}</Label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -194,7 +196,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-medium">Nhập lại mật khẩu</Label>
+              <Label className="font-medium">{t("forgot.confirm_password")}</Label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -212,7 +214,7 @@ export default function ResetPasswordPage() {
               disabled={resetPassword.isPending}
             >
               {resetPassword.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              Đổi mật khẩu
+              {t("forgot.change_password")}
             </Button>
           </div>
         );
@@ -223,18 +225,18 @@ export default function ResetPasswordPage() {
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            
+
             <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-green-600">
-                Thành công!
+                {t("forgot.success_title")}
                 </h2>
                 <p className="text-muted-foreground">
-                    Mật khẩu của bạn đã được cập nhật.
+                    {t("forgot.success_desc")}
                 </p>
             </div>
 
             <Button asChild className="h-14 w-full rounded-xl bg-primary text-lg font-bold shadow-lg shadow-primary/25 hover:bg-primary/90">
-              <Link href="/login">Đăng nhập ngay</Link>
+              <Link href="/login">{t("forgot.login")}</Link>
             </Button>
           </div>
         );
@@ -256,13 +258,13 @@ export default function ResetPasswordPage() {
               <Utensils className="h-10 w-10 text-secondary" />
             </div>
             <CardTitle className="text-3xl font-bold text-primary">
-              Khôi phục mật khẩu
+              {t("forgot.title")}
             </CardTitle>
             <CardDescription className="mt-2 text-base">
-                {step === "email" && "Nhập email để tìm lại tài khoản của bạn"}
-                {step === "otp" && "Xác thực danh tính của bạn"}
-                {step === "reset" && "Tạo mật khẩu mới an toàn hơn"}
-                {step === "success" && "Tài khoản đã sẵn sàng"}
+                {step === "email" && t("forgot.step1")}
+                {step === "otp" && t("forgot.step2")}
+                {step === "reset" && t("forgot.step3")}
+                {step === "success" && t("forgot.step4")}
             </CardDescription>
           </CardHeader>
 

@@ -21,13 +21,14 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
   const router = useRouter()
   const params = use(searchParams)
   const token = params.token
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+    token ? 'loading' : 'error'
+  )
   const { mutateAsync: activate } = useAccountActivation()
   const activated = useRef(false)
 
   useEffect(() => {
     if (!token || activated.current) {
-      if (!token) setStatus('error')
       return
     }
 

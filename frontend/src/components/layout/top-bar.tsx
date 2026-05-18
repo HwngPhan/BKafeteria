@@ -296,8 +296,13 @@ export function TopBar() {
                             <ShoppingBag size={18} />
                           </div>
                           <div className="space-y-1">
-                            <p className={`text-sm leading-none ${notif.isRead ? 'font-medium' : 'font-bold'}`}>{notif.message}</p>
-                            {/* <p className="text-xs text-muted-foreground">Đơn hàng #{notif.vendorOrderId?.substring(0, 8)}</p> */}
+                            <p className={`text-sm leading-none ${notif.isRead ? 'font-medium' : 'font-bold'}`}>
+                              {(() => {
+                                const statusKey = `order_status.${notif.status?.toLowerCase()}`
+                                const statusLabel = t(statusKey) !== statusKey ? t(statusKey) : notif.status
+                                return t('orders.status_changed').replace('{status}', statusLabel)
+                              })()}
+                            </p>
                             <p className="text-[10px] text-muted-foreground/60">{new Date(notif.timestamp).toLocaleTimeString()}</p>
                           </div>
                         </div>
