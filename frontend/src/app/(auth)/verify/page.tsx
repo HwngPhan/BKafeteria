@@ -12,8 +12,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function VerifyPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">
       <motion.div
@@ -29,10 +32,10 @@ export default function VerifyPage() {
               <Utensils className="h-10 w-10 text-secondary" />
             </div>
             <CardTitle className="text-3xl font-bold text-primary">
-              Xác thực tài khoản
+              {t('verify.title')}
             </CardTitle>
             <CardDescription className="mt-2 text-base">
-              Chào mừng bạn đến với{' '}
+              {t('verify.welcome')}{' '}
               <span className="font-semibold text-secondary">
                 BKAFETERIA
               </span>
@@ -47,22 +50,21 @@ export default function VerifyPage() {
             </div>
 
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              Kiểm tra hộp thư của bạn
+              {t('verify.check_inbox')}
             </h3>
-            
+
             <p className="text-center text-muted-foreground mb-8 leading-relaxed">
-              Chúng tôi đã gửi một liên kết xác thực đến địa chỉ email của bạn. 
-              Vui lòng kiểm tra hộp thư (bao gồm cả mục Spam) và làm theo hướng dẫn để kích hoạt tài khoản.
+              {t('verify.description')}
             </p>
 
             {/* Actions */}
             <div className="w-full space-y-4">
-              <Button 
-                asChild 
+              <Button
+                asChild
                 className="h-14 w-full rounded-xl bg-primary text-lg font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-[1.01]"
               >
                 <Link href="/login">
-                   Tiếp tục đăng nhập
+                  {t('verify.continue')}
                 </Link>
               </Button>
 
@@ -72,7 +74,7 @@ export default function VerifyPage() {
                 className="h-12 w-full rounded-xl text-muted-foreground hover:text-primary transition-all"
               >
                 <Link href="/" className="flex items-center justify-center gap-2">
-                  <ArrowLeft className="h-4 w-4" /> Quay lại trang chủ
+                  <ArrowLeft className="h-4 w-4" /> {t('verify.back_home')}
                 </Link>
               </Button>
             </div>
