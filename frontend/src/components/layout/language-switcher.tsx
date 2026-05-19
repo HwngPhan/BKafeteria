@@ -37,7 +37,7 @@ export const EnFlag = ({ className }: { className?: string }) => (
 )
 
 export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
-  const { lang, setLang } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
 
   return (
     <DropdownMenu>
@@ -62,7 +62,7 @@ export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
         >
           <div className="flex items-center gap-3">
             <ViFlag />
-            <span className="font-bold text-xs">Tiếng Việt</span>
+            <span className="font-bold text-xs">{t('common.vi')}</span>
           </div>
           {lang === 'vi' && <Check size={14} className="text-primary" />}
         </DropdownMenuItem>
@@ -72,7 +72,7 @@ export function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
         >
           <div className="flex items-center gap-3">
             <EnFlag />
-            <span className="font-bold text-xs">English</span>
+            <span className="font-bold text-xs">{t('common.en')}</span>
           </div>
           {lang === 'en' && <Check size={14} className="text-primary" />}
         </DropdownMenuItem>

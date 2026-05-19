@@ -50,3 +50,12 @@ export const MarkOrderFinishedApi = async (vendorOrderId: string): Promise<Vendo
   const responseDTO = await handleResponse<{ data: VendorOrderNotification }>(response);
   return responseDTO.data;
 };
+
+export const GetVendorOrderByIdApi = async (vendorOrderId: string): Promise<VendorOrderNotification> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${vendorOrderId}`, {
+    method: 'GET',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: VendorOrderNotification }>(response);
+  return responseDTO.data;
+};

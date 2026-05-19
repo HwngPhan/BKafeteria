@@ -5,6 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -70,6 +80,7 @@ export default function AdminUsersPage() {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
   const [newRole, setNewRole] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const handleUpdateRole = (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,17 +145,21 @@ export default function AdminUsersPage() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(t("admin.users.confirm_delete").replace("{name}", name))) {
-      deleteUser.mutate(
-        { id },
-        {
-          onSuccess: () =>
-            toast.success(
-              t("admin.users.toast_deleted").replace("{name}", name),
-            ),
+    setDeleteTarget({ id, name });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteUser.mutate(
+      { id: deleteTarget.id },
+      {
+        onSuccess: () => {
+          toast.success(t("admin.users.toast_deleted").replace("{name}", deleteTarget.name));
+          setDeleteTarget(null);
         },
-      );
-    }
+        onError: () => setDeleteTarget(null),
+      },
+    );
   };
 
   if (isLoading && !usersPage) {
@@ -461,6 +476,26 @@ export default function AdminUsersPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.delete_confirm_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("admin.users.delete_desc").replace("{name}", deleteTarget?.name ?? "")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.delete_confirm_cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {t("common.delete_confirm_action")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

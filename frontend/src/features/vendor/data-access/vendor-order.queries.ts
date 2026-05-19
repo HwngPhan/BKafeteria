@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ConfirmOrderApi,
+  GetVendorOrderByIdApi,
   GetVendorOrderNotificationsApi,
   GetVendorOrdersApi,
   MarkOrderFinishedApi
@@ -10,6 +11,7 @@ export const vendorOrderKeys = {
   all: ['vendor-orders'] as const,
   notifications: () => [...vendorOrderKeys.all, 'notifications'] as const,
   list: () => [...vendorOrderKeys.all, 'list'] as const,
+  detail: (id: string) => [...vendorOrderKeys.all, 'detail', id] as const,
 };
 
 export const useVendorOrderNotifications = (enabled: boolean = true) => {
@@ -24,6 +26,14 @@ export const useVendorOrders = (page = 0, size = 10, statuses?: string[]) => {
   return useQuery({
     queryKey: [...vendorOrderKeys.list(), page, size, statuses],
     queryFn: () => GetVendorOrdersApi(page, size, statuses),
+  });
+};
+
+export const useVendorOrderById = (vendorOrderId: string) => {
+  return useQuery({
+    queryKey: vendorOrderKeys.detail(vendorOrderId),
+    queryFn: () => GetVendorOrderByIdApi(vendorOrderId),
+    enabled: !!vendorOrderId,
   });
 };
 

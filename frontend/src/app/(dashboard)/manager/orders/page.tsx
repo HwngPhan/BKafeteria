@@ -26,14 +26,17 @@ import { useLanguage } from "@/providers/LanguageProvider";
 import {
   AlertCircle,
   ArrowUpDown,
+  ChefHat,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Eye,
   Loader2,
   ShoppingBag,
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const ACTIVE_STATUSES = ["PURCHASED", "PROCESSING"];
@@ -66,13 +69,14 @@ export default function ManagerOrdersPage() {
   const confirmOrder = useConfirmOrder();
   const markFinished = useMarkOrderFinished();
   const { t } = useLanguage();
+  const router = useRouter();
 
   const handleConfirm = async (id: string) => {
     try {
       await confirmOrder.mutateAsync(id);
       toast.success(t("manager.orders.toast_processing"));
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Error occurred");
+      toast.error(error instanceof Error ? error.message : t("common.error_occurred"));
     }
   };
 
@@ -81,7 +85,7 @@ export default function ManagerOrdersPage() {
       await markFinished.mutateAsync(id);
       toast.success(t("manager.orders.toast_finished"));
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Error occurred");
+      toast.error(error instanceof Error ? error.message : t("common.error_occurred"));
     }
   };
 
@@ -216,6 +220,14 @@ export default function ManagerOrdersPage() {
                 </CardContent>
                 <Separator className="bg-secondary/5" />
                 <div className="p-6 bg-slate-50/80 border-t border-slate-100 flex justify-end gap-3">
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.push(`/manager/orders/${order.vendorOrderId}`)}
+                    className="rounded-xl h-10 px-4 font-bold gap-2 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 cursor-pointer"
+                  >
+                    <Eye size={16} />
+                    {t("manager.order_detail.view_detail")}
+                  </Button>
                   {order.status === "PURCHASED" && (
                     <Button
                       onClick={() => handleConfirm(order.vendorOrderId)}
@@ -226,9 +238,9 @@ export default function ManagerOrdersPage() {
                       {confirmOrder.isPending ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <Clock size={16} />
+                        <ChefHat size={16} />
                       )}
-                      {t("manager.orders.process")}
+                      {t("manager.orders.start_cooking")}
                     </Button>
                   )}
                   {order.status === "PROCESSING" && (
@@ -272,7 +284,8 @@ export default function ManagerOrdersPage() {
                     {historyOrders.map((order) => (
                       <div
                         key={order.vendorOrderId}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5"
+                        onClick={() => router.push(`/manager/orders/${order.vendorOrderId}`)}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5 cursor-pointer hover:bg-secondary/10 transition-colors duration-200"
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">

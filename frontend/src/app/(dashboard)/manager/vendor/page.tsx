@@ -9,11 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { VendorFormDialog } from "@/features/vendor/components/VendorFormDialog";
 import {
   useMyVendor,
-  useRegisterVendor,
-  useUpdateVendor,
 } from "@/features/vendor/data-access/vendor.queries";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -26,17 +23,12 @@ import {
   Plus,
   Store,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function ManagerVendorPage() {
   const { data: vendor, isLoading } = useMyVendor();
-  const updateVendor = useUpdateVendor();
   const { t } = useLanguage();
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { mutate: registerVendor, isPending: isRegistering } =
-    useRegisterVendor();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -62,29 +54,12 @@ export default function ManagerVendorPage() {
           </p>
         </div>
         <Button
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => router.push('/manager/vendor/create')}
           className="rounded-2xl h-14 px-10 font-bold gap-3 shadow-2xl shadow-primary/20 text-lg hover:scale-105 transition-transform"
         >
           <Plus className="h-6 w-6" />
-          {t("manager.vendor.add_title") || "Đăng ký ngay"}
+          {t("manager.vendor.add_title")}
         </Button>
-
-        <VendorFormDialog
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          isPending={isRegistering}
-          onSubmit={(data) => {
-            registerVendor(data, {
-              onSuccess: () => {
-                toast.success(
-                  t("manager.vendor.toast_register_success") ||
-                    "Đã gửi yêu cầu đăng ký cửa hàng!",
-                );
-                setIsDialogOpen(false);
-              },
-            });
-          }}
-        />
       </div>
     );
   }
@@ -125,11 +100,11 @@ export default function ManagerVendorPage() {
           </Badge>
           <Button
             variant="outline"
-            onClick={() => setIsDialogOpen(true)}
+            onClick={() => router.push('/manager/vendor/edit')}
             className="rounded-full h-10 px-6 font-bold border-secondary/20 hover:bg-secondary/5"
           >
             <Edit2 className="h-4 w-4 mr-2" />
-            {t("manager.vendor.edit_title") || "Sửa thông tin"}
+            {t("manager.vendor.edit_title")}
           </Button>
         </div>
       </div>
@@ -257,24 +232,6 @@ export default function ManagerVendorPage() {
         </div>
       </div>
 
-      <VendorFormDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        initialData={vendor}
-        isPending={updateVendor.isPending}
-        onSubmit={(data) => {
-          updateVendor.mutate(
-            { id: vendor.vendorId, data },
-            {
-              onSuccess: () => {
-                toast.success(t("manager.vendor.toast_success"));
-                setIsDialogOpen(false);
-              },
-              onError: () => toast.error(t("manager.vendor.toast_error")),
-            },
-          );
-        }}
-      />
     </div>
   );
 }

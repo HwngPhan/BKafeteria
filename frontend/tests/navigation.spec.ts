@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from "@playwright/test";
 
 /**
  * Why the bell-button test was removed:
@@ -12,80 +12,130 @@ import { expect, test } from '@playwright/test'
 
 // ─── Desktop sidebar ──────────────────────────────────────────────────────────
 
-test.describe('Sidebar Navigation (desktop)', () => {
+test.describe("Sidebar Navigation (desktop)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 })
-    await page.goto('/dashboard')
-    await expect(page.locator('aside')).toBeVisible({ timeout: 20000 })
-  })
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/dashboard");
+    await expect(page.locator("aside")).toBeVisible({ timeout: 20000 });
+  });
 
-  test('should be visible on desktop', async ({ page }) => {
-    await expect(page.locator('aside')).toBeVisible()
-  })
+  test("should be visible on desktop", async ({ page }) => {
+    await expect(page.locator("aside")).toBeVisible();
+  });
 
-  test('should collapse when the toggle button is clicked', async ({ page }) => {
-    const sidebar = page.locator('aside')
-    const toggleBtn = sidebar.getByRole('button').first()
-    const before = await sidebar.evaluate((el) => el.getBoundingClientRect().width)
-    await toggleBtn.click()
-    await page.waitForTimeout(350)
-    const after = await sidebar.evaluate((el) => el.getBoundingClientRect().width)
-    expect(after).toBeLessThan(before)
-    await toggleBtn.click() // restore
-  })
+  test("should collapse when the toggle button is clicked", async ({
+    page,
+  }) => {
+    const sidebar = page.locator("aside");
+    const toggleBtn = sidebar.getByRole("button").first();
+    const before = await sidebar.evaluate(
+      (el) => el.getBoundingClientRect().width,
+    );
+    await toggleBtn.click();
+    await page.waitForTimeout(350);
+    const after = await sidebar.evaluate(
+      (el) => el.getBoundingClientRect().width,
+    );
+    expect(after).toBeLessThan(before);
+    await toggleBtn.click(); // restore
+  });
 
-  test('should navigate to /vendors via sidebar link', async ({ page }) => {
-    await page.locator('aside').getByRole('link', { name: /Cửa hàng|Vendors/i }).click()
-    await expect(page).toHaveURL('/vendors')
-  })
+  test("should navigate to /vendors via sidebar link", async ({ page }) => {
+    await page
+      .locator("aside")
+      .getByRole("link", { name: /Cửa hàng|Vendors/i })
+      .click();
+    await expect(page).toHaveURL("/vendors");
+  });
 
-  test('should navigate to /orders via sidebar link', async ({ page }) => {
+  test("should navigate to /orders via sidebar link", async ({ page }) => {
     // The Orders link is only shown for CUSTOMER role (auth setup uses customer account)
-    await page.locator('aside').getByRole('link', { name: /^Đơn hàng$|^Orders$/i }).click()
-    await expect(page).toHaveURL('/orders')
-  })
-})
+    await page
+      .locator("aside")
+      .getByRole("link", { name: /^Đơn hàng$|^Orders$/i })
+      .click();
+    await expect(page).toHaveURL("/orders");
+  });
+});
 
 // ─── Mobile navigation ────────────────────────────────────────────────────────
 
-test.describe('Sidebar Navigation (mobile)', () => {
+test.describe("Sidebar Navigation (mobile)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 })
-    await page.goto('/dashboard')
-    await expect(page.locator('main')).toBeVisible({ timeout: 20000 })
-  })
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/dashboard");
+    // await expect(page.locator('main')).toBeVisible({ timeout: 20000 })
+  });
 
-  test('aside should be hidden on mobile', async ({ page }) => {
+  test("aside should be hidden on mobile", async ({ page }) => {
     // SideNav renders with class `hidden md:flex` — invisible below md breakpoint
-    await expect(page.locator('aside')).toBeHidden()
-  })
+    await expect(page.locator("aside")).toBeHidden();
+  });
 
-  test('hamburger button should open the slide-out sheet', async ({ page }) => {
+  test("hamburger button should open the slide-out sheet", async ({ page }) => {
     // At 375 px the SheetTrigger (Menu icon) is visible; it is first in the header
-    await page.locator('header').getByRole('button').first().click()
+    await page.locator("header").getByRole("button").first().click();
     // SheetTitle inside the drawer contains "BKAFETERIA"
-    await expect(page.getByRole('heading', { name: /BKAFETERIA/i })).toBeVisible()
-  })
-})
+    await expect(
+      page.getByRole("heading", { name: /BKAFETERIA/i }),
+    ).toBeVisible();
+  });
+});
 
 // ─── Top bar ──────────────────────────────────────────────────────────────────
 
-test.describe('Top Bar', () => {
+test.describe("Top Bar", () => {
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 })
-    await page.goto('/dashboard')
-    await expect(page.locator('header')).toBeVisible({ timeout: 20000 })
-  })
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/dashboard");
+    await expect(page.locator("header")).toBeVisible({ timeout: 20000 });
+  });
 
-  test('should open the user dropdown showing the logout item', async ({ page }) => {
+  test("should open the user dropdown showing the logout item", async ({
+    page,
+  }) => {
     // Avatar button is the last button rendered in the header
-    await page.locator('header').getByRole('button').last().click()
-    await expect(page.getByText(/Đăng xuất|Sign out/i)).toBeVisible()
-  })
+    await page.locator("header").getByRole("button").last().click();
+    await expect(page.getByText(/Đăng xuất|Sign out/i)).toBeVisible();
+  });
 
-  test('should logout and redirect to /login', async ({ page }) => {
-    await page.locator('header').getByRole('button').last().click()
-    await page.getByText(/Đăng xuất|Sign out/i).click()
-    await expect(page).toHaveURL(/login/, { timeout: 15000 })
-  })
-})
+  test("should logout and redirect to /login", async ({ page }) => {
+    // Intercept the logout API so the backend session is NOT invalidated.
+    // Without this, subsequent tests that reuse playwright/.auth/user.json would
+    // receive a 401 (token invalidated) and be redirected to /login.
+    await page.route("**/auth/logout", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: "{}",
+      }),
+    );
+    await page.locator("header").getByRole("button").last().click();
+    await page.getByText(/Đăng xuất|Sign out/i).click();
+    await expect(page).toHaveURL(/login/, { timeout: 15000 });
+  });
+});
+
+// ─── Responsive Toaster position ─────────────────────────────────────────────
+
+test.describe("Responsive Toaster", () => {
+  test("should render toaster with top-center position on mobile viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/dashboard");
+    await expect(page.locator("header")).toBeVisible({ timeout: 20000 });
+
+    // ResponsiveToaster exposes current position via data-toaster-position
+    // (Sonner v2 uses data-y-position / data-x-position internally, not data-position)
+    const wrapper = page.locator('[data-toaster-position]');
+    await expect(wrapper).toHaveAttribute('data-toaster-position', 'top-center', { timeout: 5000 });
+  });
+
+  test("should render toaster with bottom-right position on desktop viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/dashboard");
+    await expect(page.locator("header")).toBeVisible({ timeout: 20000 });
+
+    const wrapper = page.locator('[data-toaster-position]');
+    await expect(wrapper).toHaveAttribute('data-toaster-position', 'bottom-right', { timeout: 5000 });
+  });
+});

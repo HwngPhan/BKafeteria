@@ -133,14 +133,6 @@ export default function OrdersPage() {
 
   const isEmpty = allOrders.length === 0;
 
-  if (isLoading && allOrders.length === 0) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <Loader2 className="h-16 w-16 text-primary animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 pb-20">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -188,7 +180,11 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {isEmpty ? (
+      {isLoading && allOrders.length === 0 ? (
+        <div className="flex h-[60vh] items-center justify-center">
+          <Loader2 className="h-16 w-16 text-primary animate-spin" />
+        </div>
+      ) : isEmpty ? (
         <div className="flex flex-col items-center justify-center h-96 text-center space-y-6 bg-white rounded-[3rem] shadow-xl shadow-secondary/5 border-none">
           <div className="p-8 rounded-full bg-secondary/5">
             <ClipboardList className="h-16 w-16 text-muted-foreground/30" />

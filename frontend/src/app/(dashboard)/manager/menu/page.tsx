@@ -1,20 +1,25 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MenuItemFeedbacksModal } from "@/features/menu/components/MenuItemFeedbacksModal";
-import { MenuItemFormDialog } from "@/features/menu/components/MenuItemFormDialog";
-import { FoodCategory, MenuItemDto } from "@/features/menu/config/menu.types";
+import { FoodCategory } from "@/features/menu/config/menu.types";
 import {
-  useCreateMenuItem,
   useDeleteMenuItem,
   useMyMenu,
-  useUpdateMenuItem,
-  useUpdateMenuItemImage,
 } from "@/features/menu/data-access/menu.queries";
-import { useUploadImage } from "@/hooks/useUploadImage";
 import { CATEGORY_MAP } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -31,6 +36,7 @@ import {
   UtensilsCrossed
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,19 +50,12 @@ const categories: FoodCategory[] = [
 
 export default function ManagerMenuPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const { data: menuItems, isLoading } = useMyMenu();
-  const { mutateAsync: createItem, isPending: isCreatingPending } =
-    useCreateMenuItem();
-  const { mutateAsync: updateItem, isPending: isUpdatingPending } =
-    useUpdateMenuItem();
-  const { mutateAsync: updateItemImage, isPending: isUpdatingImagePending } =
-    useUpdateMenuItemImage();
   const { mutateAsync: deleteItem } = useDeleteMenuItem();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MenuItemDto | null>(null);
-  const { uploadImage, isUploading: isUploadingImage } = useUploadImage();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Feedback Viewer states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
@@ -68,19 +67,19 @@ export default function ManagerMenuPage() {
     item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleOpenDialog = (item: MenuItemDto | null = null) => {
-    setEditingItem(item);
-    setIsDialogOpen(true);
+  const handleDelete = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm(t("manager.menu.confirm_delete"))) {
-      deleteItem(id, {
-        onSuccess: () => {
-          toast.success(t("manager.menu.toast_deleted"));
-        },
-      });
-    }
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteItem(deleteTarget.id, {
+      onSuccess: () => {
+        toast.success(t("manager.menu.toast_deleted"));
+        setDeleteTarget(null);
+      },
+      onError: () => setDeleteTarget(null),
+    });
   };
 
   if (isLoading) {
@@ -103,7 +102,7 @@ export default function ManagerMenuPage() {
           </p>
         </div>
         <Button
-          onClick={() => handleOpenDialog()}
+          onClick={() => router.push('/manager/menu/create')}
           className="rounded-2xl h-12 px-6 font-bold gap-2 shadow-lg shadow-primary/20"
         >
           <Plus size={20} />
@@ -174,7 +173,7 @@ export default function ManagerMenuPage() {
                         <Button
                           variant="secondary"
                           size="icon"
-                          onClick={() => handleOpenDialog(item)}
+                          onClick={() => router.push(`/manager/menu/${item.menuItemId}/edit`)}
                           className="h-12 w-12 rounded-2xl bg-white text-primary hover:bg-primary hover:text-white shadow-2xl transition-all duration-300 scale-90 group-hover:scale-100"
                         >
                           <Edit2 size={18} />
@@ -182,7 +181,7 @@ export default function ManagerMenuPage() {
                         <Button
                           variant="secondary"
                           size="icon"
-                          onClick={() => handleDelete(item.menuItemId)}
+                          onClick={() => handleDelete(item.menuItemId, item.name)}
                           className="h-12 w-12 rounded-2xl bg-white text-red-600 hover:bg-red-600 hover:text-white shadow-2xl transition-all duration-300 scale-90 group-hover:scale-100"
                         >
                           <Trash2 size={18} />
@@ -282,87 +281,6 @@ export default function ManagerMenuPage() {
         </CardContent>
       </Card>
 
-      {/* Reusable Dialog for Create/Edit */}
-      <MenuItemFormDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        initialData={editingItem}
-        isPending={isCreatingPending || isUpdatingPending}
-        isUploadingImage={isUploadingImage}
-        onSubmit={async (data, file) => {
-          const formattedData = {
-            ...data,
-            price: parseFloat(data.price),
-            remaining: parseInt(data.remaining),
-          };
-
-          const cleanup = () => {
-            if (data.imageUrl.startsWith("blob:")) {
-              URL.revokeObjectURL(data.imageUrl);
-            }
-          };
-
-          if (editingItem) {
-            updateItem(
-              {
-                id: editingItem.menuItemId,
-                data: file
-                  ? { ...formattedData, imageUrl: editingItem.imageUrl }
-                  : formattedData,
-              },
-              {
-                onSuccess: async () => {
-                  try {
-                    if (file) {
-                      const url = await uploadImage(file);
-                      if (url) {
-                        await updateItemImage({
-                          id: editingItem.menuItemId,
-                          data: { imageUrl: url },
-                        });
-                      }
-                    }
-                    toast.success(t("manager.menu.toast_updated"));
-                  } catch (error) {
-                    console.error("Failed to update image:", error);
-                    toast.error(t("manager.menu.toast_update_partial"));
-                  } finally {
-                    cleanup();
-                    setIsDialogOpen(false);
-                  }
-                },
-              },
-            );
-          } else {
-            createItem(
-              { ...formattedData, imageUrl: "" },
-              {
-                onSuccess: async (createdItem) => {
-                  try {
-                    if (file) {
-                      const url = await uploadImage(file);
-                      if (url && createdItem.menuItemId) {
-                        await updateItemImage({
-                          id: createdItem.menuItemId,
-                          data: { imageUrl: url },
-                        });
-                      }
-                    }
-                    toast.success(t("manager.menu.toast_added"));
-                  } catch (error) {
-                    console.error("Failed to upload image:", error);
-                    toast.error(t("manager.menu.toast_add_partial"));
-                  } finally {
-                    cleanup();
-                    setIsDialogOpen(false);
-                  }
-                },
-              },
-            );
-          }
-        }}
-      />
-
       {/* Review Feedbacks details modal */}
       <MenuItemFeedbacksModal
         open={isReviewsOpen}
@@ -371,6 +289,26 @@ export default function ManagerMenuPage() {
         itemName={selectedItemName}
         averageRating={averageRating}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.delete_confirm_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("manager.menu.delete_desc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.delete_confirm_cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {t("common.delete_confirm_action")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

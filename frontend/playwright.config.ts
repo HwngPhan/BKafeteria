@@ -1,45 +1,45 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
-  timeout: 90000,
+  testDir: "./tests",
+  timeout: 120000,
   expect: {
     timeout: 15000,
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: "50%",
-  reporter: 'html',
+  workers: 2,
+  reporter: "html",
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
     actionTimeout: 30000,
   },
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: "setup", testMatch: /.*\.setup\.ts/ },
     {
-      name: 'chromium',
+      name: "chromium",
       use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/user.json",
       },
-      dependencies: ['setup'],
+      dependencies: ["setup"],
     },
     {
-      name: 'mobile-chrome',
+      name: "mobile-chrome",
       use: {
-        ...devices['Pixel 5'],
-        storageState: 'playwright/.auth/user.json',
+        ...devices["Pixel 5"],
+        storageState: "playwright/.auth/user.json",
       },
-      dependencies: ['setup'],
+      dependencies: ["setup"],
       // Only run navigation and dashboard tests on mobile to keep CI fast
-      testMatch: /navigation\.spec\.ts|dashboard\.spec\.ts/,
+      testMatch: /navigation\.spec\.ts|dashboard\.spec\.ts|wallet\.spec\.ts/,
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: "npm run dev",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

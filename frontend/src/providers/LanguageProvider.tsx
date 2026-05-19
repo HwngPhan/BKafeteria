@@ -351,6 +351,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.users.toast_locked": "Đã khóa tài khoản {name}",
     "admin.users.toast_deleted": "Đã xóa tài khoản {name}",
     "admin.users.confirm_delete": "Bạn có chắc chắn muốn xóa tài khoản {name}?",
+    "admin.users.delete_desc": "Tài khoản {name} sẽ bị xóa vĩnh viễn và không thể khôi phục.",
 
     // Admin - Vendors
     "admin.vendors.title": "Duyệt cửa hàng",
@@ -410,6 +411,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.vendor.status_accepted": "Đang hoạt động",
     "manager.vendor.status_rejected": "Bị từ chối",
     "manager.vendor.status_closed": "Đóng cửa",
+    "manager.vendor.create_subtitle": "Điền thông tin để đăng ký cửa hàng của bạn.",
+    "manager.vendor.edit_subtitle": "Cập nhật thông tin cửa hàng của bạn.",
 
     // Manager - Menu
     "manager.menu.title": "Quản lý thực đơn",
@@ -440,16 +443,27 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.menu.submit": "Thêm món",
     "manager.menu.toast_updated": "Cập nhật món ăn thành công",
     "manager.menu.toast_added": "Thêm món ăn mới thành công",
+    "manager.menu.toast_deleted": "Đã xóa món ăn khỏi thực đơn",
+    "manager.menu.toast_update_partial": "Cập nhật thành công nhưng không thể cập nhật ảnh",
+    "manager.menu.toast_add_partial": "Thêm thành công nhưng không thể tải ảnh lên",
     "manager.menu.confirm_delete": "Bạn có chắc chắn muốn xóa món ăn này?",
+    "manager.menu.delete_desc": "Món ăn này sẽ bị xóa khỏi thực đơn và không thể khôi phục.",
     "manager.menu.no_desc": "Không có mô tả cho món ăn này.",
     "manager.menu.no_image": "Chưa có ảnh",
     "manager.menu.price": "Giá bán",
     "manager.menu.remaining": "Còn lại",
+    "manager.menu.back_to_menu": "Quay lại thực đơn",
+    "manager.menu.create_page_title": "Thêm món ăn mới",
+    "manager.menu.edit_page_title": "Chỉnh sửa món ăn",
+    "manager.menu.create_page_subtitle": "Điền thông tin để thêm món mới vào thực đơn của bạn.",
+    "manager.menu.edit_page_subtitle": "Cập nhật thông tin và hình ảnh cho món ăn.",
+    "manager.menu.item_not_found": "Không tìm thấy món ăn",
+    "manager.menu.item_not_found_desc": "Món ăn bạn đang tìm không tồn tại.",
 
     // Manager - Orders
     "manager.orders.title": "Quản lý đơn hàng",
     "manager.orders.subtitle": "Theo dõi và xử lý các đơn hàng đang đến.",
-    "manager.orders.processing": "Đang xử lý",
+    "manager.orders.processing": "Đơn hàng đang hoạt động",
     "manager.orders.history": "Lịch sử đơn hàng",
     "manager.orders.vendor_order_id": "ID Đơn hàng Vendor:",
     "manager.orders.finish": "Hoàn thành",
@@ -457,10 +471,19 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.orders.empty_history": "Chưa có lịch sử đơn hàng.",
     "manager.orders.toast_finished": "Đã xác nhận hoàn thành đơn hàng!",
     "manager.orders.process": "Xử lý",
+    "manager.orders.start_cooking": "Bắt đầu nấu",
     "manager.orders.sort": "Sắp xếp",
     "manager.orders.newest": "Mới nhất",
     "manager.orders.oldest": "Cũ nhất",
-    "manager.orders.toast_processing": "Đơn hàng đang được xử lý",
+    "manager.orders.toast_processing": "Đã bắt đầu chế biến đơn hàng!",
+
+    // Manager - Order Detail
+    "manager.order_detail.title": "Chi tiết đơn hàng",
+    "manager.order_detail.subtitle": "Xem và quản lý đơn hàng này.",
+    "manager.order_detail.not_found": "Không tìm thấy đơn hàng",
+    "manager.order_detail.not_found_desc": "Đơn hàng không tồn tại hoặc đã bị xóa.",
+    "manager.order_detail.customer_id": "Khách hàng",
+    "manager.order_detail.view_detail": "Xem chi tiết",
 
     // Manager - Staff
     "manager.staff.title": "Quản lý nhân viên",
@@ -491,6 +514,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.staff.toast_error": "Không tìm thấy người dùng hoặc có lỗi xảy ra",
     "manager.staff.confirm_remove":
       "Bạn có chắc muốn gỡ {name} khỏi danh sách nhân viên?",
+    "manager.staff.remove_desc": "Nhân viên này sẽ bị gỡ khỏi danh sách. Họ vẫn có thể được thêm lại sau.",
     "manager.staff.wip": "Tính năng gỡ nhân viên đang được cập nhật",
 
     // Vendor card
@@ -573,6 +597,18 @@ const translations: Record<Lang, Record<string, string>> = {
     "common.confirm": "Xác nhận",
     "status.active": "Hoạt động",
     "status.inactive": "Ngừng hoạt động",
+
+    // Common - extended
+    "common.error_occurred": "Đã xảy ra lỗi",
+    "common.delete_confirm_title": "Xác nhận xóa",
+    "common.delete_confirm_cancel": "Hủy",
+    "common.delete_confirm_action": "Xóa",
+
+    // Upload
+    "upload.error_not_image": "Vui lòng chọn tệp hình ảnh",
+    "upload.error_too_large": "Kích thước ảnh tối đa là 5MB",
+    "upload.success": "Tải ảnh lên thành công",
+    "upload.error_failed": "Không thể tải ảnh lên. Vui lòng thử lại.",
 
     // Feedbacks
     "feedback.rate_item": "Đánh giá món",
@@ -931,6 +967,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "admin.users.toast_deleted": "Deleted account {name}",
     "admin.users.confirm_delete":
       "Are you sure you want to delete {name}'s account?",
+    "admin.users.delete_desc": "{name}'s account will be permanently deleted and cannot be recovered.",
 
     // Admin - Vendors
     "admin.vendors.title": "Approve Stores",
@@ -984,6 +1021,8 @@ const translations: Record<Lang, Record<string, string>> = {
       "Build your brand and manage your store operations professionally.",
     "manager.vendor.dialog_hint":
       "Providing complete information helps Admin approve your store faster.",
+    "manager.vendor.create_subtitle": "Fill in the details to register your store.",
+    "manager.vendor.edit_subtitle": "Update your store information.",
     "manager.vendor.toast_register_success":
       "Vendor registration request sent!",
     "manager.vendor.toast_success": "Store information updated successfully",
@@ -1022,16 +1061,27 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.menu.submit": "Add item",
     "manager.menu.toast_updated": "Item updated successfully",
     "manager.menu.toast_added": "New item added successfully",
+    "manager.menu.toast_deleted": "Item removed from menu",
+    "manager.menu.toast_update_partial": "Item updated but image could not be saved",
+    "manager.menu.toast_add_partial": "Item added but image could not be uploaded",
     "manager.menu.confirm_delete": "Are you sure you want to delete this item?",
+    "manager.menu.delete_desc": "This item will be removed from the menu and cannot be recovered.",
     "manager.menu.no_desc": "No description for this item.",
     "manager.menu.no_image": "No Image",
     "manager.menu.price": "Price",
     "manager.menu.remaining": "Remaining",
+    "manager.menu.back_to_menu": "Back to menu",
+    "manager.menu.create_page_title": "Add New Item",
+    "manager.menu.edit_page_title": "Edit Menu Item",
+    "manager.menu.create_page_subtitle": "Fill in the details to add a new item to your menu.",
+    "manager.menu.edit_page_subtitle": "Update the information and image for this item.",
+    "manager.menu.item_not_found": "Item not found",
+    "manager.menu.item_not_found_desc": "The item you are looking for does not exist.",
 
     // Manager - Orders
     "manager.orders.title": "Manage Orders",
     "manager.orders.subtitle": "Track and process incoming orders.",
-    "manager.orders.processing": "Processing",
+    "manager.orders.processing": "Active Orders",
     "manager.orders.history": "Order History",
     "manager.orders.vendor_order_id": "Vendor Order ID:",
     "manager.orders.finish": "Complete",
@@ -1039,10 +1089,19 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.orders.empty_history": "No order history yet.",
     "manager.orders.toast_finished": "Order marked as completed!",
     "manager.orders.process": "Process",
+    "manager.orders.start_cooking": "Start Cooking",
     "manager.orders.sort": "Sort",
     "manager.orders.newest": "Newest",
     "manager.orders.oldest": "Oldest",
-    "manager.orders.toast_processing": "Order is being processed",
+    "manager.orders.toast_processing": "Started cooking the order!",
+
+    // Manager - Order Detail
+    "manager.order_detail.title": "Order Detail",
+    "manager.order_detail.subtitle": "View and manage this order.",
+    "manager.order_detail.not_found": "Order not found",
+    "manager.order_detail.not_found_desc": "This order does not exist or has been deleted.",
+    "manager.order_detail.customer_id": "Customer",
+    "manager.order_detail.view_detail": "View Detail",
 
     // Manager - Staff
     "manager.staff.title": "Manage Staff",
@@ -1072,6 +1131,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.staff.toast_error": "User not found or an error occurred",
     "manager.staff.confirm_remove":
       "Are you sure you want to remove {name} from the staff list?",
+    "manager.staff.remove_desc": "This staff member will be removed from the list. They can be re-added later.",
     "manager.staff.wip": "Remove staff feature is being updated",
 
     // Vendor card
@@ -1158,6 +1218,18 @@ const translations: Record<Lang, Record<string, string>> = {
     "common.confirm": "Confirm",
     "status.active": "Active",
     "status.inactive": "Inactive",
+
+    // Common - extended
+    "common.error_occurred": "An error occurred",
+    "common.delete_confirm_title": "Confirm Deletion",
+    "common.delete_confirm_cancel": "Cancel",
+    "common.delete_confirm_action": "Delete",
+
+    // Upload
+    "upload.error_not_image": "Please select an image file",
+    "upload.error_too_large": "Image size must not exceed 5MB",
+    "upload.success": "Image uploaded successfully",
+    "upload.error_failed": "Could not upload image. Please try again.",
 
     // Feedbacks
     "feedback.rate_item": "Rate Item",

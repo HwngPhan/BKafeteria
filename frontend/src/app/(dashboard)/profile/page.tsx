@@ -145,10 +145,11 @@ export default function ProfilePage() {
               <CardContent className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('profile.fullname')}</Label>
+                    <Label htmlFor="fullName" className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('profile.fullname')}</Label>
                     <div className="relative">
                       <UserIcon className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
+                      <Input
+                        id="fullName"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"
@@ -157,10 +158,11 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('profile.phone')}</Label>
+                    <Label htmlFor="phoneNumber" className="text-xs font-bold text-primary uppercase tracking-wider ml-1">{t('profile.phone')}</Label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
+                      <Input
+                        id="phoneNumber"
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                         className="pl-11 rounded-2xl h-12 bg-secondary/5 border-none focus-visible:ring-primary/20"

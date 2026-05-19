@@ -5,6 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -55,6 +65,7 @@ export default function ManagerStaffPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [removeTarget, setRemoveTarget] = useState<UserDto | null>(null);
 
   const handleAddStaff = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,13 +86,12 @@ export default function ManagerStaffPage() {
   };
 
   const handleRemoveStaff = (user: UserDto) => {
-    if (
-      confirm(
-        t("manager.staff.confirm_remove").replace("{name}", user.fullName),
-      )
-    ) {
-      toast.info(t("manager.staff.wip"));
-    }
+    setRemoveTarget(user);
+  };
+
+  const handleConfirmRemove = () => {
+    toast.info(t("manager.staff.wip"));
+    setRemoveTarget(null);
   };
 
   if (isVendorLoading || isUsersLoading) {
@@ -299,6 +309,26 @@ export default function ManagerStaffPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.delete_confirm_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("manager.staff.remove_desc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.delete_confirm_cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmRemove}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {t("common.delete_confirm_action")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

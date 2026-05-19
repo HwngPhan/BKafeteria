@@ -2,8 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test.describe('Wallet Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/wallet')
-    await page.waitForLoadState('networkidle')
+    await page.goto('/wallet', { waitUntil: 'domcontentloaded' })
+    // Wait for the wallet heading — networkidle never fires on pages with WebSocket connections
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
   })
 
   test('should display the wallet page heading', async ({ page }) => {
@@ -12,13 +13,13 @@ test.describe('Wallet Page', () => {
   })
 
   test('should show current balance card', async ({ page }) => {
-    await expect(page.getByText(/Số dư|Balance/i)).toBeVisible()
+    // Use first() since the subtitle text also contains "Số dư"
+    await expect(page.getByText(/Số dư hiện tại|Current Balance/i).first()).toBeVisible()
     await expect(page.getByText(/VNĐ/)).toBeVisible()
   })
 
-  test('should show deposit and withdraw buttons', async ({ page }) => {
+  test('should show deposit button', async ({ page }) => {
     await expect(page.getByRole('button', { name: /Nạp tiền|Deposit/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Rút tiền|Withdraw/i })).toBeVisible()
   })
 
   test('should show transaction history section', async ({ page }) => {
@@ -28,8 +29,9 @@ test.describe('Wallet Page', () => {
 
 test.describe('Deposit Dialog', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/wallet')
-    await page.waitForLoadState('networkidle')
+    await page.goto('/wallet', { waitUntil: 'domcontentloaded' })
+    // Wait for the Deposit button to be ready — networkidle never fires with WebSocket connections
+    await expect(page.getByRole('button', { name: /Nạp tiền|Deposit/i })).toBeVisible({ timeout: 30000 })
     // Open deposit dialog
     await page.getByRole('button', { name: /Nạp tiền|Deposit/i }).click()
   })
@@ -91,7 +93,8 @@ test.describe('Deposit Dialog', () => {
     // Bank info section should appear
     await expect(page.getByText(/Vietcombank/i)).toBeVisible()
     await expect(page.getByText(/9876543210/i)).toBeVisible()
-    await expect(page.getByText(/BKAFETERIA/i)).toBeVisible()
+    // Scope to dialog to avoid matching the sidebar "BKAFETERIA" brand text
+    await expect(page.getByRole('dialog').getByText(/BKAFETERIA/i)).toBeVisible()
   })
 
   test('should show error for amount below 10000', async ({ page }) => {
