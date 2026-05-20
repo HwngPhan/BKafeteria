@@ -47,7 +47,7 @@ const statusLabels: Record<string, string> = {
   CANCELED: "order_status.canceled",
 };
 
-export default function ManagerOrderDetailPage() {
+export default function StaffOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -106,7 +106,7 @@ export default function ManagerOrderDetailPage() {
           </p>
         </div>
         <Button
-          onClick={() => router.push("/manager/orders")}
+          onClick={() => router.push("/staff/orders")}
           className="rounded-2xl h-12 px-8 font-bold"
         >
           {t("order_detail.back")}

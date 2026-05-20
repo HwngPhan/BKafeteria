@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger
@@ -108,6 +109,7 @@ export function TopBar() {
               <SheetTitle className="text-xl font-black tracking-tight text-primary">
                 BK<span className="text-foreground">AFETERIA</span>
               </SheetTitle>
+              <SheetDescription className="sr-only">Navigation menu</SheetDescription>
               {user && (
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-primary/10 text-primary border-none">

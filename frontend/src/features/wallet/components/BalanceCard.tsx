@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -144,9 +144,9 @@ export function BalanceCard() {
             <DialogTitle className="text-xl font-black relative z-10">
               {t("wallet.deposit_title")}
             </DialogTitle>
-            <p className="text-sm text-white/70 mt-1 relative z-10">
+            <DialogDescription className="text-sm text-white/70 mt-1 relative z-10">
               {t("wallet.deposit_subtitle")}
-            </p>
+            </DialogDescription>
           </div>
 
           {/* Scrollable body */}

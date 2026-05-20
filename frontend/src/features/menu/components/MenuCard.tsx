@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { useCartStore } from '@/features/cart/store/cart.store'
 import { CATEGORY_MAP } from '@/lib/constants'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -126,6 +126,8 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="rounded-2xl sm:rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white max-w-lg mx-3 sm:mx-auto">
+          <DialogTitle className="sr-only">{item.name}</DialogTitle>
+          <DialogDescription className="sr-only">{vendorName}</DialogDescription>
           <div className="relative h-44 sm:h-64 w-full">
             {item.imageUrl ? (
               <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />

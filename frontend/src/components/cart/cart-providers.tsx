@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Product } from "@/lib/mock-data"
 import { ShoppingCart, Trash2 } from "lucide-react"
 import React, { createContext, useContext, useState } from "react"
@@ -79,6 +79,7 @@ export function CartFloatingButton() {
           <SheetTitle className="text-2xl font-bold text-primary flex items-center gap-2">
              <ShoppingCart /> {t('cart.providers.title')}
           </SheetTitle>
+          <SheetDescription className="sr-only">{t('cart.providers.title')}</SheetDescription>
         </SheetHeader>
         
         <ScrollArea className="flex-1 -mx-6 px-6 my-4">
