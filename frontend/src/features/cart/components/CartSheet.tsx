@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -79,6 +80,7 @@ export function CartSheet() {
               </div>
               {t('cart.title')}
             </SheetTitle>
+            <SheetDescription className="sr-only">{t('cart.title')}</SheetDescription>
             {items.length > 0 && (
               <Button
                 variant="ghost"
@@ -112,7 +114,7 @@ export function CartSheet() {
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-8 space-y-10">
                 {Object.entries(itemsByVendor).map(([vendorId, vendorItems]) => (
                   <div key={vendorId} className="space-y-6">

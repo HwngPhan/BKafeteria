@@ -489,7 +489,6 @@ export default function AdminUsersPage() {
             <AlertDialogCancel>{t("common.delete_confirm_cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
             >
               {t("common.delete_confirm_action")}
             </AlertDialogAction>

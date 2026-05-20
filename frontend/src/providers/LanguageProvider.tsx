@@ -49,6 +49,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.manage_users": "Quản lý người dùng",
     "nav.approve_stores": "Duyệt cửa hàng",
     "nav.wallet": "Ví tiền",
+    "nav.staff_orders": "Đơn hàng",
 
     // Landing page
     "landing.tagline": "Nhanh – Ngon – Tiện lợi",
@@ -560,6 +561,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "profile.toast_success": "Cập nhật hồ sơ thành công",
     "profile.toast_error": "Cập nhật thất bại",
 
+    "cart.subtotal": "Tạm tính",
+    "cart.service_fee": "Phí dịch vụ",
+    "cart.free": "Miễn phí",
+    "cart.processing": "Đang xử lý...",
     "cart.toast_success": "Đặt đơn hàng thành công!",
     "cart.toast_error": "Có lỗi xảy ra khi đặt đơn hàng",
     "cart.providers.title": "Giỏ hàng của bạn",
@@ -667,6 +672,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.manage_users": "Manage Users",
     "nav.approve_stores": "Approve Vendors",
     "nav.wallet": "Wallet",
+    "nav.staff_orders": "Orders",
 
     // Landing page
     "landing.tagline": "Fast – Delicious – Convenient",

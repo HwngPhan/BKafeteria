@@ -51,7 +51,7 @@ const statusLabels: Record<string, string> = {
   CANCELED: "order_status.canceled",
 };
 
-export default function ManagerOrdersPage() {
+export default function StaffOrdersPage() {
   const [historyPage, setHistoryPage] = useState(0);
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
@@ -222,7 +222,7 @@ export default function ManagerOrdersPage() {
                 <div className="p-6 bg-slate-50/80 border-t border-slate-100 flex justify-end gap-3">
                   <Button
                     variant="ghost"
-                    onClick={() => router.push(`/manager/orders/${order.orderId}?v=${order.vendorOrderId}`)}
+                    onClick={() => router.push(`/staff/orders/${order.orderId}?v=${order.vendorOrderId}`)}
                     className="rounded-xl h-10 px-4 font-bold gap-2 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 cursor-pointer"
                   >
                     <Eye size={16} />
@@ -284,7 +284,7 @@ export default function ManagerOrdersPage() {
                     {historyOrders.map((order) => (
                       <div
                         key={order.vendorOrderId}
-                        onClick={() => router.push(`/manager/orders/${order.orderId}?v=${order.vendorOrderId}`)}
+                        onClick={() => router.push(`/staff/orders/${order.orderId}?v=${order.vendorOrderId}`)}
                         className="flex items-center justify-between p-4 rounded-2xl bg-secondary/5 cursor-pointer hover:bg-secondary/10 transition-colors duration-200"
                       >
                         <div className="flex items-center gap-3">

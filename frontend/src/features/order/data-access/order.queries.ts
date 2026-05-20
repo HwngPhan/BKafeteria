@@ -1,6 +1,6 @@
 import { userKeys } from "@/features/user/data-access/user.queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreateOrderRequest, OrderDto } from "../config/order.types";
+import { CreateOrderRequest, OrderDto, PageDto } from "../config/order.types";
 import { CreateOrderApi, GetMyOrdersApi, GetOrderByIdApi, PayOrderApi } from "./order.api";
 
 export const orderKeys = {
@@ -28,7 +28,21 @@ export const useCreateOrder = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateOrderRequest) => CreateOrderApi(payload),
-    onSuccess: () => {
+    onSuccess: (newOrder) => {
+      // Inject the new order at the top of every cached page-0 list immediately
+      // so navigating to /orders shows it without waiting for a background refetch.
+      queryClient.setQueriesData<PageDto<OrderDto>>(
+        { queryKey: orderKeys.mine() },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            content: [newOrder, ...old.content],
+            totalElements: (old.totalElements || 0) + 1,
+          };
+        }
+      );
+      // Background sync to ensure the list stays consistent with the server.
       queryClient.invalidateQueries({ queryKey: orderKeys.mine() });
     },
   });
@@ -39,6 +53,19 @@ export const usePayOrder = () => {
   return useMutation({
     mutationFn: (id: string) => PayOrderApi(id),
     onSuccess: (data) => {
+      // Update the order in every cached list immediately so status changes appear
+      // without waiting for a background refetch.
+      queryClient.setQueriesData<PageDto<OrderDto>>(
+        { queryKey: orderKeys.mine() },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            content: old.content.map((o) => (o.orderId === data.orderId ? data : o)),
+          };
+        }
+      );
+      queryClient.setQueryData(orderKeys.detail(data.orderId), data);
       queryClient.invalidateQueries({ queryKey: orderKeys.mine() });
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(data.orderId) });
       queryClient.invalidateQueries({ queryKey: userKeys.me() });

@@ -322,7 +322,6 @@ export default function ManagerStaffPage() {
             <AlertDialogCancel>{t("common.delete_confirm_cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmRemove}
-              className="bg-destructive text-white hover:bg-destructive/90"
             >
               {t("common.delete_confirm_action")}
             </AlertDialogAction>

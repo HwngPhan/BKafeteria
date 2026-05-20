@@ -35,10 +35,13 @@ export function SideNav() {
     { href: '/wallet', icon: Wallet, labelKey: 'nav.wallet', roles: ['CUSTOMER'] },
 
     // Manager routes
-    { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER', 'STAFF'] },
+    { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER'] },
     { href: '/manager/vendor', icon: Settings, labelKey: 'nav.manage_store', roles: ['MANAGER'] },
     { href: '/manager/menu', icon: Utensils, labelKey: 'nav.manage_menu', roles: ['MANAGER'] },
     // { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
+
+    // Staff routes
+    { href: '/staff/orders', icon: ClipboardList, labelKey: 'nav.staff_orders', roles: ['STAFF'] },
 
     // Admin routes
     { href: '/admin/users', icon: Users, labelKey: 'nav.manage_users', roles: ['ADMIN'] },
