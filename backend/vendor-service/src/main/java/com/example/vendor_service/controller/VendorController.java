@@ -19,6 +19,7 @@ import com.example.shared.dtos.ApiResponse;
 import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
 import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
+import com.example.vendor_service.dtos.VendorDtos.Request.UpdateVendorImageRequest;
 import com.example.vendor_service.dtos.VendorDtos.Request.UpdateVendorRequest;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
@@ -157,6 +158,25 @@ public class VendorController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(new ApiResponse<>(500, "Failed to update vendor", null));
+        }
+    }
+
+    @PutMapping("/img/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    public ResponseEntity<ApiResponse<VendorDto>> updateVendorImage(
+            @PathVariable String id,
+            @RequestBody UpdateVendorImageRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            VendorDto vendorDto = vendorDtoConverter.convert(
+                    vendorService.updateVendorImage(id, request.getImgUrl(), userDetails.getId()));
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor image updated successfully", vendorDto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to update vendor image", null));
         }
     }
 

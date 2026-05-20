@@ -21,7 +21,9 @@ public class VendorDtoConverter {
                 from.getManagerId(),
                 from.getCreatedAt(),
                 from.getUpdatedAt(),
-                from.getApprovedBy());
+                from.getApprovedBy(),
+                from.getImgUrl()
+        );
     }
 
     public List<VendorDto> convert(List<Vendor> fromList) {

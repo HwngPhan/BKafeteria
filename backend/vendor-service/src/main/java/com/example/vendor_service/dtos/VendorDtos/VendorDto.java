@@ -17,5 +17,6 @@ public record VendorDto (
         String managerId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        String approvedBy
+        String approvedBy,
+        String imgUrl
 ){}
