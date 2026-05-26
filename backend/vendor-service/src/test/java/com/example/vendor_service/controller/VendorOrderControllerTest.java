@@ -4,6 +4,8 @@ import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
 import com.example.shared.dtos.PageDtos.PageDto;
 import com.example.shared.dtos.PageDtos.PageDtoConverter;
+import com.example.vendor_service.dtos.UserInfoDto;
+import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.model.VendorOrderNotification;
 import com.example.vendor_service.repository.VendorOrderNotificationRepository;
@@ -37,6 +39,8 @@ public class VendorOrderControllerTest {
     private VendorService vendorService;
     @Mock
     private PageDtoConverter pageDtoConverter;
+    @Mock
+    private IamClient iamClient;
 
     @InjectMocks
     private VendorOrderController vendorOrderController;
@@ -46,12 +50,14 @@ public class VendorOrderControllerTest {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("manager1");
 
+        UserInfoDto userInfo = new UserInfoDto("manager1", "Manager", null, "m@test.com", "MANAGER", "v1");
+        when(iamClient.getUserInfo("manager1")).thenReturn(userInfo);
+
         Vendor vendor = new Vendor();
         vendor.setVendorId("v1");
-        
-        VendorOrderNotification notification = new VendorOrderNotification();
+        when(vendorService.getVendorsByIds(anyList())).thenReturn(Collections.singletonList(vendor));
 
-        when(vendorService.getVendorsByManagerId("manager1")).thenReturn(Collections.singletonList(vendor));
+        VendorOrderNotification notification = new VendorOrderNotification();
         when(notificationRepository.findByVendorId("v1")).thenReturn(Collections.singletonList(notification));
 
         ResponseEntity<ApiResponse<List<VendorOrderNotification>>> response = vendorOrderController.getOrderNotifications(userDetails);
@@ -65,7 +71,9 @@ public class VendorOrderControllerTest {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("manager1");
 
-        when(vendorService.getVendorsByManagerId("manager1")).thenReturn(Collections.emptyList());
+        UserInfoDto userInfo = new UserInfoDto("manager1", "Manager", null, "m@test.com", "MANAGER", "v1");
+        when(iamClient.getUserInfo("manager1")).thenReturn(userInfo);
+        when(vendorService.getVendorsByIds(anyList())).thenReturn(Collections.emptyList());
 
         ResponseEntity<ApiResponse<List<VendorOrderNotification>>> response = vendorOrderController.getOrderNotifications(userDetails);
 
@@ -116,12 +124,15 @@ public class VendorOrderControllerTest {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("manager1");
 
+        UserInfoDto userInfo = new UserInfoDto("manager1", "Manager", null, "m@test.com", "MANAGER", "v1");
+        when(iamClient.getUserInfo("manager1")).thenReturn(userInfo);
+
         Vendor vendor = new Vendor();
         vendor.setVendorId("v1");
+        when(vendorService.getVendorsByIds(anyList())).thenReturn(Collections.singletonList(vendor));
 
         VendorOrderNotification notification = new VendorOrderNotification();
 
-        when(vendorService.getVendorsByManagerId("manager1")).thenReturn(Collections.singletonList(vendor));
         when(notificationRepository.findByVendorIdIn(anyList(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(notification)));
         PageDto<VendorOrderNotification> pageDto = new PageDto<>(

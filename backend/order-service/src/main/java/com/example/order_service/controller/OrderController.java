@@ -120,6 +120,52 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/customer-refund/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<OrderDto>> cancelOrder(@PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            Order order = orderService.cancelOrder(id, userDetails.getId());
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Order cancelled successfully", orderDto));
+        } catch (RuntimeException e) {
+            log.error("Error cancelling order {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error cancelling order {}: {}", id, e.getMessage());
+            return new ResponseEntity<>(
+                    new ApiResponse<>(500, "Failed to cancel order: " + e.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/manager-refund/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
+    public ResponseEntity<ApiResponse<OrderDto>> cancelVendorOrder(@PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            Order order = orderService.cancelVendorOrder(id, userDetails.getId());
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(order.getOrderId())
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor order cancelled successfully", orderDto));
+        } catch (RuntimeException e) {
+            log.error("Error cancelling vendor order {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error cancelling vendor order {}: {}", id, e.getMessage());
+            return new ResponseEntity<>(
+                    new ApiResponse<>(500, "Failed to cancel vendor order: " + e.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/get-my-order")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PageDto<OrderDto>>> getOrders(

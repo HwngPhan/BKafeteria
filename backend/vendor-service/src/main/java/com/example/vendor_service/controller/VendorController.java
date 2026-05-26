@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
+import com.example.vendor_service.dtos.UserInfoDto;
+import com.example.vendor_service.dtos.VendorDashboardDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDto;
 import com.example.vendor_service.dtos.VendorDtos.VendorDtoConverter;
 import com.example.vendor_service.dtos.VendorDtos.Request.CreateVendorRequest;
@@ -24,7 +26,10 @@ import com.example.vendor_service.dtos.VendorDtos.Request.UpdateVendorRequest;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.model.Vendor;
 import com.example.vendor_service.repository.VendorRepository;
+import com.example.vendor_service.service.VendorDashboardService;
 import com.example.vendor_service.service.VendorService;
+
+import java.util.Arrays;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -43,6 +48,7 @@ public class VendorController {
     private final VendorDtoConverter vendorDtoConverter;
     private final IamClient iamClient;
     private final VendorRepository vendorRepository;
+    private final VendorDashboardService vendorDashboardService;
 
 
     @PostMapping("/register")
@@ -112,6 +118,31 @@ public class VendorController {
                     .body(new ApiResponse<>(500, "Failed to retrieve vendor", null));
         }
 
+    }
+
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
+    public ResponseEntity<ApiResponse<VendorDashboardDto>> getDashboard(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            UserInfoDto userInfo = iamClient.getUserInfo(userDetails.getId());
+            String vendorIdStr = userInfo.getVendorId();
+            List<String> vendorIds = (vendorIdStr == null || vendorIdStr.isBlank())
+                    ? List.of()
+                    : Arrays.asList(vendorIdStr.split(","));
+            List<Vendor> vendors = vendorService.getVendorsByIds(vendorIds);
+            if (vendors.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse<>(400, "No vendor associated with this account", null));
+            }
+            VendorDashboardDto dashboard = vendorDashboardService.buildDashboard(vendors);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Dashboard retrieved successfully", dashboard));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(500, "Failed to retrieve dashboard", null));
+        }
     }
 
     @GetMapping

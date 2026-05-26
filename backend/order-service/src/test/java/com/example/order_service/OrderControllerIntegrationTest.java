@@ -35,7 +35,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.kafka.bootstrap-servers=localhost:9092",
     "spring.data.redis.host=localhost",
-    "spring.data.redis.port=6379"
+    "spring.data.redis.port=6379",
+    "server.port=0",
+    "jwt.secret=test-secret-key-for-integration-testing-only-minimum-256-bits",
+    "jwt.access.expiration=86400000",
+    "jwt.refresh.expiration=604800000",
+    "jwt.otp.expiration=300000",
+    "jwt.account.expiration=86400000",
+    "internal-token.service-name=order-service",
+    "internal-token.api-key=test-secret-key-for-integration-testing-only-minimum-256-bits",
+    "internal-token.auth-url=http://localhost:0/iam/internal/auth/token"
 })
 @AutoConfigureMockMvc
 class OrderControllerIntegrationTest {
@@ -125,8 +134,8 @@ class OrderControllerIntegrationTest {
         mockMvc.perform(get("/orders/non-existent-id")
                 .header("Authorization", "Bearer " + userToken)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.status", is(500)));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(404)));
     }
 
     // ==================== GET /orders/get-my-order Tests ====================
@@ -162,7 +171,7 @@ class OrderControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is(200)))
                 .andExpect(jsonPath("$.message", is("Orders retrieved successfully")))
-                .andExpect(jsonPath("$.data", hasSize(2)));
+                .andExpect(jsonPath("$.data.content", hasSize(2)));
     }
 
     @Test
@@ -171,6 +180,6 @@ class OrderControllerIntegrationTest {
                 .header("Authorization", "Bearer " + userToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data", hasSize(0)));
+                .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
 }
