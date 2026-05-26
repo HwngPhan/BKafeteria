@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { CartItem, CartStore } from '../config/cart.types'
+import { CartItem, CartStore } from '../config/cart.config'
 
 export const useCartStore = create<CartStore>()(
   persist(

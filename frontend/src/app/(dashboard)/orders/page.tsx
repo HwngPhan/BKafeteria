@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderCard } from "@/features/order/components/OrderCard";
-import { OrderDto } from "@/features/order/config/order.types";
+import { OrderDto } from "@/features/order/config/order.config";
 import { useMyOrders } from "@/features/order/data-access/order.queries";
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { cn } from "@/lib/utils";

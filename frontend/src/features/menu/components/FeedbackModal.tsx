@@ -66,7 +66,7 @@ export function FeedbackModal({
         toast.success(t('feedback.toast_success'))
       }
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error?.message || t('feedback.toast_error'))
     }
   }

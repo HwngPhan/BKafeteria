@@ -2,7 +2,7 @@ import { API_GATEWAY_BASE_URL, TokenType } from "@/lib/constants";
 import { fetchWithToken } from "@/lib/fetchWithToken";
 import { handleResponse } from "@/lib/handle-response";
 import { throwApiError } from "@/lib/throwApiError";
-import { MenuItemDto } from "../config/menu.types";
+import { MenuItemDto } from "../config/menu.config";
 
 const BASE_URL = `${API_GATEWAY_BASE_URL}/menu/items`;
 

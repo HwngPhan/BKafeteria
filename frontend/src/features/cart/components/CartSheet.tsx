@@ -54,7 +54,7 @@ export function CartSheet() {
       clearCart()
       setIsOpen(false)
       router.push('/orders')
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error?.message || t('cart.toast_error'))
     }
   }

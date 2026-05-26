@@ -11,7 +11,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { FoodCategory } from '@/features/menu/config/menu.types'
+import { FoodCategory } from '@/features/menu/config/menu.config'
 import { CATEGORY_MAP } from '@/lib/constants'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { Loader2, Package } from 'lucide-react'
@@ -27,7 +27,7 @@ export interface MenuItemFormData {
 }
 
 interface MenuItemFormProps {
-  initialData?: any
+  initialData?: MenuItemFormData | null
   isPending: boolean
   isUploadingImage: boolean
   onSubmit: (data: MenuItemFormData, file: File | null) => void

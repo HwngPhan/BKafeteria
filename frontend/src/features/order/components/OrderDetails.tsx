@@ -1,6 +1,6 @@
 'use client'
 
-import { OrderDto, OrderStatus } from '../config/order.types'
+import { OrderDto, OrderStatus } from '../config/order.config'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -14,7 +14,8 @@ import {
   UtensilsCrossed,
   Store,
   Tag,
-  Star
+  Star,
+  type LucideIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -29,7 +30,7 @@ interface OrderDetailsProps {
   order: OrderDto
 }
 
-const statusSteps: { status: OrderStatus; labelKey: string; icon: any }[] = [
+const statusSteps: { status: OrderStatus; labelKey: string; icon: LucideIcon }[] = [
   { status: 'PENDING', labelKey: 'order_details.status_pending', icon: Clock },
   { status: 'PURCHASED', labelKey: 'order_details.status_purchased', icon: ClipboardList },
   { status: 'PROCESSING', labelKey: 'order_details.status_processing', icon: UtensilsCrossed },

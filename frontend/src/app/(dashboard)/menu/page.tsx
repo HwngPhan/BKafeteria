@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/features/cart/store/cart.store";
 import { MenuCard } from "@/features/menu/components/MenuCard";
-import { MenuItemDto } from "@/features/menu/config/menu.types";
+import { MenuItemDto } from "@/features/menu/config/menu.config";
 import { useMenuItems } from "@/features/menu/data-access/menu.queries";
 import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries";
 import { useLanguage } from "@/providers/LanguageProvider";

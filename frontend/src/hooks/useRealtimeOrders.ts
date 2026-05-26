@@ -1,4 +1,4 @@
-import { OrderDto } from '@/features/order/config/order.types'
+import { OrderDto, OrderStatus } from '@/features/order/config/order.config'
 import { create } from 'zustand'
 
 /**
@@ -50,14 +50,14 @@ export const useRealtimeOrders = create<RealtimeOrderStore>((set, get) => ({
       // Update the vendor order status inside the order
       const updatedVendorOrders = order.vendorOrders?.map(vo => {
         if (vo.vendorId === update.vendorId) {
-          return { ...vo, status: update.status as any }
+          return { ...vo, status: update.status as OrderStatus }
         }
         return vo
       })
-      
+
       return {
         ...order,
-        status: update.status as any,
+        status: update.status as OrderStatus,
         vendorOrders: updatedVendorOrders,
       }
     })

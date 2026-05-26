@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,7 +20,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { FoodCategory } from '@/features/menu/config/menu.types'
+import { FoodCategory } from '@/features/menu/config/menu.config'
 import { CATEGORY_MAP } from '@/lib/constants'
 import { useLanguage } from '@/providers/LanguageProvider'
 import {
@@ -41,7 +42,7 @@ interface MenuItemFormDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (data: MenuItemFormData, file: File | null) => void
-  initialData?: any
+  initialData?: MenuItemFormData | null
   isPending: boolean
   isUploadingImage: boolean
 }
@@ -249,7 +250,7 @@ export function MenuItemFormDialog({
   )
 }
 
-function Save(props: any) {
+function Save(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { VendorForm, VendorFormData } from '@/features/vendor/components/VendorForm'
-import { useMyVendor, useUpdateVendor } from '@/features/vendor/data-access/vendor.queries'
+import { useMyVendor, useUpdateVendor, useUpdateVendorImage } from '@/features/vendor/data-access/vendor.queries'
+import { useUploadImage } from '@/hooks/useUploadImage'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -13,12 +14,27 @@ export default function EditVendorPage() {
   const router = useRouter()
   const { data: vendor, isLoading } = useMyVendor()
   const { mutateAsync: updateVendor, isPending } = useUpdateVendor()
+  const { mutateAsync: updateVendorImage, isPending: isUpdatingImagePending } = useUpdateVendorImage()
+  const { uploadImage, isUploading: isUploadingImage } = useUploadImage()
 
-  const handleSubmit = async (data: VendorFormData) => {
+  const handleSubmit = async (data: VendorFormData, file: File | null) => {
     if (!vendor) return
     try {
       await updateVendor({ id: vendor.vendorId, data })
+
+      if (file && vendor.vendorId) {
+        try {
+          const url = await uploadImage(file)
+          if (url) {
+            await updateVendorImage({ id: vendor.vendorId, data: { imgUrl: url } })
+          }
+        } catch {
+          // image upload failure is non-fatal
+        }
+      }
+
       toast.success(t('manager.vendor.toast_success'))
+      if (data.imgUrl.startsWith('blob:')) URL.revokeObjectURL(data.imgUrl)
       router.push('/manager/vendor')
     } catch {
       toast.error(t('manager.vendor.toast_error'))
@@ -36,6 +52,15 @@ export default function EditVendorPage() {
   if (!vendor) {
     router.push('/manager/vendor')
     return null
+  }
+
+  const initialData: VendorFormData = {
+    name: vendor.name,
+    description: vendor.description,
+    workingHourFrom: vendor.workingHourFrom,
+    workingHourTo: vendor.workingHourTo,
+    certification: vendor.certification,
+    imgUrl: vendor.imgUrl ?? '',
   }
 
   return (
@@ -61,8 +86,9 @@ export default function EditVendorPage() {
 
       <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-secondary/5 overflow-hidden">
         <VendorForm
-          initialData={vendor}
-          isPending={isPending}
+          initialData={initialData}
+          isPending={isPending || isUpdatingImagePending}
+          isUploadingImage={isUploadingImage}
           onSubmit={handleSubmit}
           onCancel={() => router.push('/manager/vendor')}
         />

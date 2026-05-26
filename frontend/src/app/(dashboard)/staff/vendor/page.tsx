@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,35 +9,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  useMyMenu,
-} from "@/features/menu/data-access/menu.queries";
-import {
-  useMyVendor,
+  useVendorById,
   useVendorDashboard,
 } from "@/features/vendor/data-access/vendor.queries";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/AuthProvider";
 import { useLanguage } from "@/providers/LanguageProvider";
 import {
   CheckCircle2,
   Clock,
-  Edit2,
   FileText,
   Loader2,
-  Plus,
   Store,
   TrendingUp,
   UtensilsCrossed,
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
-export default function ManagerVendorPage() {
-  const { data: vendor, isLoading } = useMyVendor();
-  const { data: dashboard } = useVendorDashboard();
-  const { data: menuItems } = useMyMenu();
+export default function StaffVendorPage() {
+  const { user } = useAuth();
   const { t } = useLanguage();
-  const router = useRouter();
+  const { data: vendor, isLoading } = useVendorById(user?.vendorId ?? "");
+  const { data: dashboard } = useVendorDashboard();
 
   if (isLoading) {
     return (
@@ -50,26 +43,9 @@ export default function ManagerVendorPage() {
 
   if (!vendor) {
     return (
-      <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
-        <div className="p-10 rounded-[2.5rem] bg-secondary/5 border-2 border-dashed border-secondary/20 relative group overflow-hidden">
-          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Store className="h-20 w-20 text-muted-foreground/30 relative z-10 transition-transform duration-500 group-hover:scale-110" />
-        </div>
-        <div className="space-y-3 max-w-sm">
-          <h3 className="text-2xl font-black text-primary tracking-tight">
-            {t("manager.vendor.no_vendor")}
-          </h3>
-          <p className="text-muted-foreground font-medium">
-            {t("manager.vendor.no_vendor_desc")}
-          </p>
-        </div>
-        <Button
-          onClick={() => router.push('/manager/vendor/create')}
-          className="rounded-2xl h-14 px-10 font-bold gap-3 shadow-2xl shadow-primary/20 text-lg hover:scale-105 transition-transform"
-        >
-          <Plus className="h-6 w-6" />
-          {t("manager.vendor.add_title")}
-        </Button>
+      <div className="flex flex-col items-center justify-center h-[80vh] text-center space-y-4">
+        <Store className="h-20 w-20 text-muted-foreground/30" />
+        <p className="text-muted-foreground font-medium">{t("manager.vendor.no_vendor_desc")}</p>
       </div>
     );
   }
@@ -88,8 +64,7 @@ export default function ManagerVendorPage() {
     CLOSED: "manager.vendor.status_closed",
   };
 
-  const formatVND = (value: number) =>
-    value.toLocaleString('vi-VN') + 'đ';
+  const formatVND = (value: number) => value.toLocaleString('vi-VN') + 'đ';
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -102,24 +77,14 @@ export default function ManagerVendorPage() {
             {t("manager.vendor.subtitle")}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge
-            className={cn(
-              "rounded-full px-6 py-2 text-xs font-bold border",
-              statusColors[vendor.status],
-            )}
-          >
-            {t(statusLabelKeys[vendor.status]) || vendor.status}
-          </Badge>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/manager/vendor/edit')}
-            className="rounded-full h-10 px-6 font-bold border-secondary/20 hover:bg-secondary/5"
-          >
-            <Edit2 className="h-4 w-4 mr-2" />
-            {t("manager.vendor.edit_title")}
-          </Button>
-        </div>
+        <Badge
+          className={cn(
+            "rounded-full px-6 py-2 text-xs font-bold border self-start md:self-auto",
+            statusColors[vendor.status],
+          )}
+        >
+          {t(statusLabelKeys[vendor.status]) || vendor.status}
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -152,9 +117,7 @@ export default function ManagerVendorPage() {
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                     {t("manager.vendor.name")}
                   </p>
-                  <p className="text-lg font-bold text-primary">
-                    {vendor.name}
-                  </p>
+                  <p className="text-lg font-bold text-primary">{vendor.name}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -184,9 +147,7 @@ export default function ManagerVendorPage() {
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                       {t("manager.vendor.open")}
                     </p>
-                    <p className="font-bold text-primary">
-                      {vendor.workingHourFrom}
-                    </p>
+                    <p className="font-bold text-primary">{vendor.workingHourFrom}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -197,9 +158,7 @@ export default function ManagerVendorPage() {
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                       {t("manager.vendor.close")}
                     </p>
-                    <p className="font-bold text-primary">
-                      {vendor.workingHourTo}
-                    </p>
+                    <p className="font-bold text-primary">{vendor.workingHourTo}</p>
                   </div>
                 </div>
               </div>
@@ -256,8 +215,8 @@ export default function ManagerVendorPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-4">
-              <div className="flex items-center gap-4 bg-secondary/5 p-4 rounded-3xl group hover:bg-secondary/10 transition-colors">
-                <div className="p-3 rounded-2xl bg-white text-primary shadow-sm group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-4 bg-secondary/5 p-4 rounded-3xl">
+                <div className="p-3 rounded-2xl bg-white text-primary shadow-sm">
                   <CheckCircle2 size={24} />
                 </div>
                 <div>
@@ -269,8 +228,8 @@ export default function ManagerVendorPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-3xl group hover:bg-amber-100 transition-colors">
-                <div className="p-3 rounded-2xl bg-white text-amber-600 shadow-sm group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-3xl">
+                <div className="p-3 rounded-2xl bg-white text-amber-600 shadow-sm">
                   <Clock size={24} />
                 </div>
                 <div>
@@ -282,8 +241,8 @@ export default function ManagerVendorPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 bg-red-50 p-4 rounded-3xl group hover:bg-red-100 transition-colors">
-                <div className="p-3 rounded-2xl bg-white text-red-500 shadow-sm group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-4 bg-red-50 p-4 rounded-3xl">
+                <div className="p-3 rounded-2xl bg-white text-red-500 shadow-sm">
                   <XCircle size={24} />
                 </div>
                 <div>
@@ -295,16 +254,16 @@ export default function ManagerVendorPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-3xl group hover:bg-primary/10 transition-colors">
-                <div className="p-3 rounded-2xl bg-white text-primary shadow-sm group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-3xl">
+                <div className="p-3 rounded-2xl bg-white text-primary shadow-sm">
                   <FileText size={24} />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    {t("manager.vendor.menu")}
+                    {t('dashboard.total_orders') || 'Tổng đơn'}
                   </p>
                   <p className="text-2xl font-black text-primary">
-                    {menuItems ? menuItems.length : '--'}
+                    {dashboard ? dashboard.totalOrders : '--'}
                   </p>
                 </div>
               </div>
@@ -323,15 +282,6 @@ export default function ManagerVendorPage() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[2.5rem] border-none shadow-xl shadow-secondary/5 overflow-hidden bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-            <CardContent className="p-8 space-y-4">
-              <h4 className="font-bold">{t("manager.vendor.tip_title")}</h4>
-              <p className="text-sm opacity-80 leading-relaxed font-medium">
-                {t("manager.vendor.tip_desc")}
-              </p>
             </CardContent>
           </Card>
         </div>

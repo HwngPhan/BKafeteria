@@ -39,7 +39,7 @@ interface VendorFormDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (data: VendorFormData) => void
-  initialData?: any
+  initialData?: VendorFormData | null
   isPending: boolean
 }
 

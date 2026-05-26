@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -13,16 +14,18 @@ export interface VendorFormData {
   workingHourFrom: string
   workingHourTo: string
   certification: string
+  imgUrl: string
 }
 
 interface VendorFormProps {
   initialData?: VendorFormData | null
   isPending: boolean
-  onSubmit: (data: VendorFormData) => void
+  isUploadingImage?: boolean
+  onSubmit: (data: VendorFormData, file: File | null) => void
   onCancel: () => void
 }
 
-export function VendorForm({ initialData, isPending, onSubmit, onCancel }: VendorFormProps) {
+export function VendorForm({ initialData, isPending, isUploadingImage = false, onSubmit, onCancel }: VendorFormProps) {
   const { t } = useLanguage()
   const [formData, setFormData] = useState<VendorFormData>({
     name: '',
@@ -30,7 +33,9 @@ export function VendorForm({ initialData, isPending, onSubmit, onCancel }: Vendo
     workingHourFrom: '08:00:00',
     workingHourTo: '20:00:00',
     certification: '',
+    imgUrl: '',
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
     if (initialData) {
@@ -40,13 +45,19 @@ export function VendorForm({ initialData, isPending, onSubmit, onCancel }: Vendo
         workingHourFrom: initialData.workingHourFrom || '08:00:00',
         workingHourTo: initialData.workingHourTo || '20:00:00',
         certification: initialData.certification || '',
+        imgUrl: initialData.imgUrl || '',
       })
     }
+    setSelectedFile(null)
   }, [initialData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit(formData, selectedFile)
+  }
+
+  const handleFileChange = (file: File | null) => {
+    setSelectedFile(file)
   }
 
   return (
@@ -135,6 +146,23 @@ export function VendorForm({ initialData, isPending, onSubmit, onCancel }: Vendo
             </div>
           </div>
         </div>
+
+        {/* Image upload */}
+        <div className="group space-y-2">
+          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+            {t('manager.vendor.image')}
+          </label>
+          <div className="relative w-full rounded-2xl overflow-hidden bg-secondary/5 border-2 border-dashed border-primary/20 p-2 hover:border-primary/40 transition-colors">
+            <div className="w-full h-32 rounded-xl overflow-hidden relative bg-white">
+              <ImageUpload
+                value={formData.imgUrl}
+                onChange={url => setFormData({ ...formData, imgUrl: url })}
+                onFileChange={handleFileChange}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="px-8 pb-8 pt-0 flex gap-4">
@@ -148,10 +176,10 @@ export function VendorForm({ initialData, isPending, onSubmit, onCancel }: Vendo
         </Button>
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || isUploadingImage}
           className="h-12 px-8 rounded-xl font-bold flex-1 shadow-lg shadow-primary/20"
         >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          {(isPending || isUploadingImage) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {initialData ? t('manager.vendor.save') : t('manager.vendor.submit')}
         </Button>
       </div>

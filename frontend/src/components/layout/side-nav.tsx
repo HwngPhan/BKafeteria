@@ -42,6 +42,8 @@ export function SideNav() {
 
     // Staff routes
     { href: '/staff/orders', icon: ClipboardList, labelKey: 'nav.staff_orders', roles: ['STAFF'] },
+    { href: '/staff/vendor', icon: Store, labelKey: 'nav.staff_vendor', roles: ['STAFF'] },
+    { href: '/staff/menu', icon: Utensils, labelKey: 'nav.staff_menu', roles: ['STAFF'] },
 
     // Admin routes
     { href: '/admin/users', icon: Users, labelKey: 'nav.manage_users', roles: ['ADMIN'] },

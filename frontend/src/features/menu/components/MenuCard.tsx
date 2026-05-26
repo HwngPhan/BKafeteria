@@ -10,7 +10,7 @@ import { useLanguage } from '@/providers/LanguageProvider'
 import { Minus, Plus, ShoppingCart, Star, UtensilsCrossed } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { MenuItemDto } from '../config/menu.types'
+import { MenuItemDto } from '../config/menu.config'
 import { MenuItemFeedbacksModal } from './MenuItemFeedbacksModal'
 
 interface MenuCardProps {
@@ -24,6 +24,8 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
   const [quantity, setQuantity] = useState(1)
   const { t } = useLanguage()
   const [isReviewsOpen, setIsReviewsOpen] = useState(false)
+
+  const isSoldOut = item.remaining === 0
 
   const handleAddToCart = () => {
     addItem({
@@ -42,6 +44,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isSoldOut) return
     addItem({
       itemId: item.menuItemId,
       itemName: item.name,
@@ -66,10 +69,10 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${isSoldOut ? 'grayscale opacity-60' : ''}`}
               />
             ) : (
-              <div className="h-full w-full bg-secondary/5 flex items-center justify-center text-muted-foreground/20 italic">
+              <div className={`h-full w-full bg-secondary/5 flex items-center justify-center text-muted-foreground/20 italic ${isSoldOut ? 'opacity-60' : ''}`}>
                 <UtensilsCrossed size={28} />
               </div>
             )}
@@ -88,6 +91,17 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
               <Star size={10} className="fill-white" />
               {item.rating ? item.rating.toFixed(1) : '5.0'}
             </div>
+
+            {/* Sold out / low stock banner */}
+            {isSoldOut ? (
+              <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[9px] font-bold py-0.5 text-center">
+                {t('menu.sold_out') || 'Hết hàng'}
+              </div>
+            ) : item.remaining !== undefined && item.remaining <= 5 ? (
+              <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[9px] font-bold py-0.5 text-center">
+                {t('menu.remaining').replace('{n}', String(item.remaining))}
+              </div>
+            ) : null}
           </div>
         </CardHeader>
 
@@ -110,18 +124,13 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
           <Button
             size="icon"
             onClick={handleQuickAdd}
-            className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl shadow-md shadow-primary/20 hover:scale-110 active:scale-95 transition-all shrink-0"
+            disabled={isSoldOut}
+            className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl shadow-md shadow-primary/20 hover:scale-110 active:scale-95 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none"
           >
             <Plus size={16} strokeWidth={3} className="sm:hidden" />
             <Plus size={20} strokeWidth={3} className="hidden sm:block" />
           </Button>
         </CardFooter>
-
-        {item.remaining !== undefined && item.remaining <= 5 && (
-          <div className="absolute top-0 left-0 w-full bg-red-500/90 text-white text-[9px] font-bold py-0.5 text-center">
-            {t('menu.remaining').replace('{n}', String(item.remaining))}
-          </div>
-        )}
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -130,7 +139,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
           <DialogDescription className="sr-only">{vendorName}</DialogDescription>
           <div className="relative h-44 sm:h-64 w-full">
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+              <img src={item.imageUrl} alt={item.name} className={`h-full w-full object-cover ${isSoldOut ? 'grayscale opacity-70' : ''}`} />
             ) : (
               <div className="h-full w-full bg-secondary/5 flex items-center justify-center text-muted-foreground/20 italic">
                 <UtensilsCrossed size={48} />
@@ -184,6 +193,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
                   size="icon"
                   className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl hover:bg-secondary/10 text-primary transition-all"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={isSoldOut}
                 >
                   <Minus size={16} strokeWidth={3} />
                 </Button>
@@ -192,7 +202,8 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl hover:bg-secondary/10 text-primary transition-all"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(item.remaining, quantity + 1))}
+                  disabled={isSoldOut || quantity >= item.remaining}
                 >
                   <Plus size={16} strokeWidth={3} />
                 </Button>
@@ -209,10 +220,17 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
               </Button>
               <Button
                 onClick={handleAddToCart}
-                className="h-12 sm:h-14 rounded-xl sm:rounded-2xl font-bold flex-[2] gap-2 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm"
+                disabled={isSoldOut}
+                className="h-12 sm:h-14 rounded-xl sm:rounded-2xl font-bold flex-[2] gap-2 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none"
               >
-                <ShoppingCart size={18} />
-                {t('menu.add_to_cart_btn')} • {(item.price * quantity).toLocaleString()}đ
+                {isSoldOut ? (
+                  t('menu.sold_out') || 'Hết hàng'
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    {t('menu.add_to_cart_btn')} • {(item.price * quantity).toLocaleString()}đ
+                  </>
+                )}
               </Button>
             </div>
           </div>

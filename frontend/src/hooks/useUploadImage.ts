@@ -29,9 +29,8 @@ export function useUploadImage() {
         throw new Error(result.error || 'Upload failed');
       }
 
-      toast.success(t('upload.success'));
       return result.url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
       toast.error(t('upload.error_failed'));
       return null;

@@ -1,6 +1,6 @@
 'use client'
 
-import { VendorDto } from '../config/vendor.types'
+import { VendorDto } from '../config/vendor.config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, Store, Star, ArrowRight } from 'lucide-react'

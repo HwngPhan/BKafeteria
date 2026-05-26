@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { ChevronRight, ClipboardList, Clock, CreditCard, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { OrderDto } from '../config/order.types'
+import { OrderDto } from '../config/order.config'
 import { toast } from 'sonner'
 import { usePayOrder } from '../data-access/order.queries'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -42,7 +42,7 @@ export function OrderCard({ order }: OrderCardProps) {
     try {
       await payOrder.mutateAsync(order.orderId)
       toast.success(t('order_card.toast_pay_success'))
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error?.message || t('order_card.toast_pay_error'))
     }
   }

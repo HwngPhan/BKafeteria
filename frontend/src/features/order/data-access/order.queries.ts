@@ -1,6 +1,6 @@
 import { userKeys } from "@/features/user/data-access/user.queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreateOrderRequest, OrderDto, PageDto } from "../config/order.types";
+import { CreateOrderRequest, OrderDto, PageDto } from "../config/order.config";
 import { CreateOrderApi, GetMyOrdersApi, GetOrderByIdApi, PayOrderApi } from "./order.api";
 
 export const orderKeys = {

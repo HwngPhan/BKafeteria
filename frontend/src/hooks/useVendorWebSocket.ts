@@ -7,7 +7,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import { useLanguage } from '@/providers/LanguageProvider'
 import { toast } from 'sonner'
 import { vendorOrderKeys } from '@/features/vendor/data-access/vendor-order.queries'
-import { VendorOrderNotification } from '@/features/vendor/config/vendor-order.types'
+import { VendorOrderNotification } from '@/features/vendor/config/vendor-order.config'
 
 export function useVendorWebSocket() {
   const { vendorClient, isVendorConnected } = useWebSocket()

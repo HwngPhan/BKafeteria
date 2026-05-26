@@ -16,7 +16,7 @@ export const userKeys = {
     all: ['user'] as const,
     details: () => [...userKeys.all, 'details'] as const,
     me: () => [...userKeys.details(), 'me'] as const,
-    list: (params: any) => [...userKeys.all, 'list', params] as const,
+    list: (params: { search?: string; role?: string; status?: string; page?: number; size?: number }) => [...userKeys.all, 'list', params] as const,
 }
 
 export const useGetMe = (enabled: boolean = true) => { 
