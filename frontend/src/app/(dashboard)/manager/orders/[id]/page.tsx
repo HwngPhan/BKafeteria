@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +18,7 @@ import {
   useConfirmOrder,
   useMarkOrderFinished,
 } from "@/features/vendor/data-access/vendor-order.queries";
-import { useOrderById } from "@/features/order/data-access/order.queries";
+import { useManagerRefundVendorOrder, useOrderById } from "@/features/order/data-access/order.queries";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/providers/LanguageProvider";
@@ -20,11 +30,13 @@ import {
   ClipboardList,
   Clock,
   Loader2,
+  RotateCcw,
   ShoppingBag,
   User,
   UtensilsCrossed,
 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const statusSteps = [
@@ -62,6 +74,8 @@ export default function ManagerOrderDetailPage() {
 
   const confirmOrder = useConfirmOrder();
   const markFinished = useMarkOrderFinished();
+  const refundVendorOrder = useManagerRefundVendorOrder();
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
 
   const handleConfirm = async () => {
     if (!vendorOrder) return;
@@ -78,6 +92,17 @@ export default function ManagerOrderDetailPage() {
     try {
       await markFinished.mutateAsync(vendorOrder.vendorOrderId);
       toast.success(t("manager.orders.toast_finished"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("common.error_occurred"));
+    }
+  };
+
+  const handleRefund = async () => {
+    if (!vendorOrder) return;
+    try {
+      await refundVendorOrder.mutateAsync(vendorOrder.vendorOrderId);
+      toast.success(t("manager.orders.toast_refund_success"));
+      router.back();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : t("common.error_occurred"));
     }
@@ -329,7 +354,7 @@ export default function ManagerOrderDetailPage() {
                 {!isCanceled && (vendorOrder.status === "PURCHASED" || vendorOrder.status === "PROCESSING") && (
                   <>
                     <Separator className="bg-white/20" />
-                    <div>
+                    <div className="space-y-3">
                       {vendorOrder.status === "PURCHASED" && (
                         <Button
                           onClick={handleConfirm}
@@ -358,6 +383,22 @@ export default function ManagerOrderDetailPage() {
                           {t("manager.orders.finish")}
                         </Button>
                       )}
+                      {/* Refund — only allowed when PURCHASED (not yet PROCESSING) */}
+                      {vendorOrder.status === "PURCHASED" && (
+                        <Button
+                          onClick={() => setRefundDialogOpen(true)}
+                          disabled={refundVendorOrder.isPending}
+                          variant="ghost"
+                          className="w-full rounded-xl h-12 font-bold gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 cursor-pointer"
+                        >
+                          {refundVendorOrder.isPending ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <RotateCcw size={16} />
+                          )}
+                          {t("manager.orders.refund_btn")}
+                        </Button>
+                      )}
                     </div>
                   </>
                 )}
@@ -366,6 +407,27 @@ export default function ManagerOrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Refund Confirmation Dialog */}
+      <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("manager.orders.refund_confirm_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("manager.orders.refund_confirm_desc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefund}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {t("manager.orders.refund_btn")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -63,12 +63,12 @@ export function CartSheet() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-primary/10 transition-colors">
+        <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
           {items.length > 0 && (
-            <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in">
-              {items.length}
-            </Badge>
+            <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold bg-primary text-primary-foreground shadow-md shadow-primary/40 border-2 border-background animate-in zoom-in">
+              {items.length > 99 ? '99+' : items.length}
+            </span>
           )}
         </Button>
       </SheetTrigger>

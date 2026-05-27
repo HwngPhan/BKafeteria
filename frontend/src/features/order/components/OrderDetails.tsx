@@ -1,5 +1,15 @@
 'use client'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,6 +34,7 @@ import {
   CreditCard,
   Loader2,
   Ticket,
+  RotateCcw,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -35,7 +46,7 @@ import { FeedbackModal } from '@/features/menu/components/FeedbackModal'
 import { FeedbackDto } from '@/features/menu/config/feedback.types'
 import { isVoucherValid, VoucherDto } from '@/features/voucher/config/voucher.config'
 import { useVouchersByVendor } from '@/features/voucher/data-access/voucher.queries'
-import { usePayOrder } from '../data-access/order.queries'
+import { useCustomerRefundOrder, usePayOrder } from '../data-access/order.queries'
 import { OrderDto, OrderStatus } from '../config/order.config'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -151,7 +162,14 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   const [selectedVouchers, setSelectedVouchers] = useState<Record<string, SelectedVoucher>>({})
 
   const payOrderMutation = usePayOrder()
+  const refundOrderMutation = useCustomerRefundOrder()
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false)
   const isPending = order.status === 'PENDING'
+
+  // Customer can refund when order is PURCHASED and NO vendor order is PROCESSING
+  const canRefund =
+    order.status === 'PURCHASED' &&
+    (order.vendorOrders || []).every((vo) => vo.status !== 'PROCESSING')
 
   const getStatusIndex = (status: OrderStatus): number => {
     switch (status) {
@@ -196,6 +214,17 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : undefined
       toast.error(msg || t('order_card.toast_pay_error'))
+    }
+  }
+
+  const handleRefund = async () => {
+    try {
+      await refundOrderMutation.mutateAsync(order.orderId)
+      toast.success(t('order_details.toast_refund_success'))
+      router.back()
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('common.error_occurred'))
     }
   }
 
@@ -572,10 +601,48 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     : t('order_card.pay_btn')}
                 </Button>
               )}
+
+              {/* Refund button — only for PURCHASED orders with no PROCESSING vendor order */}
+              {canRefund && (
+                <Button
+                  onClick={() => setRefundDialogOpen(true)}
+                  disabled={refundOrderMutation.isPending}
+                  variant="ghost"
+                  className="w-full h-12 rounded-2xl font-bold bg-white/10 hover:bg-white/20 text-white gap-2 border border-white/20"
+                >
+                  {refundOrderMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RotateCcw size={18} />
+                  )}
+                  {t('order_details.refund_btn')}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Refund Confirmation Dialog */}
+      <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('order_details.refund_confirm_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('order_details.refund_confirm_desc')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefund}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {t('order_details.refund_btn')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Feedback Dialog */}
       <FeedbackModal

@@ -46,3 +46,23 @@ export const PayOrderApi = async (id: string, voucherIds: string[] = []): Promis
   const responseDTO = await handleResponse<{ data: OrderDto }>(response);
   return responseDTO.data;
 };
+
+/** Customer requests a full-order refund (only allowed when PURCHASED and no vendor order is PROCESSING) */
+export const CustomerRefundOrderApi = async (id: string): Promise<OrderDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/customer-refund/${id}`, {
+    method: 'PUT',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: OrderDto }>(response);
+  return responseDTO.data;
+};
+
+/** Manager cancels a specific vendor order and triggers refund to customer */
+export const ManagerRefundVendorOrderApi = async (vendorOrderId: string): Promise<OrderDto> => {
+  const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/manager-refund/${vendorOrderId}`, {
+    method: 'PUT',
+  });
+  if (!response.ok) await throwApiError(response);
+  const responseDTO = await handleResponse<{ data: OrderDto }>(response);
+  return responseDTO.data;
+};

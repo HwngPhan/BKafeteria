@@ -198,6 +198,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "dashboard.explore_stores": "Khám phá cửa hàng",
     "dashboard.view_menu": "Xem thực đơn",
     "dashboard.today_income": "Thu nhập hôm nay",
+    "dashboard.week_income": "Thu nhập tuần",
+    "dashboard.month_income": "Thu nhập tháng",
+    "dashboard.top_dishes": "Món bán chạy",
+    "dashboard.total_orders": "Tổng đơn hàng",
+    "dashboard.avg_prep": "Thời gian chế biến TB",
     "dashboard.completed": "Hoàn thành",
     "dashboard.pending": "Đang chờ",
     "dashboard.manage_orders": "Quản lý đơn hàng",
@@ -216,6 +221,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "menu.not_found": "Không tìm thấy món ăn nào trong danh mục này.",
     "menu.fresh_daily": "Được chế biến tươi ngon mỗi ngày.",
     "menu.remaining": "Còn {n} phần!",
+    "menu.sold_out": "Hết hàng",
     "menu.added_to_cart": "Đã thêm {name} vào giỏ hàng",
     "menu.added_n_items": "Đã thêm {n} x {name} vào giỏ hàng",
     "menu.desc_title": "Mô tả món ăn",
@@ -277,6 +283,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "order_details.voucher_label": "Áp dụng voucher",
     "order_details.no_voucher": "Không dùng voucher",
     "order_details.pay_with_voucher": "Thanh toán với voucher",
+    "order_details.refund_btn": "Yêu cầu hoàn tiền",
+    "order_details.refund_confirm_title": "Xác nhận yêu cầu hoàn tiền?",
+    "order_details.refund_confirm_desc": "Toàn bộ số tiền sẽ được hoàn về ví của bạn. Tất cả đơn hàng con sẽ bị hủy. Hành động này không thể hoàn tác.",
+    "order_details.toast_refund_success": "Hoàn tiền thành công! Số tiền đã được trả về ví của bạn.",
 
     // Order statuses
     "order_status.pending": "Chờ thanh toán",
@@ -424,6 +434,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.vendor.status_closed": "Đóng cửa",
     "manager.vendor.create_subtitle": "Điền thông tin để đăng ký cửa hàng của bạn.",
     "manager.vendor.edit_subtitle": "Cập nhật thông tin cửa hàng của bạn.",
+    "manager.vendor.pending": "Đang chờ",
+    "manager.vendor.canceled": "Đã hủy",
+    "manager.vendor.no_desc": "Chưa có mô tả.",
+    "manager.vendor.image": "Ảnh cửa hàng",
 
     // Manager - Menu
     "manager.menu.title": "Quản lý thực đơn",
@@ -520,6 +534,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.orders.newest": "Mới nhất",
     "manager.orders.oldest": "Cũ nhất",
     "manager.orders.toast_processing": "Đã bắt đầu chế biến đơn hàng!",
+    "manager.orders.refund_btn": "Hoàn tiền",
+    "manager.orders.refund_confirm_title": "Xác nhận hoàn tiền?",
+    "manager.orders.refund_confirm_desc": "Đơn hàng này sẽ bị hủy và số tiền sẽ được hoàn về ví khách hàng. Hành động này không thể hoàn tác.",
+    "manager.orders.toast_refund_success": "Đã hoàn tiền thành công!",
 
     // Manager - Order Detail
     "manager.order_detail.title": "Chi tiết đơn hàng",
@@ -863,6 +881,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "dashboard.explore_stores": "Explore Vendors",
     "dashboard.view_menu": "View Menu",
     "dashboard.today_income": "Today's Revenue",
+    "dashboard.week_income": "Weekly Revenue",
+    "dashboard.month_income": "Monthly Revenue",
+    "dashboard.top_dishes": "Top Dishes",
+    "dashboard.total_orders": "Total Orders",
+    "dashboard.avg_prep": "Avg. Prep Time",
     "dashboard.completed": "Completed",
     "dashboard.pending": "Pending",
     "dashboard.manage_orders": "Manage Orders",
@@ -881,6 +904,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "menu.not_found": "No items found in this category.",
     "menu.fresh_daily": "Made fresh every day.",
     "menu.remaining": "{n} left!",
+    "menu.sold_out": "Sold Out",
     "menu.added_to_cart": "Added {name} to cart",
     "menu.added_n_items": "Added {n} x {name} to cart",
     "menu.desc_title": "Description",
@@ -941,6 +965,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "order_details.voucher_label": "Apply Voucher",
     "order_details.no_voucher": "No voucher",
     "order_details.pay_with_voucher": "Pay with Voucher",
+    "order_details.refund_btn": "Request Refund",
+    "order_details.refund_confirm_title": "Confirm Refund Request?",
+    "order_details.refund_confirm_desc": "Your full payment will be returned to your wallet. All sub-orders will be canceled. This action cannot be undone.",
+    "order_details.toast_refund_success": "Refund successful! The amount has been returned to your wallet.",
 
     // Order statuses
     "order_status.pending": "Pending payment",
@@ -1082,6 +1110,10 @@ const translations: Record<Lang, Record<string, string>> = {
       "Providing complete information helps Admin approve your store faster.",
     "manager.vendor.create_subtitle": "Fill in the details to register your store.",
     "manager.vendor.edit_subtitle": "Update your store information.",
+    "manager.vendor.pending": "Pending",
+    "manager.vendor.canceled": "Canceled",
+    "manager.vendor.no_desc": "No description yet.",
+    "manager.vendor.image": "Store Image",
     "manager.vendor.toast_register_success":
       "Vendor registration request sent!",
     "manager.vendor.toast_success": "Store information updated successfully",
@@ -1186,6 +1218,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "manager.orders.newest": "Newest",
     "manager.orders.oldest": "Oldest",
     "manager.orders.toast_processing": "Started cooking the order!",
+    "manager.orders.refund_btn": "Refund",
+    "manager.orders.refund_confirm_title": "Confirm Refund?",
+    "manager.orders.refund_confirm_desc": "This vendor order will be canceled and the customer will be refunded. This action cannot be undone.",
+    "manager.orders.toast_refund_success": "Refund completed successfully!",
 
     // Manager - Order Detail
     "manager.order_detail.title": "Order Detail",

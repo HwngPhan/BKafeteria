@@ -179,12 +179,12 @@ export function TopBar() {
         {isManager && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-secondary/10">
+              <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell size={22} className="text-foreground/80" />
                 {unreadManagerNotifications.length > 0 && (
-                  <Badge className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-red-500 text-white border-2 border-background">
-                    {unreadManagerNotifications.length}
-                  </Badge>
+                  <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold bg-red-500 text-white shadow-md shadow-red-500/40 border-2 border-background animate-in zoom-in">
+                    {unreadManagerNotifications.length > 99 ? '99+' : unreadManagerNotifications.length}
+                  </span>
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -253,12 +253,12 @@ export function TopBar() {
         {!isManager && user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative border-1 border-slate-400 rounded-xl hover:bg-secondary/10">
+              <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
                 <Bell size={22} className="text-foreground/80" />
                 {unreadCustomerCount > 0 && (
-                  <Badge className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-red-500 text-white border-2 border-background">
-                    {unreadCustomerCount}
-                  </Badge>
+                  <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold bg-red-500 text-white shadow-md shadow-red-500/40 border-2 border-background animate-in zoom-in">
+                    {unreadCustomerCount > 99 ? '99+' : unreadCustomerCount}
+                  </span>
                 )}
               </Button>
             </DropdownMenuTrigger>
