@@ -55,7 +55,8 @@ export function CartSheet() {
       setIsOpen(false)
       router.push('/orders')
     } catch (error: unknown) {
-      toast.error(error?.message || t('cart.toast_error'))
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('cart.toast_error'))
     }
   }
 
@@ -132,6 +133,7 @@ export function CartSheet() {
                         <div key={item.itemId} className="flex gap-4 group animate-in slide-in-from-right-4 duration-300">
                           <div className="shrink-0 h-24 w-24 rounded-3xl bg-secondary/5 overflow-hidden border-none shadow-inner flex items-center justify-center">
                             {item.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img src={item.imageUrl} alt={item.itemName} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             ) : (
                               <UtensilsCrossed size={24} className="text-muted-foreground/20" />

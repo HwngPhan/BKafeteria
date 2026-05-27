@@ -38,6 +38,7 @@ export function FeedbackModal({
   useEffect(() => {
     if (open) {
       if (existingFeedback) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setRating(existingFeedback.rating)
         setComment(existingFeedback.comment || '')
       } else {
@@ -67,7 +68,8 @@ export function FeedbackModal({
       }
       onOpenChange(false)
     } catch (error: unknown) {
-      toast.error(error?.message || t('feedback.toast_error'))
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('feedback.toast_error'))
     }
   }
 

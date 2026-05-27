@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLanguage } from '@/providers/LanguageProvider'
@@ -17,15 +16,9 @@ import {
   Clock,
   FileText,
   Loader2,
-  Save,
   Store,
-  X,
-  Building2,
-  Sparkles
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
 
 interface VendorFormData {
   name: string
@@ -59,8 +52,10 @@ export function VendorFormDialog({
     certification: ''
   })
 
+  // Form reset when dialog opens or initialData changes. setState-in-effect is intentional.
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         name: initialData.name || '',
         description: initialData.description || '',
@@ -107,9 +102,9 @@ export function VendorFormDialog({
               </label>
               <div className="relative">
                 <Store size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                <Input 
-                  value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})} 
+                <Input
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
                   className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
                   placeholder={t('manager.vendor.name_placeholder')}
                   required
@@ -124,9 +119,9 @@ export function VendorFormDialog({
                 <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
                   {t('manager.vendor.desc')}
                 </label>
-                <Textarea 
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                <Textarea
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
                   className="rounded-2xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 p-5 text-sm font-medium leading-relaxed resize-none text-zinc-950 flex-1 min-h-[160px] h-full"
                   placeholder={t('manager.vendor.desc_placeholder')}
                 />
@@ -141,9 +136,9 @@ export function VendorFormDialog({
                   </label>
                   <div className="relative">
                     <FileText size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                    <Input 
-                      value={formData.certification} 
-                      onChange={e => setFormData({...formData, certification: e.target.value})} 
+                    <Input
+                      value={formData.certification}
+                      onChange={e => setFormData({...formData, certification: e.target.value})}
                       className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
                       placeholder={t('manager.vendor.cert_placeholder')}
                     />
@@ -157,11 +152,11 @@ export function VendorFormDialog({
                   </label>
                   <div className="relative">
                     <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
-                    <Input 
+                    <Input
                       type="time"
                       step="1"
-                      value={formData.workingHourFrom} 
-                      onChange={e => setFormData({...formData, workingHourFrom: e.target.value})} 
+                      value={formData.workingHourFrom}
+                      onChange={e => setFormData({...formData, workingHourFrom: e.target.value})}
                       className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
                       required
                     />
@@ -175,11 +170,11 @@ export function VendorFormDialog({
                   </label>
                   <div className="relative">
                     <Clock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none" />
-                    <Input 
+                    <Input
                       type="time"
                       step="1"
-                      value={formData.workingHourTo} 
-                      onChange={e => setFormData({...formData, workingHourTo: e.target.value})} 
+                      value={formData.workingHourTo}
+                      onChange={e => setFormData({...formData, workingHourTo: e.target.value})}
                       className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
                       required
                     />
@@ -191,16 +186,16 @@ export function VendorFormDialog({
 
           {/* Footer Buttons */}
           <DialogFooter className="px-8 pb-8 pt-0 flex gap-4">
-            <Button 
-              type="button" 
-              variant="ghost" 
+            <Button
+              type="button"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
               className="h-12 px-6 rounded-xl font-bold flex-1 text-muted-foreground bg-secondary/5 hover:bg-secondary/10"
             >
               {t('manager.menu.cancel')}
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isPending}
               className="h-12 px-8 rounded-xl font-bold flex-1 shadow-lg shadow-primary/20"
             >

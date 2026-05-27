@@ -43,7 +43,8 @@ export function OrderCard({ order }: OrderCardProps) {
       await payOrder.mutateAsync(order.orderId)
       toast.success(t('order_card.toast_pay_success'))
     } catch (error: unknown) {
-      toast.error(error?.message || t('order_card.toast_pay_error'))
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('order_card.toast_pay_error'))
     }
   }
 

@@ -128,7 +128,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const { day, month, year, confirmPassword, ...rest } = values;
+    const { day, month, year, confirmPassword: _confirmPassword, ...rest } = values;
     const dob = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
     if (dob.getMonth() !== parseInt(month) - 1) {

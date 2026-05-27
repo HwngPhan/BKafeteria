@@ -62,5 +62,6 @@ export function useOrderWebSocket() {
       console.log('Unsubscribing from /topic/customer/' + user.userId)
       subscription.unsubscribe()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderClient, isOrderConnected, user])
 }

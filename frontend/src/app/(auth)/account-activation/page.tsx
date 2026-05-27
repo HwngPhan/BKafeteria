@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Loader2, Utensils, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -19,7 +18,6 @@ import { useLanguage } from '@/providers/LanguageProvider'
 
 export default function AccountActivationPage() {
   const { t } = useLanguage()
-  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? undefined
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -34,6 +32,7 @@ export default function AccountActivationPage() {
     activate(token)
       .then(() => setStatus('success'))
       .catch(() => setStatus('error'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   return (

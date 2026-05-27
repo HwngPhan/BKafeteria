@@ -37,7 +37,7 @@ export function useVendorWebSocket() {
         try {
           const audio = new Audio('/assets/sounds/notification.mp3')
           audio.play()
-        } catch (e) {
+        } catch {
           // Ignore if sound fails
         }
 
@@ -77,5 +77,6 @@ export function useVendorWebSocket() {
       console.log('Unsubscribing from /topic/vendor/' + user.vendorId)
       subscription.unsubscribe()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorClient, isVendorConnected, user, queryClient])
 }

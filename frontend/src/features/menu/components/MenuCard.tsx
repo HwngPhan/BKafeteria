@@ -66,6 +66,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
         <CardHeader className="p-0">
           <div className="relative h-28 sm:h-44 w-full overflow-hidden">
             {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={item.imageUrl}
                 alt={item.name}
@@ -139,6 +140,7 @@ export function MenuCard({ item, vendorName }: MenuCardProps) {
           <DialogDescription className="sr-only">{vendorName}</DialogDescription>
           <div className="relative h-44 sm:h-64 w-full">
             {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={item.imageUrl} alt={item.name} className={`h-full w-full object-cover ${isSoldOut ? 'grayscale opacity-70' : ''}`} />
             ) : (
               <div className="h-full w-full bg-secondary/5 flex items-center justify-center text-muted-foreground/20 italic">

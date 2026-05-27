@@ -120,7 +120,14 @@ export default function EditMenuItemPage({
 
       <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-secondary/5 overflow-hidden">
         <MenuItemForm
-          initialData={item}
+          initialData={{
+            name: item.name,
+            description: item.description || '',
+            price: item.price.toString(),
+            remaining: item.remaining.toString(),
+            category: item.category,
+            imageUrl: item.imageUrl || '',
+          } satisfies MenuItemFormData}
           isPending={isPending || isUpdatingImagePending}
           isUploadingImage={isUploadingImage}
           onSubmit={handleSubmit}

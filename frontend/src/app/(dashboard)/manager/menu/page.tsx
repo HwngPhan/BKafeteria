@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MenuItemFeedbacksModal } from "@/features/menu/components/MenuItemFeedbacksModal";
-import { FoodCategory } from "@/features/menu/config/menu.config";
 import {
   useDeleteMenuItem,
   useMyMenu,
@@ -39,14 +38,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const categories: FoodCategory[] = [
-  "BEVERAGES",
-  "PASTRIES",
-  "SNACKS",
-  "MEALS",
-  "DESSERTS",
-];
 
 export default function ManagerMenuPage() {
   const { t } = useLanguage();

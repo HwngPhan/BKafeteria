@@ -1,15 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/features/cart/store/cart.store";
 import { MenuCard } from "@/features/menu/components/MenuCard";
-import { MenuItemDto } from "@/features/menu/config/menu.config";
 import { useMenuItems } from "@/features/menu/data-access/menu.queries";
 import { useActiveVendors } from "@/features/vendor/data-access/vendor.queries";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { motion } from "framer-motion";
 import { Loader2, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 // Ensure CATEGORIES is imported and defined correctly
 const CATEGORIES = [
@@ -23,7 +20,6 @@ const CATEGORIES = [
 export default function MenuPage() {
   const { t } = useLanguage();
   const [activeCatKey, setActiveCatKey] = useState("menu.cat_all");
-  const { addItem } = useCartStore();
 
   const activeBackendValue = CATEGORIES.find(
     (c) => c.key === activeCatKey,
@@ -39,19 +35,6 @@ export default function MenuPage() {
   const getVendorName = (vendorId: string) =>
     vendors?.find((v) => v.vendorId === vendorId)?.name ||
     t("menu.default_vendor");
-
-  const handleAddToCart = (item: MenuItemDto) => {
-    addItem({
-      itemId: item.menuItemId,
-      itemName: item.name,
-      price: item.price,
-      quantity: 1,
-      vendorId: item.vendorId,
-      vendorName: getVendorName(item.vendorId),
-      imageUrl: item.imageUrl,
-    });
-    toast.success(t("menu.added_to_cart").replace("{name}", item.name));
-  };
 
   if (menuLoading) {
     return (

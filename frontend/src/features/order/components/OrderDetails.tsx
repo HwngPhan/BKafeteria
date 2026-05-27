@@ -9,7 +9,6 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  Package,
   Truck,
   UtensilsCrossed,
   Store,
@@ -220,7 +219,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                                   </div>
                                   {feedback.comment && (
                                     <p className="text-[10px] text-muted-foreground italic mt-1 pl-1 line-clamp-2">
-                                      "{feedback.comment}"
+                                      &ldquo;{feedback.comment}&rdquo;
                                     </p>
                                   )}
                                 </div>

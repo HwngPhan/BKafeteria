@@ -119,7 +119,7 @@ export function MenuItemFeedbacksModal({
 
                     {review.comment ? (
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed italic bg-white/70 border border-slate-100 p-3 rounded-2xl">
-                        "{review.comment}"
+                        &ldquo;{review.comment}&rdquo;
                       </p>
                     ) : (
                       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 font-medium italic pl-1">

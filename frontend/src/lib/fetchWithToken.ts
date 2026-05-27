@@ -59,8 +59,8 @@ export async function fetchWithToken(
 
       console.info("Retrying original request with refreshed token...");
       return fetch(input, retryInit);
-    } catch (err) {
-      // console.error("Refresh token failed → forcing logout");
+    } catch {
+      // Refresh token failed → forcing logout
 
       deleteCookie(TokenType.authToken);
 

@@ -8,7 +8,7 @@ import { ApiRegisterRequest, LoginRequest } from "../config/auth.schema";
 export const useSendOtp = () => {
     return useMutation({
       mutationFn: SendOtpApi,
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
 }
@@ -21,7 +21,7 @@ export const useVerifyOtp = () => {
             setCookie(TokenType.otpToken, data.otpToken);
         }
       },
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
 }
@@ -32,7 +32,7 @@ export const useResetPassword = () => {
       onSuccess: () => {
         deleteCookie(TokenType.otpToken);
       },
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
 }
@@ -47,7 +47,7 @@ export const useLogin = () => {
         } 
         queryClient.invalidateQueries({ queryKey: userKeys.me() });
       },
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
 }
@@ -60,7 +60,7 @@ export const useLogout = () => {
         deleteCookie(TokenType.authToken);
         queryClient.invalidateQueries({ queryKey: userKeys.me() });
       },
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
 }
@@ -69,7 +69,7 @@ export const useLogout = () => {
 export const useRegister = () => {  
     return useMutation({
       mutationFn: (payload: ApiRegisterRequest) => RegisterApi(payload),
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
   }
@@ -77,7 +77,7 @@ export const useRegister = () => {
 export const useAccountActivation = () => {
     return useMutation({
       mutationFn: AccountActivationApi,
-      onError: (error: Error) => {
+      onError: () => {
       }
     });
   }

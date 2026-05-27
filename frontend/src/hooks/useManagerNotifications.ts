@@ -1,11 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface ManagerNotification {
-  vendorOrderId: string;
-  isRead: boolean;
-}
-
 interface ManagerNotificationStore {
   readNotifications: Record<string, boolean>;
   markAsRead: (vendorOrderId: string) => void;

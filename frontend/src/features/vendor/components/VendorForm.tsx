@@ -37,8 +37,10 @@ export function VendorForm({ initialData, isPending, isUploadingImage = false, o
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  // Form reset when initialData changes. setState-in-effect is intentional.
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         name: initialData.name || '',
         description: initialData.description || '',
