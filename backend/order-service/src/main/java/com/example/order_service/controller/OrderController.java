@@ -2,6 +2,7 @@ package com.example.order_service.controller;
 
 import com.example.order_service.dtos.*;
 import com.example.order_service.dtos.Request.OrderRequest;
+import com.example.order_service.dtos.Request.PaymentRequest;
 import com.example.order_service.model.Order;
 import com.example.order_service.service.OrderService;
 import com.example.order_service.service.VendorOrderService;
@@ -102,9 +103,11 @@ public class OrderController {
     @PutMapping("/{id}/payment")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> makePayment(@PathVariable String id,
+            @RequestBody(required = false) PaymentRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-            orderService.makePayment(id, userDetails.getId());
+            List<String> voucherIds = request != null ? request.getVoucherIds() : null;
+            orderService.makePayment(id, userDetails.getId(), voucherIds);
             List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
                     .stream()
                     .map(vendorOrderDtoConverter::convert)

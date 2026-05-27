@@ -3,6 +3,7 @@ package com.example.order_service.service;
 import com.example.order_service.dtos.MenuItemInfoDto;
 import com.example.order_service.dtos.UserInfoDto;
 import com.example.order_service.dtos.VendorInfoDto;
+import com.example.order_service.dtos.VoucherInfoDto;
 import com.example.order_service.helper.IamClient;
 import com.example.order_service.helper.MenuClient;
 import com.example.order_service.helper.VendorClient;
@@ -28,7 +29,9 @@ import com.example.shared.enums.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderService {
@@ -161,7 +164,7 @@ public class OrderService {
         }
     }
 
-    public void makePayment(String orderId, String customerId) throws RuntimeException {
+    public void makePayment(String orderId, String customerId, List<String> voucherIds) throws RuntimeException {
         Order order = getOrderById(orderId);
         if (order == null)
             throw new RuntimeException("Order not found");
@@ -169,6 +172,13 @@ public class OrderService {
             throw new RuntimeException("Order is not in PENDING state");
         if (!customerId.equals(order.getCustomerId()))
             throw new RuntimeException("Invalid customerId");
+
+        List<VendorOrder> vendorOrders = vendorOrderRepository.findByOrderId(orderId);
+
+        if (voucherIds != null && !voucherIds.isEmpty()) {
+            order.setTotalPrice(applyVoucherDiscounts(vendorOrders, voucherIds));
+        }
+
         UserInfoDto customer = iamClient.getUserInfo(customerId);
         if (customer.getBalance() < order.getTotalPrice())
             throw new RuntimeException("Insufficient balance");
@@ -179,40 +189,70 @@ public class OrderService {
             iamClient.addPoints(customerId, pointsToAdd);
         }
 
-        List<VendorOrder> vendorOrders = vendorOrderRepository.findByOrderId(orderId);
+        payVendors(vendorOrders, orderId, customerId);
+
+        order.setStatus(OrderStatus.PURCHASED);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+    }
+
+    private double applyVoucherDiscounts(List<VendorOrder> vendorOrders, List<String> voucherIds) {
+        List<String> vendorIdList = vendorOrders.stream()
+                .map(VendorOrder::getVendorId)
+                .toList();
+
+        Map<String, Double> vendorDiscountMap = new HashMap<>();
+        for (String voucherId : voucherIds) {
+            VoucherInfoDto voucher = menuClient.validateVoucher(voucherId, vendorIdList);
+            if (voucher != null && voucher.getVendorId() != null) {
+                double pct = voucher.getDiscountPercentage();
+                // Accumulate combined multiplier: applying 10% then 20% → multiply by 0.9 * 0.8
+                vendorDiscountMap.compute(voucher.getVendorId(),
+                        (k, existing) -> (existing == null ? 1.0 : existing) * (100.0 - pct) / 100.0);
+            }
+        }
 
         for (VendorOrder vendorOrder : vendorOrders) {
-            // Calculate new balance for vendor manager
+            Double multiplier = vendorDiscountMap.get(vendorOrder.getVendorId());
+            if (multiplier != null) {
+                vendorOrder.setVendorPrice(vendorOrder.getVendorPrice() * multiplier);
+            }
+        }
+
+        return vendorOrders.stream().mapToDouble(VendorOrder::getVendorPrice).sum();
+    }
+
+    private void payVendors(List<VendorOrder> vendorOrders, String orderId, String customerId) {
+        for (VendorOrder vendorOrder : vendorOrders) {
             VendorInfoDto vendorInfoDto = vendorClient.getVendorInfo(vendorOrder.getVendorId());
             UserInfoDto manager = iamClient.getUserInfo(vendorInfoDto.getManagerId());
             iamClient.setBalance(vendorInfoDto.getManagerId(), manager.getBalance() + vendorOrder.getVendorPrice());
 
-            // Update status from PENDING to PURCHASED
             vendorOrder.setStatus(OrderStatus.PURCHASED);
             vendorOrderRepository.save(vendorOrder);
 
-            // Send Kafka notification to vendor
-            VendorNotificationMessage notification = new VendorNotificationMessage();
-            notification.setOrderId(orderId);
-            notification.setVendorOrderId(vendorOrder.getVendorOrderId());
-            notification.setVendorId(vendorOrder.getVendorId());
-            notification.setCustomerId(customerId);
-            notification.setStatus(OrderStatus.PURCHASED);
-            notification.setMessage("New order received");
-            notification.setMenuItems(vendorOrder.getMenuItems());
-
-            try {
-                kafkaProducerService.send("vendor-orders", notification);
-                logger.info("Successfully sent Kafka notification to vendor: {} for order: {}",
-                        vendorOrder.getVendorId(), orderId);
-            } catch (Exception e) {
-                logger.error("Failed to send Kafka notification to vendor: {} for order: {}",
-                        vendorOrder.getVendorId(), orderId, e);
-            }
+            sendPurchasedNotification(vendorOrder, orderId, customerId);
         }
-        order.setStatus(OrderStatus.PURCHASED);
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
+    }
+
+    private void sendPurchasedNotification(VendorOrder vendorOrder, String orderId, String customerId) {
+        VendorNotificationMessage notification = new VendorNotificationMessage();
+        notification.setOrderId(orderId);
+        notification.setVendorOrderId(vendorOrder.getVendorOrderId());
+        notification.setVendorId(vendorOrder.getVendorId());
+        notification.setCustomerId(customerId);
+        notification.setStatus(OrderStatus.PURCHASED);
+        notification.setMessage("New order received");
+        notification.setMenuItems(vendorOrder.getMenuItems());
+
+        try {
+            kafkaProducerService.send("vendor-orders", notification);
+            logger.info("Successfully sent Kafka notification to vendor: {} for order: {}",
+                    vendorOrder.getVendorId(), orderId);
+        } catch (Exception e) {
+            logger.error("Failed to send Kafka notification to vendor: {} for order: {}",
+                    vendorOrder.getVendorId(), orderId, e);
+        }
     }
 
     public Order cancelOrder(String orderId, String customerId) {

@@ -3,7 +3,6 @@ package com.example.order_service.controller;
 import com.example.order_service.dtos.OrderDto;
 import com.example.order_service.dtos.OrderDtoConverter;
 import com.example.order_service.dtos.Request.OrderRequest;
-import com.example.order_service.dtos.VendorOrderDto;
 import com.example.order_service.dtos.VendorOrderDtoConverter;
 import com.example.order_service.model.Order;
 import com.example.order_service.model.VendorOrder;
@@ -24,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -87,7 +85,7 @@ public class OrderControllerTest {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("user1");
 
-        doNothing().when(orderService).makePayment("order1", "user1");
+        doNothing().when(orderService).makePayment("order1", "user1", null);
 
         VendorOrder vendorOrder = new VendorOrder();
         
@@ -98,7 +96,7 @@ public class OrderControllerTest {
         when(orderService.getOrderById("order1")).thenReturn(order);
         when(orderDtoConverter.convert(eq(order), anyList())).thenReturn(null);
 
-        ResponseEntity<ApiResponse<OrderDto>> response = orderController.makePayment("order1", userDetails);
+        ResponseEntity<ApiResponse<OrderDto>> response = orderController.makePayment("order1", null, userDetails);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Order paid successfully", response.getBody().getMessage());

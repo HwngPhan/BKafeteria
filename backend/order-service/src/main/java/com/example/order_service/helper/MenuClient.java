@@ -2,6 +2,7 @@ package com.example.order_service.helper;
 
 import com.example.order_service.config.jwt.InternalTokenProvider;
 import com.example.order_service.dtos.MenuItemInfoDto;
+import com.example.order_service.dtos.VoucherInfoDto;
 import com.example.shared.dtos.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,6 +59,30 @@ public class MenuClient {
                 .orElse(null);
 
     }
+    public VoucherInfoDto validateVoucher(String voucherId, List<String> vendorIds) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("voucherId", voucherId);
+        body.put("vendorIds", vendorIds);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(tokenProvider.getToken());
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        ParameterizedTypeReference<ApiResponse<VoucherInfoDto>> typeRef = new ParameterizedTypeReference<>() {};
+
+        ResponseEntity<ApiResponse<VoucherInfoDto>> response = restTemplate.exchange(
+                getMenuServiceBaseUrl() + "/menu/vouchers/validate",
+                HttpMethod.POST,
+                entity,
+                typeRef);
+
+        return Optional.ofNullable(response.getBody())
+                .map(ApiResponse::getData)
+                .orElse(null);
+    }
+
     public void updateRemaining(String menuItemId, Integer remaining){
         Map<String, String> body = new HashMap<>();
         body.put("remain", remaining.toString());
