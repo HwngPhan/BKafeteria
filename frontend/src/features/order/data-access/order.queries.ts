@@ -51,7 +51,8 @@ export const useCreateOrder = () => {
 export const usePayOrder = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => PayOrderApi(id),
+    mutationFn: ({ id, voucherIds }: { id: string; voucherIds?: string[] }) =>
+      PayOrderApi(id, voucherIds ?? []),
     onSuccess: (data) => {
       // Update the order in every cached list immediately so status changes appear
       // without waiting for a background refetch.

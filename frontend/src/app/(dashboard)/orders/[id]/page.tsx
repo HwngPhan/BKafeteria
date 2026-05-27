@@ -2,17 +2,30 @@
 
 import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/features/order/components/OrderDetails";
-import { useOrderById } from "@/features/order/data-access/order.queries";
+import { orderKeys, useOrderById } from "@/features/order/data-access/order.queries";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { useLanguage } from "@/providers/LanguageProvider";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const orderId = params.id as string;
 
-  const { data: order, isLoading } = useOrderById(params.id as string);
+  const { data: order, isLoading } = useOrderById(orderId);
   const { t } = useLanguage();
+
+  // Subscribe to real-time updates and invalidate the query when this order is updated
+  const queryClient = useQueryClient();
+  const realtimeUpdates = useRealtimeOrders((state) => state.updates);
+  useEffect(() => {
+    if (realtimeUpdates.has(orderId)) {
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+    }
+  }, [realtimeUpdates, orderId, queryClient]);
 
   if (isLoading) {
     return (

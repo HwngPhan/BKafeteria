@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldCheck,
   Store,
+  Ticket,
   Users,
   Utensils,
   Wallet,
@@ -38,6 +39,7 @@ export function SideNav() {
     { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER'] },
     { href: '/manager/vendor', icon: Settings, labelKey: 'nav.manage_store', roles: ['MANAGER'] },
     { href: '/manager/menu', icon: Utensils, labelKey: 'nav.manage_menu', roles: ['MANAGER'] },
+    { href: '/manager/vouchers', icon: Ticket, labelKey: 'nav.manage_vouchers', roles: ['MANAGER'] },
     // { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
 
     // Staff routes

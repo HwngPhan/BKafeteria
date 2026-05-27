@@ -40,7 +40,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
   const handlePay = async () => {
     try {
-      await payOrder.mutateAsync(order.orderId)
+      await payOrder.mutateAsync({ id: order.orderId })
       toast.success(t('order_card.toast_pay_success'))
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : undefined

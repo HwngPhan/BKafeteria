@@ -37,9 +37,10 @@ export const CreateOrderApi = async (payload: CreateOrderRequest): Promise<Order
   return responseDTO.data;
 };
 
-export const PayOrderApi = async (id: string): Promise<OrderDto> => {
+export const PayOrderApi = async (id: string, voucherIds: string[] = []): Promise<OrderDto> => {
   const response = await fetchWithToken(TokenType.authToken, `${BASE_URL}/${id}/payment`, {
     method: 'PUT',
+    body: JSON.stringify({ voucherIds }),
   });
   if (!response.ok) await throwApiError(response);
   const responseDTO = await handleResponse<{ data: OrderDto }>(response);
