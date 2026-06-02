@@ -1,0 +1,275 @@
+\subsection{Frontend}
+
+\subsubsection{Overview}
+The BKafeteria frontend is a Next.js 16 web application using the App Router with a feature-based folder structure.
+Each business domain is encapsulated under \texttt{src/features/}, promoting clear separation of concerns.
+The interface is built with React 19, Tailwind CSS v4, and \texttt{shadcn/ui} (Radix UI primitives), targeting desktop browsers as the primary platform.
+
+\subsubsection{Project Structure}
+The source code is organised into routing, domain logic, shared components, providers, and utility modules.
+Figure~\ref{fig:frontend-structure} shows the overall folder structure, while Figure~\ref{fig:frontend-features} details the internal layout of the \texttt{features/} directory.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.45\linewidth]{Images/Frontend/frontend-structure.png}
+  \caption{Frontend overall directory structure}
+  \label{fig:frontend-structure}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.45\linewidth]{Images/Frontend/frontend-features.png}
+  \caption{Feature modules directory structure}
+  \label{fig:frontend-features}
+\end{figure}
+
+\noindent
+The \texttt{app/} directory contains route groups: \texttt{(auth)/} for authentication screens and \texttt{(dashboard)/} for protected pages.
+The \texttt{features/} directory houses domain modules: \texttt{auth}, \texttt{cart}, \texttt{menu}, \texttt{order}, \texttt{user}, \texttt{vendor}, \texttt{voucher}, and \texttt{wallet}.
+Each module follows a consistent internal structure with \texttt{config/} for types and schemas, \texttt{data-access/} for API functions and React Query hooks, and \texttt{components/} for UI components.
+Shared elements live in \texttt{components/}, React context providers in \texttt{providers/}, reusable hooks in \texttt{hooks/}, and cross-cutting utilities in \texttt{lib/}.
+
+\subsubsection{Technology Stack}
+The frontend uses the core libraries shown in Table~\ref{tab:frontend-tech-stack}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{4cm}|p{2.5cm}|p{7cm}|}
+\hline
+\textbf{Library} & \textbf{Version} & \textbf{Purpose}\\ \hline
+Next.js & 16.2.2 & Framework with App Router and SSR/CSR support\\ \hline
+React & 19.2.3 & UI rendering\\ \hline
+TanStack React Query & 5.90.16 & Server-state management and caching\\ \hline
+Zustand & 5.0.12 & Client-side cart state with \texttt{localStorage} persistence\\ \hline
+Zod & 4.3.5 & Schema validation for forms and API responses\\ \hline
+React Hook Form & 7.70.0 & Form-state management with Zod resolvers\\ \hline
+Tailwind CSS & 4.0 & Utility-first CSS styling\\ \hline
+Radix UI / shadcn & 1.x & Headless accessible UI components\\ \hline
+Lucide React & 0.562.0 & Icon library\\ \hline
+Sonner & 2.0.7 & Toast notification system\\ \hline
+Framer Motion & 12.24.7 & Animations and transitions\\ \hline
+Recharts & 2.15.4 & Charts for analytics dashboards\\ \hline
+cookies-next & 6.1.1 & Cookie management for authentication tokens\\ \hline
+@stomp/stompjs & 7.3.0 & WebSocket STOMP client\\ \hline
+@aws-sdk/client-s3 & 3.1045.0 & Image uploads to Cloudflare R2 or S3-compatible storage\\ \hline
+\end{tabular}
+\caption{Frontend technology stack}
+\label{tab:frontend-tech-stack}
+\end{table}
+
+\subsubsection{Routing and Page Structure}
+The application uses the Next.js App Router with route groups to separate authentication pages from dashboard pages.
+
+\noindent
+\textbf{Authentication routes (\texttt{(auth)/}):}
+\begin{itemize}
+    \item \texttt{/login} --- Login with email and password
+    \item \texttt{/register} --- New account registration
+    \item \texttt{/verify} --- Email activation prompt
+    \item \texttt{/forgot-password} --- Forgot-password flow using OTP
+    \item \texttt{/account-activation} --- Account activation via email link
+\end{itemize}
+
+\noindent
+\textbf{Customer routes (\texttt{(dashboard)/}):}
+\begin{itemize}
+    \item \texttt{/vendors} --- Browse active food vendors
+    \item \texttt{/vendors/[id]} --- View a vendor menu and add items to the cart
+    \item \texttt{/orders} --- Paginated order history with active/completed split view
+    \item \texttt{/orders/[id]} --- Real-time order tracking detail page
+    \item \texttt{/wallet} --- Wallet balance display and bank-transfer deposit flow
+    \item \texttt{/profile} --- View and update personal information
+\end{itemize}
+
+\noindent
+\textbf{Manager routes (\texttt{(dashboard)/manager/}):}
+\begin{itemize}
+    \item \texttt{/manager/dashboard} --- Revenue and order statistics overview
+    \item \texttt{/manager/orders} --- Manage incoming vendor orders; \texttt{/manager/orders/[id]} for detail
+    \item \texttt{/manager/menu} --- Create, update, and delete menu items
+    \item \texttt{/manager/vendor} --- View and update vendor profile
+    \item \texttt{/manager/staff} --- Assign and manage staff accounts
+    \item \texttt{/manager/vouchers} --- Create and manage discount vouchers
+\end{itemize}
+
+\noindent
+\textbf{Staff routes (\texttt{(dashboard)/staff/}):}
+\begin{itemize}
+    \item \texttt{/staff/orders} --- View and process vendor orders (same actions as manager)
+    \item \texttt{/staff/orders/[id]} --- Order detail page
+    \item \texttt{/staff/vendor} --- View vendor profile (read-only)
+    \item \texttt{/staff/menu} --- View menu items (read-only)
+\end{itemize}
+
+\noindent
+\textbf{Administrator routes (\texttt{(dashboard)/admin/}):}
+\begin{itemize}
+    \item \texttt{/admin/users} --- Manage all user accounts
+    \item \texttt{/admin/vendors} --- View and approve or reject vendor registrations
+\end{itemize}
+
+\noindent
+Route protection is handled at the layout level.
+\texttt{(dashboard)/layout.tsx} checks authentication state from \texttt{AuthProvider} and redirects unauthenticated users to \texttt{/login}.
+\texttt{(auth)/layout.tsx} redirects already-authenticated users away from authentication screens.
+
+\subsubsection{State Management Architecture}
+The frontend separates client state from server state using two complementary strategies.
+
+\vspace{0.25cm}
+\noindent
+Server state is managed by TanStack React Query, which handles data fetching, caching, and synchronisation.
+Each feature exposes typed query hooks (e.g.\ \texttt{useMyOrders}, \texttt{useVendorById}, \texttt{useGetMe}).
+Mutations automatically invalidate related cache keys after success, keeping the interface consistent with server data.
+
+\vspace{0.25cm}
+\noindent
+Client state for the shopping cart is managed by Zustand with the \texttt{persist} middleware, storing contents in \texttt{localStorage} under the key \texttt{bkafeteria-cart}.
+The cart store exposes \texttt{addItem}, \texttt{removeItem}, \texttt{updateQuantity}, \texttt{clearCart}, \texttt{getTotalPrice}, and \texttt{getItemsByVendor}, the last of which groups items by \texttt{vendorId} to construct the multi-vendor order payload.
+
+\vspace{0.25cm}
+\noindent
+The provider hierarchy wrapping the application is:
+
+\begin{verbatim}
+<QueryProvider>
+  <LanguageProvider>
+    <CartProvider>
+      <AuthProvider>
+        <WebSocketProvider>
+          {children}
+\end{verbatim}
+
+\subsubsection{Authentication and Token Management}
+Authentication follows a cookie-based JWT workflow.
+After a successful login, the \texttt{accessToken} is stored in a cookie named \texttt{authToken} (1-day expiry) via \texttt{cookies-next}.
+All API calls are made through a shared \texttt{fetchWithToken} utility that automatically injects the \texttt{Authorization: Bearer} header.
+
+\vspace{0.25cm}
+\noindent
+On an HTTP 401 response, \texttt{fetchWithToken} transparently retries the request after calling \texttt{/auth/refresh} using an HTTP-only \texttt{refresh\_token} cookie.
+If refresh fails, the access token is removed and an \texttt{UNAUTHENTICATED} error is thrown, which \texttt{AuthProvider} detects to redirect the user to the login page.
+
+\vspace{0.25cm}
+\noindent
+The \texttt{useAuth()} hook returns \texttt{\{ user, isAuthenticated, isUnauthenticated, isLoading \}}.
+The user object is populated by \texttt{useGetMe} (\texttt{GET /iam/users/me}) and contains profile attributes including balance, points, and role.
+The password-reset flow uses a secondary token sequence: \texttt{SendOtp} $\rightarrow$ \texttt{VerifyOtp} (stores an \texttt{otpToken} cookie) $\rightarrow$ \texttt{ResetPassword} (consumes the \texttt{otpToken}).
+
+\subsubsection{Role-Based UI Rendering}
+The \texttt{SideNav} component filters navigation items by role:
+\begin{itemize}
+    \item \textbf{CUSTOMER}: Vendors, Orders, Wallet, and Profile
+    \item \textbf{MANAGER}: Dashboard, Orders, Menu, Vendor, Staff, and Vouchers
+    \item \textbf{STAFF}: Orders, Menu, and Vendor (read-only for non-order pages)
+    \item \textbf{ADMIN}: User Management and Vendor Management
+\end{itemize}
+
+\noindent
+An \texttt{RbacGuard} component wraps individual interface elements that should be visible only to particular roles, providing a second layer of protection alongside the layout-level redirect checks.
+
+\subsubsection{Real-Time Order Updates}
+Real-time data synchronisation is implemented via WebSocket (the active strategy), with polling available as a fallback, controlled by constants in \texttt{lib/constants.ts}.
+
+\vspace{0.25cm}
+\noindent
+\textbf{WebSocket (active).} \texttt{WebSocketProvider} establishes STOMP-over-SockJS clients based on the authenticated user's role: CUSTOMER users connect to the Order Service endpoint \texttt{/order/ws}, while MANAGER and STAFF users connect to the Vendor Service endpoint \texttt{/vendor/ws}.
+The \texttt{useOrderWebSocket} hook subscribes to \texttt{/topic/customer/\{userId\}} to receive order-status updates.
+The \texttt{useVendorWebSocket} hook subscribes to \texttt{/topic/vendor/\{vendorId\}} to receive new-order notifications, accompanied by an audio alert.
+Incoming messages are merged into the React Query cache via a Zustand-based \texttt{useRealtimeOrders} store and displayed as toast notifications.
+The provider also unlocks browser audio on the first user interaction to enable notification sounds.
+
+\vspace{0.25cm}
+\noindent
+\textbf{Polling (available).} Setting \texttt{USE\_POLLING = true} enables React Query \texttt{refetchInterval}: every 5~seconds for vendor order lists and every 3~seconds for active order detail pages, stopping automatically once an order reaches a terminal state (\texttt{COMPLETED}, \texttt{DELIVERED}, or \texttt{CANCELED}).
+
+\subsubsection{API Integration Pattern}
+All API communication follows a consistent three-layer pattern:
+\begin{itemize}
+    \item A raw function in \texttt{*.api.ts} calls \texttt{fetchWithToken}, invokes \texttt{throwApiError} on non-2xx responses, and calls \texttt{handleResponse} to parse the JSON body into a typed result.
+    \item A React Query hook in \texttt{*.queries.ts} wraps the raw function, defines a structured cache key, configures \texttt{refetchInterval} where appropriate, and invalidates related queries in \texttt{onSuccess} callbacks.
+    \item Components consume only the hook and never call raw API functions directly.
+\end{itemize}
+
+\noindent
+Base URL prefixes follow the API Gateway convention: \texttt{/iam} for identity, \texttt{/menu} for menu resources, \texttt{/order} for order processing, and \texttt{/vendor} for vendor and vendor-order resources.
+
+\subsubsection{Key Feature Implementations}
+
+\textbf{Shopping Cart and Checkout.}
+The \texttt{CartSheet} component renders as a right-side slide-over panel from the \texttt{TopBar}.
+Items are grouped by vendor with quantity controls.
+At checkout, \texttt{getItemsByVendor()} transforms the flat cart state into the \texttt{vendorOrders} payload for \texttt{POST /orders}.
+The order is then paid in a second step via \texttt{POST /orders/\{id\}/pay}, which optionally accepts an array of voucher IDs to apply discounts.
+After a successful payment, the cart is cleared and the user is redirected to \texttt{/orders}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{Images/Frontend/feature-cart.png}
+  \caption{Cart sheet panel showing grouped vendor items, quantity controls, and checkout action}
+  \label{fig:feature-cart}
+\end{figure}
+
+\vspace{0.25cm}
+\noindent
+\textbf{Voucher Management.}
+Managers create discount vouchers through \texttt{/manager/vouchers}, specifying a discount percentage, start date, and expiry date.
+Vouchers are scoped to the manager's own vendor and are validated client-side by computing their current status (\texttt{active}, \texttt{upcoming}, or \texttt{expired}) from the date range.
+Customers can select active vouchers during the payment step to receive a price reduction.
+
+\vspace{0.25cm}
+\noindent
+\textbf{Menu Browsing.}
+The \texttt{MenuCard} component supports two interaction modes: a single-click quick-add that adds one unit immediately, and a dialog view that shows full item details, a quantity selector, and the computed total before confirmation.
+Items with five or fewer units remaining display a low-stock warning.
+Customers can also view ratings and reviews for a menu item via the \texttt{MenuItemFeedbacksModal}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{Images/Frontend/feature-menu.png}
+  \caption{Menu browsing page showing item cards with quick-add and detail dialog}
+  \label{fig:feature-menu}
+\end{figure}
+
+\vspace{0.25cm}
+\noindent
+\textbf{Order Tracking.}
+The \texttt{OrderDetails} component renders a horizontal progress timeline (vertical on mobile) showing five status steps from \texttt{PENDING} to \texttt{DELIVERED}.
+When a membership or voucher discount is applied, a collapsible discount card beneath the item list shows the original total, discount amount, and final paid price.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{Images/Frontend/feature-order-tracking.png}
+  \caption{Order detail page with status progress timeline and item summary}
+  \label{fig:feature-order-tracking}
+\end{figure}
+
+\vspace{0.25cm}
+\noindent
+\textbf{Manager and Staff Order Processing.}
+The orders page for both roles fetches vendor orders filtered to \texttt{PURCHASED} and \texttt{PROCESSING} statuses.
+Each order card shows a context-sensitive action button: \textit{Confirm} for \texttt{PURCHASED} orders (calls \texttt{POST /\{vendorOrderId\}/confirm}) and \textit{Finish} for \texttt{PROCESSING} orders (calls \texttt{POST /\{vendorOrderId\}/mark-finished}).
+Both mutations invalidate the vendor-order cache after success.
+
+\vspace{0.25cm}
+\noindent
+\textbf{Wallet.}
+The \texttt{BalanceCard} component displays the user's current balance.
+A deposit dialog guides the customer through selecting or entering an amount, then shows the corresponding bank account details and a generated QR code for bank transfer.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{Images/Frontend/feature-wallet.png}
+  \caption{Wallet page with balance card and deposit dialog showing QR code and bank transfer details}
+  \label{fig:feature-wallet}
+\end{figure}
+
+\subsubsection{Internationalization}
+The \texttt{LanguageProvider} implements client-side i18n supporting Vietnamese (\texttt{vi}) and English (\texttt{en}) with more than 750 translation keys covering authentication, navigation, customer flows, and manager panels.
+The active language is persisted in \texttt{localStorage} and toggled via a language button in the \texttt{TopBar}.
+The \texttt{useLanguage()} hook exposes a \texttt{t(key)} function that falls back to the key itself when no translation is found.
+
+\subsubsection{Image Uploads}
+Menu-item and vendor-profile images are uploaded directly to Cloudflare R2 using the AWS SDK S3-compatible client.
+The \texttt{ImageUpload} component handles file selection, preview rendering, and upload progress.
+The returned public URL is stored in the database and served from Cloudflare's CDN edge.

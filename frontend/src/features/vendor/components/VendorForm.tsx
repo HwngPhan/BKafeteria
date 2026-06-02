@@ -5,7 +5,7 @@ import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLanguage } from '@/providers/LanguageProvider'
-import { Clock, FileText, Loader2, Store } from 'lucide-react'
+import { Clock, Loader2, Store } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export interface VendorFormData {
@@ -21,7 +21,7 @@ interface VendorFormProps {
   initialData?: VendorFormData | null
   isPending: boolean
   isUploadingImage?: boolean
-  onSubmit: (data: VendorFormData, file: File | null) => void
+  onSubmit: (data: VendorFormData, imgFile: File | null, certFile: File | null) => void
   onCancel: () => void
 }
 
@@ -36,6 +36,7 @@ export function VendorForm({ initialData, isPending, isUploadingImage = false, o
     imgUrl: '',
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedCertFile, setSelectedCertFile] = useState<File | null>(null)
 
   // Form reset when initialData changes. setState-in-effect is intentional.
   useEffect(() => {
@@ -51,15 +52,21 @@ export function VendorForm({ initialData, isPending, isUploadingImage = false, o
       })
     }
     setSelectedFile(null)
+    setSelectedCertFile(null)
   }, [initialData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData, selectedFile)
+    onSubmit(formData, selectedFile, selectedCertFile)
   }
 
   const handleFileChange = (file: File | null) => {
     setSelectedFile(file)
+  }
+
+  const handleCertFileChange = (file: File | null) => {
+    setSelectedCertFile(file)
+    if (!file) setFormData(prev => ({ ...prev, certification: '' }))
   }
 
   return (
@@ -98,18 +105,19 @@ export function VendorForm({ initialData, isPending, isUploadingImage = false, o
 
           {/* Cert + Hours */}
           <div className="space-y-4 flex flex-col justify-between">
-            <div className="group space-y-1.5">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2 group-focus-within:text-primary transition-colors">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-2">
                 {t('manager.vendor.cert')}
               </label>
-              <div className="relative">
-                <FileText size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40" />
-                <Input
-                  value={formData.certification}
-                  onChange={e => setFormData({ ...formData, certification: e.target.value })}
-                  className="h-12 rounded-xl bg-secondary/5 border-none focus-visible:ring-2 focus-visible:ring-primary/20 text-base font-bold pl-12 pr-5 text-zinc-950"
-                  placeholder={t('manager.vendor.cert_placeholder')}
-                />
+              <div className="relative w-full rounded-2xl overflow-hidden bg-secondary/5 border-2 border-dashed border-primary/20 p-2 hover:border-primary/40 transition-colors">
+                <div className="w-full h-28 rounded-xl overflow-hidden relative bg-white">
+                  <ImageUpload
+                    value={formData.certification}
+                    onChange={url => setFormData(prev => ({ ...prev, certification: url }))}
+                    onFileChange={handleCertFileChange}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               </div>
             </div>
 

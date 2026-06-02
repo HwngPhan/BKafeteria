@@ -17,14 +17,18 @@ export default function EditVendorPage() {
   const { mutateAsync: updateVendorImage, isPending: isUpdatingImagePending } = useUpdateVendorImage()
   const { uploadImage, isUploading: isUploadingImage } = useUploadImage()
 
-  const handleSubmit = async (data: VendorFormData, file: File | null) => {
+  const handleSubmit = async (data: VendorFormData, imgFile: File | null, certFile: File | null) => {
     if (!vendor) return
     try {
-      await updateVendor({ id: vendor.vendorId, data })
+      const certIsBlob = data.certification.startsWith('blob:')
+      await updateVendor({
+        id: vendor.vendorId,
+        data: certIsBlob ? { ...data, certification: vendor.certification } : data,
+      })
 
-      if (file && vendor.vendorId) {
+      if (imgFile && vendor.vendorId) {
         try {
-          const url = await uploadImage(file)
+          const url = await uploadImage(imgFile)
           if (url) {
             await updateVendorImage({ id: vendor.vendorId, data: { imgUrl: url } })
           }
@@ -33,8 +37,20 @@ export default function EditVendorPage() {
         }
       }
 
+      if (certFile && vendor.vendorId) {
+        try {
+          const certUrl = await uploadImage(certFile)
+          if (certUrl) {
+            await updateVendor({ id: vendor.vendorId, data: { certification: certUrl } })
+          }
+        } catch {
+          // cert upload failure is non-fatal
+        }
+      }
+
       toast.success(t('manager.vendor.toast_success'))
       if (data.imgUrl.startsWith('blob:')) URL.revokeObjectURL(data.imgUrl)
+      if (certIsBlob) URL.revokeObjectURL(data.certification)
       router.push('/manager/vendor')
     } catch {
       toast.error(t('manager.vendor.toast_error'))
