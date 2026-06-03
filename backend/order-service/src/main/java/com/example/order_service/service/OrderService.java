@@ -197,17 +197,13 @@ public class OrderService {
     }
 
     private double applyVoucherDiscounts(List<VendorOrder> vendorOrders, List<String> voucherIds) {
-        List<String> vendorIdList = vendorOrders.stream()
-                .map(VendorOrder::getVendorId)
-                .toList();
-
         Map<String, Double> vendorDiscountMap = new HashMap<>();
-        for (String voucherId : voucherIds) {
-            VoucherInfoDto voucher = menuClient.validateVoucher(voucherId, vendorIdList);
-            if (voucher != null && voucher.getVendorId() != null) {
+        for (VendorOrder vendorOrder : vendorOrders) {
+            List<VoucherInfoDto> vouchers = menuClient.validateVoucher(vendorOrder.getVendorId(), voucherIds);
+            for (VoucherInfoDto voucher : vouchers) {
+                if (voucher == null) continue;
                 double pct = voucher.getDiscountPercentage();
-                // Accumulate combined multiplier: applying 10% then 20% → multiply by 0.9 * 0.8
-                vendorDiscountMap.compute(voucher.getVendorId(),
+                vendorDiscountMap.compute(vendorOrder.getVendorId(),
                         (k, existing) -> (existing == null ? 1.0 : existing) * (100.0 - pct) / 100.0);
             }
         }

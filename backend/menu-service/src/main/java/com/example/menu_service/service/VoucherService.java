@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -50,21 +51,25 @@ public class VoucherService {
                 .stream().map(this::toDto).toList();
     }
 
-    public VoucherDto validate(String voucherId, List<String> orderVendorIds) {
-        if (voucherId == null) throw new IllegalArgumentException("Voucher ID must not be null");
-        Voucher voucher = voucherRepository.findById(voucherId)
-                .orElseThrow(() -> new IllegalArgumentException(VOUCHER_NOT_FOUND));
+    public List<VoucherDto> validate(String vendorId, List<String> voucherIds) {
+        if (vendorId == null) throw new IllegalArgumentException("Vendor ID must not be null");
+        if (voucherIds == null || voucherIds.isEmpty()) throw new IllegalArgumentException("Voucher IDs must not be empty");
 
+        List<VoucherDto> result = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(voucher.getStartDate()) || now.isAfter(voucher.getExpiryDate())) {
-            throw new IllegalArgumentException("Voucher is expired or not yet active");
+        for (String voucherId : voucherIds) {
+            if (voucherId == null) continue;
+            Voucher voucher = voucherRepository.findById(voucherId)
+                    .orElseThrow(() -> new IllegalArgumentException(VOUCHER_NOT_FOUND));
+            if (now.isBefore(voucher.getStartDate()) || now.isAfter(voucher.getExpiryDate())) {
+                throw new IllegalArgumentException("Voucher is expired or not yet active");
+            }
+            if (!vendorId.equals(voucher.getVendorId())) {
+                throw new IllegalArgumentException("Voucher is not applicable for this vendor");
+            }
+            result.add(toDto(voucher));
         }
-
-        if (voucher.getVendorId() == null || !orderVendorIds.contains(voucher.getVendorId())) {
-            throw new IllegalArgumentException("Voucher is not applicable for any vendor in this order");
-        }
-
-        return toDto(voucher);
+        return result;
     }
 
     public void deleteVoucher(String voucherId) {

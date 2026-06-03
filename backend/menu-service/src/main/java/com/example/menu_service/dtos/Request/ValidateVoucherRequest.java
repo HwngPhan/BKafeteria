@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class ValidateVoucherRequest {
     @NotBlank
-    private String voucherId;
+    private String vendorId;
     @NotEmpty
-    private List<String> vendorIds;
+    private List<String> voucherIds;
 }

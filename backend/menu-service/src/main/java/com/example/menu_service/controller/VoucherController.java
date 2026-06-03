@@ -82,17 +82,17 @@ public class VoucherController {
      */
     @PostMapping("/validate")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<VoucherDto>> validate(
+    public ResponseEntity<ApiResponse<List<VoucherDto>>> validate(
             @RequestBody @Valid ValidateVoucherRequest request) {
         try {
-            VoucherDto dto = voucherService.validate(request.getVoucherId(), request.getVendorIds());
-            return ResponseEntity.ok(new ApiResponse<>(200, "Voucher is valid", dto));
+            List<VoucherDto> dtos = voucherService.validate(request.getVendorId(), request.getVoucherIds());
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vouchers are valid", dtos));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
         } catch (Exception e) {
-            log.error("Error validating voucher {}: {}", request.getVoucherId(), e.getMessage());
+            log.error("Error validating vouchers for vendor {}: {}", request.getVendorId(), e.getMessage());
             return ResponseEntity.internalServerError()
-                    .body(new ApiResponse<>(500, "Failed to validate voucher", null));
+                    .body(new ApiResponse<>(500, "Failed to validate vouchers", null));
         }
     }
 

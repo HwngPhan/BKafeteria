@@ -37,6 +37,7 @@ services:
     ports:
       - "${IAM_SERVICE}:${IAM_SERVICE}"
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
       - IAM_SERVICE=${IAM_SERVICE}
       - VENDOR_SERVICE_URI=http://vendor-service:${VENDOR_SERVICE}
@@ -65,6 +66,7 @@ services:
     ports:
       - "${VENDOR_SERVICE}:${VENDOR_SERVICE}"
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
       - IAM_SERVICE_URI=http://iam-service:${IAM_SERVICE}
       - VENDOR_SERVICE=${VENDOR_SERVICE}
@@ -93,6 +95,7 @@ services:
     ports:
       - "${MENU_SERVICE}:${MENU_SERVICE}"
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
       - IAM_SERVICE_URI=http://iam-service:${IAM_SERVICE}
       - VENDOR_SERVICE_URI=http://vendor-service:${VENDOR_SERVICE}
@@ -121,6 +124,7 @@ services:
     ports:
       - "${ORDER_SERVICE}:${ORDER_SERVICE}"
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - API_GATEWAY_URI=http://api-gateway:${API_GATEWAY}
       - IAM_SERVICE_URI=http://iam-service:${IAM_SERVICE}
       - VENDOR_SERVICE_URI=http://vendor-service:${VENDOR_SERVICE}

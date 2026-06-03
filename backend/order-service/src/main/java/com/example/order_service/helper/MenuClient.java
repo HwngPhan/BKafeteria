@@ -13,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +60,10 @@ public class MenuClient {
                 .orElse(null);
 
     }
-    public VoucherInfoDto validateVoucher(String voucherId, List<String> vendorIds) {
+    public List<VoucherInfoDto> validateVoucher(String vendorId, List<String> voucherIds) {
         Map<String, Object> body = new HashMap<>();
-        body.put("voucherId", voucherId);
-        body.put("vendorIds", vendorIds);
+        body.put("vendorId", vendorId);
+        body.put("voucherIds", voucherIds);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -70,9 +71,9 @@ public class MenuClient {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ParameterizedTypeReference<ApiResponse<VoucherInfoDto>> typeRef = new ParameterizedTypeReference<>() {};
+        ParameterizedTypeReference<ApiResponse<List<VoucherInfoDto>>> typeRef = new ParameterizedTypeReference<>() {};
 
-        ResponseEntity<ApiResponse<VoucherInfoDto>> response = restTemplate.exchange(
+        ResponseEntity<ApiResponse<List<VoucherInfoDto>>> response = restTemplate.exchange(
                 getMenuServiceBaseUrl() + "/menu/vouchers/validate",
                 HttpMethod.POST,
                 entity,
@@ -80,7 +81,7 @@ public class MenuClient {
 
         return Optional.ofNullable(response.getBody())
                 .map(ApiResponse::getData)
-                .orElse(null);
+                .orElse(Collections.emptyList());
     }
 
     public void updateRemaining(String menuItemId, Integer remaining){
