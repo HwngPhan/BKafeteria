@@ -11,7 +11,6 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateVendorRequest {
-    @NotBlank(message = "Vendor name must not be blank")
     private String name;
 
     private String description;
