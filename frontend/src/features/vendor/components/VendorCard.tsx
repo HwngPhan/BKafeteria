@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Clock, Store, Star, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { useState } from 'react'
 
 interface VendorCardProps {
   vendor: VendorDto
@@ -21,6 +23,7 @@ const statusLabelKeys: Record<string, string> = {
 
 export function VendorCard({ vendor }: VendorCardProps) {
   const { t } = useLanguage()
+  const [imgError, setImgError] = useState(false)
 
   return (
     <Card className="group relative overflow-hidden rounded-3xl border-none bg-white shadow-xl shadow-secondary/5 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10">
@@ -28,9 +31,19 @@ export function VendorCard({ vendor }: VendorCardProps) {
 
       <CardHeader className="p-0">
         <div className="relative h-32 sm:h-48 w-full overflow-hidden">
-          <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center">
-            <Store className="h-16 w-16 text-secondary/30" />
-          </div>
+          {vendor.imgUrl && !imgError ? (
+            <Image
+              src={vendor.imgUrl}
+              alt={vendor.name}
+              fill
+              className="object-cover"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-secondary/10 flex items-center justify-center">
+              <Store className="h-16 w-16 text-secondary/30" />
+            </div>
+          )}
           <Badge className="absolute left-4 top-4 bg-white/80 text-primary backdrop-blur-md border-none">
             {t(statusLabelKeys[vendor.status]) || vendor.status}
           </Badge>
