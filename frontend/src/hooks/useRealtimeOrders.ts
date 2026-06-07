@@ -58,6 +58,7 @@ export const useRealtimeOrders = create<RealtimeOrderStore>((set, get) => ({
       // Derive overall order status from ALL vendor orders (match backend logic):
       // COMPLETED only when ALL vendor orders are COMPLETED or CANCELED (with at least one COMPLETED)
       // CANCELED only when ALL vendor orders are CANCELED
+      // PROCESSING when any vendor order is PROCESSING (and not already in terminal state)
       // Otherwise keep current order status
       const allStatuses = (updatedVendorOrders ?? []).map(vo => vo.status)
       let newOrderStatus: OrderStatus = order.status
@@ -65,6 +66,8 @@ export const useRealtimeOrders = create<RealtimeOrderStore>((set, get) => ({
         const allDone = allStatuses.every(s => s === 'COMPLETED' || s === 'CANCELED')
         if (allDone) {
           newOrderStatus = allStatuses.some(s => s === 'COMPLETED') ? 'COMPLETED' : 'CANCELED'
+        } else if (allStatuses.some(s => s === 'PROCESSING')) {
+          newOrderStatus = 'PROCESSING'
         }
       }
 
