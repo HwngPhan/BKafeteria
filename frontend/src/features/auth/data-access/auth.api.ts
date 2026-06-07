@@ -14,7 +14,6 @@ export const LoginApi = async (payload: LoginRequest): Promise<LoginResponse> =>
   });
   if (!response.ok) await throwApiError(response);
   const responseDTO = await handleResponse<{ message: string; data: LoginResponse }>(response);
-  localStorage.setItem(TokenType.authToken, responseDTO.data.accessToken);
   return responseDTO.data;
 };
 
