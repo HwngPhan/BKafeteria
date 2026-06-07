@@ -76,6 +76,7 @@ export default function LoginPage() {
       setIsLoading(true);
       await Login(apiData);
       toast.success(t('login.success'));
+      router.push('/dashboard');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('login.failed');
       toast.error(errorMessage);

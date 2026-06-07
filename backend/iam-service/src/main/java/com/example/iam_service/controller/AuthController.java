@@ -113,7 +113,7 @@ public class AuthController {
 
             String cookieValue = "refresh_token=" + refreshToken
                     + "; HttpOnly; Secure; Path=/; Max-Age=" + Duration.ofDays(7).getSeconds()
-                    + "; SameSite=Strict";
+                    + "; SameSite=None";
             response.setHeader("Set-Cookie", cookieValue);
 
             return ResponseEntity.ok(
@@ -173,13 +173,11 @@ public class AuthController {
 
             redisTokenService.storeRefreshToken(email, newJti, newRefreshToken, Duration.ofDays(7));
 
-            // ✅ Send refresh token via cookie
-            Cookie cookie = new Cookie("refresh_token", newRefreshToken);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge((int) Duration.ofDays(7).getSeconds());
-            response.addCookie(cookie);
+            // ✅ Send refresh token via cookie (manual header for SameSite=None support)
+            String newCookieValue = "refresh_token=" + newRefreshToken
+                    + "; HttpOnly; Secure; Path=/; Max-Age=" + Duration.ofDays(7).getSeconds()
+                    + "; SameSite=None";
+            response.setHeader("Set-Cookie", newCookieValue);
 
             // ✅ Load UserDetails to get role
 //            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
@@ -253,12 +251,8 @@ public class AuthController {
             }
 
             // Xóa cookie khỏi client
-            Cookie expiredCookie = new Cookie("refresh_token", null);
-            expiredCookie.setHttpOnly(true);
-            expiredCookie.setSecure(true);
-            expiredCookie.setPath("/");
-            expiredCookie.setMaxAge(0);
-            response.addCookie(expiredCookie);
+            String expiryCookie = "refresh_token=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None";
+            response.setHeader("Set-Cookie", expiryCookie);
 
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Logout successfully", null));

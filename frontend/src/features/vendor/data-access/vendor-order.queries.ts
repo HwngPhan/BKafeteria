@@ -6,6 +6,7 @@ import {
   GetVendorOrdersApi,
   MarkOrderFinishedApi
 } from "./vendor-order.api";
+import { PageDto, VendorOrderNotification } from "../config/vendor-order.config";
 
 export const vendorOrderKeys = {
   all: ['vendor-orders'] as const,
@@ -26,6 +27,7 @@ export const useVendorOrders = (page = 0, size = 10, statuses?: string[]) => {
   return useQuery({
     queryKey: [...vendorOrderKeys.list(), page, size, statuses],
     queryFn: () => GetVendorOrdersApi(page, size, statuses),
+    staleTime: 0,
   });
 };
 
@@ -34,6 +36,7 @@ export const useVendorOrderById = (vendorOrderId: string) => {
     queryKey: vendorOrderKeys.detail(vendorOrderId),
     queryFn: () => GetVendorOrderByIdApi(vendorOrderId),
     enabled: !!vendorOrderId,
+    staleTime: 0,
   });
 };
 
@@ -41,7 +44,15 @@ export const useConfirmOrder = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => ConfirmOrderApi(id),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(vendorOrderKeys.detail(data.vendorOrderId), data);
+      queryClient.setQueriesData<PageDto<VendorOrderNotification>>(
+        { queryKey: vendorOrderKeys.list() },
+        (old) => {
+          if (!old) return old;
+          return { ...old, content: old.content.map((o) => (o.vendorOrderId === data.vendorOrderId ? data : o)) };
+        }
+      );
       queryClient.invalidateQueries({ queryKey: vendorOrderKeys.all });
     },
   });
@@ -51,7 +62,15 @@ export const useMarkOrderFinished = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => MarkOrderFinishedApi(id),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(vendorOrderKeys.detail(data.vendorOrderId), data);
+      queryClient.setQueriesData<PageDto<VendorOrderNotification>>(
+        { queryKey: vendorOrderKeys.list() },
+        (old) => {
+          if (!old) return old;
+          return { ...old, content: old.content.map((o) => (o.vendorOrderId === data.vendorOrderId ? data : o)) };
+        }
+      );
       queryClient.invalidateQueries({ queryKey: vendorOrderKeys.all });
     },
   });

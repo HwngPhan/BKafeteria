@@ -47,6 +47,8 @@ export async function fetchWithToken(
       // 2. Save new token
       setCookie(TokenType.authToken, refreshResult.accessToken, {
         maxAge: 60 * 60 * 24 * 7,
+        secure: process.env.NEXT_PUBLIC_PRODUCTION === 'true',
+        sameSite: 'lax',
       });
 
       // 3. Retry original request with new token

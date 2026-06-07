@@ -1,4 +1,3 @@
-import { userKeys } from "@/features/user/data-access/user.queries";
 import { TokenType } from "@/lib/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { setCookie, deleteCookie } from "cookies-next";
@@ -37,15 +36,21 @@ export const useResetPassword = () => {
     });
 }
 
+const isProduction = process.env.NEXT_PUBLIC_PRODUCTION === 'true';
+
 export const useLogin = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: (payload: LoginRequest) => LoginApi(payload),
       onSuccess: (data) => {
         if (data.accessToken !== null) {
-          setCookie(TokenType.authToken, data.accessToken, { maxAge: 60 * 60 * 24 * 7 }); // 7 days
-        } 
-        queryClient.invalidateQueries({ queryKey: userKeys.me() });
+          setCookie(TokenType.authToken, data.accessToken, {
+            maxAge: 60 * 60 * 24 * 7,
+            secure: isProduction,
+            sameSite: 'lax',
+          });
+        }
+        queryClient.clear();
       },
       onError: () => {
       }
@@ -58,7 +63,7 @@ export const useLogout = () => {
       mutationFn: LogoutApi,
       onSuccess: () => {
         deleteCookie(TokenType.authToken);
-        queryClient.invalidateQueries({ queryKey: userKeys.me() });
+        queryClient.clear();
       },
       onError: () => {
       }

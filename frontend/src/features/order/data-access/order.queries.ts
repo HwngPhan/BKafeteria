@@ -13,6 +13,7 @@ export const useMyOrders = (page = 0, size = 9) => {
   return useQuery({
     queryKey: [...orderKeys.mine(), page, size],
     queryFn: () => GetMyOrdersApi(page, size),
+    staleTime: 0,
   });
 };
 
@@ -21,6 +22,7 @@ export const useOrderById = (id: string) => {
     queryKey: orderKeys.detail(id),
     queryFn: () => GetOrderByIdApi(id),
     enabled: !!id,
+    staleTime: 0,
   });
 };
 
