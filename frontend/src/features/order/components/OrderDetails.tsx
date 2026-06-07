@@ -210,7 +210,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     try {
       await payOrderMutation.mutateAsync({ id: order.orderId, voucherIds })
       toast.success(t('order_card.toast_pay_success'))
-      router.back()
+      router.push('/orders')
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : undefined
       toast.error(msg || t('order_card.toast_pay_error'))

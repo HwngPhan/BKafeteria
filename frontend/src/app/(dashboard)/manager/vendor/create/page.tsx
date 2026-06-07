@@ -39,7 +39,16 @@ export default function CreateVendorPage() {
         try {
           const certUrl = await uploadImage(certFile)
           if (certUrl) {
-            await updateVendor({ id: createdVendor.vendorId, data: { certification: certUrl } })
+            await updateVendor({
+              id: createdVendor.vendorId,
+              data: {
+                name: data.name,
+                description: data.description,
+                workingHourFrom: data.workingHourFrom,
+                workingHourTo: data.workingHourTo,
+                certification: certUrl,
+              },
+            })
           }
         } catch {
           // cert upload failure is non-fatal

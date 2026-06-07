@@ -26,7 +26,7 @@ export default function EditVendorPage() {
         data: certIsBlob ? { ...data, certification: vendor.certification } : data,
       })
 
-      if (imgFile && vendor.vendorId) {
+      if (imgFile) {
         try {
           const url = await uploadImage(imgFile)
           if (url) {
@@ -37,11 +37,20 @@ export default function EditVendorPage() {
         }
       }
 
-      if (certFile && vendor.vendorId) {
+      if (certFile) {
         try {
           const certUrl = await uploadImage(certFile)
           if (certUrl) {
-            await updateVendor({ id: vendor.vendorId, data: { certification: certUrl } })
+            await updateVendor({
+              id: vendor.vendorId,
+              data: {
+                name: data.name,
+                description: data.description,
+                workingHourFrom: data.workingHourFrom,
+                workingHourTo: data.workingHourTo,
+                certification: certUrl,
+              },
+            })
           }
         } catch {
           // cert upload failure is non-fatal
