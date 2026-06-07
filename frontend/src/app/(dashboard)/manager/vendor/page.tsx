@@ -156,13 +156,21 @@ export default function ManagerVendorPage() {
                     {vendor.name}
                   </p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                     {t("manager.vendor.cert")}
                   </p>
-                  <p className="text-lg font-bold text-primary">
-                    {vendor.certification || t("admin.vendors.no_cert")}
-                  </p>
+                  {vendor.certification ? (
+                    <a href={vendor.certification} target="_blank" rel="noopener noreferrer" className="block">
+                      <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-secondary/10 hover:opacity-80 transition-opacity">
+                        <Image src={vendor.certification} alt="Certification" fill className="object-contain bg-secondary/5" />
+                      </div>
+                    </a>
+                  ) : (
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {t("admin.vendors.no_cert")}
+                    </p>
+                  )}
                 </div>
               </div>
 
