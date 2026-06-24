@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { uploadImageAction } from '@/actions/upload';
+import { uploadImageAction } from '@/lib/upload';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export function useUploadImage() {
+  const { t } = useLanguage();
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    // Basic validation
     if (!file.type.startsWith('image/')) {
-      toast.error('Vui lòng chọn tệp hình ảnh');
+      toast.error(t('upload.error_not_image'));
       return null;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Kích thước ảnh tối đa là 5MB');
+      toast.error(t('upload.error_too_large'));
       return null;
     }
 
@@ -28,11 +29,10 @@ export function useUploadImage() {
         throw new Error(result.error || 'Upload failed');
       }
 
-      toast.success('Tải ảnh lên thành công');
       return result.url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
-      toast.error('Không thể tải ảnh lên. Vui lòng thử lại.');
+      toast.error(t('upload.error_failed'));
       return null;
     } finally {
       setIsUploading(false);

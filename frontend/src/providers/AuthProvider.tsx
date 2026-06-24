@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { User } from "@/features/user/config/user.config"; // bạn đã có
 import { useGetMe } from "@/features/user/data-access/user.queries";
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
 // -------------------------------

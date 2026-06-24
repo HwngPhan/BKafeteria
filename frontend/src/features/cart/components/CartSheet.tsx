@@ -7,18 +7,19 @@ import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed, Loader2 } from 'lucide-react'
-import { useCartStore } from '../store/cart.store'
-import { useCreateOrder } from '../../order/data-access/order.queries'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { useState } from 'react'
 import { useLanguage } from '@/providers/LanguageProvider'
+import { Loader2, Minus, Plus, ShoppingBag, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { useCreateOrder } from '../../order/data-access/order.queries'
+import { useCartStore } from '../store/cart.store'
 
 export function CartSheet() {
   const items = useCartStore((state) => state.items)
@@ -53,20 +54,21 @@ export function CartSheet() {
       clearCart()
       setIsOpen(false)
       router.push('/orders')
-    } catch (error: any) {
-      toast.error(error?.message || t('cart.toast_error'))
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('cart.toast_error'))
     }
   }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 transition-colors">
+        <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-primary/10 transition-colors">
           <ShoppingCart size={22} className="text-foreground/80" />
           {items.length > 0 && (
-            <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-background animate-in zoom-in">
-              {items.length}
-            </Badge>
+            <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold bg-primary text-primary-foreground shadow-md shadow-primary/40 border-2 border-background animate-in zoom-in">
+              {items.length > 99 ? '99+' : items.length}
+            </span>
           )}
         </Button>
       </SheetTrigger>
@@ -79,6 +81,7 @@ export function CartSheet() {
               </div>
               {t('cart.title')}
             </SheetTitle>
+            <SheetDescription className="sr-only">{t('cart.title')}</SheetDescription>
             {items.length > 0 && (
               <Button
                 variant="ghost"
@@ -112,7 +115,7 @@ export function CartSheet() {
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-8 space-y-10">
                 {Object.entries(itemsByVendor).map(([vendorId, vendorItems]) => (
                   <div key={vendorId} className="space-y-6">
@@ -130,6 +133,7 @@ export function CartSheet() {
                         <div key={item.itemId} className="flex gap-4 group animate-in slide-in-from-right-4 duration-300">
                           <div className="shrink-0 h-24 w-24 rounded-3xl bg-secondary/5 overflow-hidden border-none shadow-inner flex items-center justify-center">
                             {item.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img src={item.imageUrl} alt={item.itemName} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             ) : (
                               <UtensilsCrossed size={24} className="text-muted-foreground/20" />

@@ -15,7 +15,14 @@ import org.springframework.mail.javamail.JavaMailSender;
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.kafka.bootstrap-servers=localhost:9092",
     "spring.data.redis.host=localhost",
-    "spring.data.redis.port=6379"
+    "spring.data.redis.port=6379",
+    "jwt.secret=test-secret-key-for-integration-testing-only-minimum-256-bits",
+    "jwt.access.expiration=86400000",
+    "jwt.refresh.expiration=604800000",
+    "jwt.otp.expiration=300000",
+    "jwt.account.expiration=86400000",
+    "frontend.url=http://localhost:3000",
+    "server.port=0"
 })
 class IamServiceApplicationTests {
 

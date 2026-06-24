@@ -3,6 +3,7 @@ package com.example.menu_service.controller;
 import com.example.menu_service.dtos.MenuItemDto;
 import com.example.menu_service.dtos.Request.CreateMenuItemRequest;
 import com.example.menu_service.dtos.Request.UpdateImageRequest;
+import com.example.menu_service.dtos.Request.UpdateMenuItemRequest;
 import com.example.menu_service.dtos.Request.UpdateRemainingRequest;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -126,11 +127,12 @@ public class MenuItemController {
   @PutMapping("/update/{id}")
   @PreAuthorize("hasAnyRole('MANAGER')")
   public ResponseEntity<ApiResponse<MenuItemDto>> updateMenuItem(
-      @RequestBody @Valid CreateMenuItemRequest updateMenuItemRequest,
-      @AuthenticationPrincipal CustomUserDetails userDetails, String id) {
+      @RequestBody @Valid UpdateMenuItemRequest updateMenuItemRequest,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable String id) {
     try {
       MenuItemDto menuItemDto = menuItemDtoConverter.convert(
-          menuItemService.createMenuItem(updateMenuItemRequest, userDetails.getId()));
+          menuItemService.updateMenuItem(id, updateMenuItemRequest, userDetails.getId()));
       return ResponseEntity.ok(
           new ApiResponse<>(200, "Menu item updated successfully", menuItemDto));
     } catch (RuntimeException e) {
@@ -153,7 +155,7 @@ public class MenuItemController {
   @DeleteMapping("/delete/{id}")
   @PreAuthorize("hasAnyRole('MANAGER')")
   public ResponseEntity<ApiResponse<Void>> deleteMenuItem(@AuthenticationPrincipal CustomUserDetails userDetails,
-      String id) {
+      @PathVariable String id) {
     try {
       menuItemService.deleteMenuItem(id, userDetails.getId());
       return ResponseEntity.ok(

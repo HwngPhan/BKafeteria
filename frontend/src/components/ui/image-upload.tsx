@@ -63,10 +63,10 @@ export function ImageUpload({
   }
 
   return (
-    <div className={cn("space-y-4 w-full flex flex-col items-center justify-center", className)}>
-      <div className="flex items-center gap-4">
+    <div className={cn("relative w-full h-full flex flex-col items-center justify-center", className)}>
+      <div className="w-full h-full">
         {value ? (
-          <div className="relative w-40 h-40 rounded-2xl overflow-hidden border-2 border-secondary/20 shadow-inner group">
+          <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-inner group">
             <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 type="button"
@@ -82,24 +82,32 @@ export function ImageUpload({
               fill
               src={value}
               alt="Preview"
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>
         ) : (
           <div 
             onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
             className={cn(
-              "w-40 h-40 rounded-2xl border-2 border-dashed border-secondary/30 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:bg-secondary/5 hover:border-primary/50",
+              "w-full h-full rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:bg-primary/5",
               disabled && "opacity-50 cursor-not-allowed",
               isUploading && "cursor-wait"
             )}
           >
             {isUploading ? (
-              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest animate-pulse">Uploading...</span>
+              </div>
             ) : (
               <>
-                <ImagePlus className="h-10 w-10 text-muted-foreground/50" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Chọn ảnh</span>
+                <div className="h-14 w-14 rounded-full bg-primary/5 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                  <ImagePlus className="h-7 w-7" />
+                </div>
+                <div className="text-center px-4">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Chọn ảnh</span>
+                  <span className="text-[8px] text-muted-foreground/60 font-medium italic block">Tối đa 5MB</span>
+                </div>
               </>
             )}
           </div>

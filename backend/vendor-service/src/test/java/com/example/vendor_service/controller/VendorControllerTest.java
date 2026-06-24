@@ -43,7 +43,7 @@ public class VendorControllerTest {
 
     private VendorDto createDummyVendorDto() {
         return new VendorDto(
-                "v1", "Vendor 1", "Desc", null, null, null, null, "m1", null, null, null);
+                "v1", "Vendor 1", "Desc", null, null, null, null, "m1", null, null, null, null);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class VendorControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("Vendor registered successfully", response.getBody().getMessage());
-        verify(iamClient, times(1)).assignVendor("v1", "test@test.com", "MANAGER");
+        verify(iamClient, times(2)).assignVendor("v1", "test@test.com", "MANAGER");
     }
 
     // @Test

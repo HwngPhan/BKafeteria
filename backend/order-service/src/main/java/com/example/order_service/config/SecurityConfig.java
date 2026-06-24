@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/ws/**", "/test-notification").permitAll()
                         .anyRequest().authenticated())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))

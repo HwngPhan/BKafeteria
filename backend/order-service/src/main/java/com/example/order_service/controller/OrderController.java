@@ -2,17 +2,20 @@ package com.example.order_service.controller;
 
 import com.example.order_service.dtos.*;
 import com.example.order_service.dtos.Request.OrderRequest;
-import com.example.order_service.helper.IamClient;
+import com.example.order_service.dtos.Request.PaymentRequest;
 import com.example.order_service.model.Order;
-import com.example.order_service.model.VendorOrder;
-import com.example.order_service.repository.OrderRepository;
 import com.example.order_service.service.OrderService;
 import com.example.order_service.service.VendorOrderService;
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
+import com.example.shared.dtos.PageDtos.PageDto;
+import com.example.shared.dtos.PageDtos.PageDtoConverter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +35,7 @@ public class OrderController {
     private final OrderDtoConverter orderDtoConverter;
     private final VendorOrderService vendorOrderService;
     private final VendorOrderDtoConverter vendorOrderDtoConverter;
+    private final PageDtoConverter pageDtoConverter;
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
@@ -99,9 +103,11 @@ public class OrderController {
     @PutMapping("/{id}/payment")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<OrderDto>> makePayment(@PathVariable String id,
+            @RequestBody(required = false) PaymentRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-            orderService.makePayment(id, userDetails.getId());
+            List<String> voucherIds = request != null ? request.getVoucherIds() : null;
+            orderService.makePayment(id, userDetails.getId(), voucherIds);
             List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
                     .stream()
                     .map(vendorOrderDtoConverter::convert)
@@ -117,24 +123,76 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/get-my-order")
+    @PutMapping("/customer-refund/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getOrders(
+    public ResponseEntity<ApiResponse<OrderDto>> cancelOrder(@PathVariable String id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-            List<Order> orders = orderService.getOrders(userDetails.getId());
-            List<OrderDto> orderDtos = orders.stream().map(order -> {
+            Order order = orderService.cancelOrder(id, userDetails.getId());
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(id)
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Order cancelled successfully", orderDto));
+        } catch (RuntimeException e) {
+            log.error("Error cancelling order {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error cancelling order {}: {}", id, e.getMessage());
+            return new ResponseEntity<>(
+                    new ApiResponse<>(500, "Failed to cancel order: " + e.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/manager-refund/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
+    public ResponseEntity<ApiResponse<OrderDto>> cancelVendorOrder(@PathVariable String id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            Order order = orderService.cancelVendorOrder(id, userDetails.getId());
+            List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(order.getOrderId())
+                    .stream()
+                    .map(vendorOrderDtoConverter::convert)
+                    .collect(Collectors.toList());
+            OrderDto orderDto = orderDtoConverter.convert(order, vendorOrders);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Vendor order cancelled successfully", orderDto));
+        } catch (RuntimeException e) {
+            log.error("Error cancelling vendor order {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(400, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error cancelling vendor order {}: {}", id, e.getMessage());
+            return new ResponseEntity<>(
+                    new ApiResponse<>(500, "Failed to cancel vendor order: " + e.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/get-my-order")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<PageDto<OrderDto>>> getOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        try {
+            Sort sort = direction.equalsIgnoreCase("asc")
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+            Page<Order> orders = orderService.getOrders(userDetails.getId(), PageRequest.of(page, size, sort));
+            PageDto<OrderDto> result = pageDtoConverter.convert(orders, order -> {
                 List<VendorOrderDto> vendorOrders = vendorOrderService.getVendorOrdersByOrderId(order.getOrderId())
                         .stream()
                         .map(vendorOrderDtoConverter::convert)
                         .collect(Collectors.toList());
                 return orderDtoConverter.convert(order, vendorOrders);
-            }).collect(Collectors.toList());
-            return ResponseEntity.ok(
-                    new ApiResponse<>(200, "Orders retrieved successfully", orderDtos));
+            });
+            return ResponseEntity.ok(new ApiResponse<>(200, "Orders retrieved successfully", result));
         } catch (Exception e) {
             log.error("Error retrieving orders: {}", e.getMessage());
-            ApiResponse<List<OrderDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            ApiResponse<PageDto<OrderDto>> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Failed to retrieve orders: " + e.getMessage(), null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -42,4 +42,5 @@ public class Vendor {
     private LocalDateTime updatedAt;
 
     private String approvedBy;
+    private String imgUrl;
 }

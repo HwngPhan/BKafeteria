@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MenuItemDto } from "../config/menu.types";
+import { MenuItemDto } from "../config/menu.config";
 import {
   CreateMenuItemApi,
   DeleteMenuItemApi,

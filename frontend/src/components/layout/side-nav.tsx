@@ -1,30 +1,32 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/providers/AuthProvider'
+import { useLanguage } from '@/providers/LanguageProvider'
+import { useSidebar } from '@/providers/SidebarProvider'
+import { ViFlag, EnFlag } from './language-switcher'
 import {
-  Home,
-  Store,
-  Utensils,
-  Wallet,
-  ClipboardList,
   ChevronLeft,
   ChevronRight,
-  Users,
+  ClipboardList,
+  Home,
   Settings,
   ShieldCheck,
+  Store,
+  Ticket,
+  Users,
+  Utensils,
+  Wallet,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/providers/AuthProvider'
-import { useLanguage } from '@/providers/LanguageProvider'
 
 export function SideNav() {
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { isCollapsed, toggle } = useSidebar()
   const { user } = useAuth()
-  const { t } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
 
   const navItems = [
     { href: '/dashboard', icon: Home, labelKey: 'nav.overview', roles: ['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER'] },
@@ -34,10 +36,16 @@ export function SideNav() {
     { href: '/wallet', icon: Wallet, labelKey: 'nav.wallet', roles: ['CUSTOMER'] },
 
     // Manager routes
-    { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER', 'STAFF'] },
+    { href: '/manager/orders', icon: ClipboardList, labelKey: 'nav.manage_orders', roles: ['MANAGER'] },
     { href: '/manager/vendor', icon: Settings, labelKey: 'nav.manage_store', roles: ['MANAGER'] },
     { href: '/manager/menu', icon: Utensils, labelKey: 'nav.manage_menu', roles: ['MANAGER'] },
-    { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
+    { href: '/manager/vouchers', icon: Ticket, labelKey: 'nav.manage_vouchers', roles: ['MANAGER'] },
+    // { href: '/manager/staff', icon: Users, labelKey: 'nav.manage_staff', roles: ['MANAGER'] },
+
+    // Staff routes
+    { href: '/staff/orders', icon: ClipboardList, labelKey: 'nav.staff_orders', roles: ['STAFF'] },
+    { href: '/staff/vendor', icon: Store, labelKey: 'nav.staff_vendor', roles: ['STAFF'] },
+    { href: '/staff/menu', icon: Utensils, labelKey: 'nav.staff_menu', roles: ['STAFF'] },
 
     // Admin routes
     { href: '/admin/users', icon: Users, labelKey: 'nav.manage_users', roles: ['ADMIN'] },
@@ -59,7 +67,7 @@ export function SideNav() {
             </span>
             {user && (
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-                {user.role}
+                {t(`role.${user.role.toLowerCase()}`)}
               </span>
             )}
           </div>
@@ -67,7 +75,7 @@ export function SideNav() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggle}
           className="ml-auto"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -107,6 +115,25 @@ export function SideNav() {
           )
         })}
       </nav>
+
+      <div className="p-4 border-t mt-auto">
+        <Button
+          variant="ghost"
+          onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
+          className={cn(
+            "w-full flex items-center rounded-xl transition-colors hover:bg-secondary/10",
+            isCollapsed ? "justify-center px-0 h-12" : "justify-start gap-3 px-4 py-6"
+          )}
+        >
+          {lang === 'vi' ? <ViFlag className={isCollapsed ? "h-6 w-9" : ""} /> : <EnFlag className={isCollapsed ? "h-6 w-9" : ""} />}
+          {!isCollapsed && (
+            <div className="flex flex-col items-start text-left">
+              <span className="text-sm font-bold text-foreground">{lang === 'vi' ? t('common.vi') : t('common.en')}</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{lang === 'vi' ? t('common.change_to_en') : t('common.change_to_vi')}</span>
+            </div>
+          )}
+        </Button>
+      </div>
     </aside>
   )
 }

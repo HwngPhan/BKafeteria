@@ -5,13 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { ChevronRight, ClipboardList, Clock, CreditCard } from 'lucide-react'
+import { ChevronRight, ClipboardList, Clock, CreditCard, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { OrderDto } from '../config/order.types'
-
-import { Loader2 } from 'lucide-react'
+import { OrderDto } from '../config/order.config'
 import { toast } from 'sonner'
 import { usePayOrder } from '../data-access/order.queries'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 interface OrderCardProps {
   order: OrderDto
@@ -27,23 +26,25 @@ const statusColors: Record<string, string> = {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: 'Chờ thanh toán',
-  PURCHASED: 'Đã thanh toán',
-  PROCESSING: 'Đang chế biến',
-  COMPLETED: 'Hoàn thành',
-  DELIVERED: 'Đã giao',
-  CANCELED: 'Đã hủy',
+  PENDING: 'order_status.pending',
+  PURCHASED: 'order_status.purchased',
+  PROCESSING: 'order_status.processing',
+  COMPLETED: 'order_status.completed',
+  DELIVERED: 'order_status.delivered',
+  CANCELED: 'order_status.canceled',
 }
 
 export function OrderCard({ order }: OrderCardProps) {
   const payOrder = usePayOrder()
+  const { t } = useLanguage()
 
   const handlePay = async () => {
     try {
-      await payOrder.mutateAsync(order.orderId)
-      toast.success('Thanh toán thành công!')
-    } catch (error: any) {
-      toast.error(error?.message || 'Thanh toán thất bại')
+      await payOrder.mutateAsync({ id: order.orderId })
+      toast.success(t('order_card.toast_pay_success'))
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : undefined
+      toast.error(msg || t('order_card.toast_pay_error'))
     }
   }
 
@@ -55,7 +56,7 @@ export function OrderCard({ order }: OrderCardProps) {
             <ClipboardList size={20} />
           </div>
           <div>
-            <CardTitle className="text-sm font-bold">Đơn hàng #{order.orderId.substring(0, 8)}</CardTitle>
+            <CardTitle className="text-sm font-bold">{t('order_card.id')}{order.orderId.substring(0, 8)}</CardTitle>
             <CardDescription className="text-[10px] flex items-center gap-1">
               <Clock size={10} />
               {new Date(order.createdAt).toLocaleString()}
@@ -63,7 +64,7 @@ export function OrderCard({ order }: OrderCardProps) {
           </div>
         </div>
         <Badge className={cn('rounded-full px-3 py-0.5 text-[10px] font-bold border', statusColors[order.status])}>
-          {statusLabels[order.status] || order.status}
+          {t(statusLabels[order.status]) || order.status}
         </Badge>
       </CardHeader>
 
@@ -94,7 +95,7 @@ export function OrderCard({ order }: OrderCardProps) {
 
       <CardFooter className="p-6 pt-0 flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] text-muted-foreground font-medium">Tổng số tiền</span>
+          <span className="text-[10px] text-muted-foreground font-medium">{t('order_card.total_amount')}</span>
           <span className="text-xl font-black text-primary">{(order.totalPrice || 0).toLocaleString()}đ</span>
         </div>
 
@@ -111,12 +112,12 @@ export function OrderCard({ order }: OrderCardProps) {
               ) : (
                 <CreditCard size={16} className="mr-2" />
               )}
-              Thanh toán
+              {t('order_card.pay_btn')}
             </Button>
           )}
           <Button variant="ghost" size="sm" asChild className="rounded-xl h-10 px-4 font-bold group-hover:bg-secondary/5">
             <Link href={`/orders/${order.orderId}`}>
-              Chi tiết <ChevronRight size={16} className="ml-1" />
+              {t('order_card.detail_btn')} <ChevronRight size={16} className="ml-1" />
             </Link>
           </Button>
         </div>

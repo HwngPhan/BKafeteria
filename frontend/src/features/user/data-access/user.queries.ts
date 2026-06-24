@@ -2,21 +2,20 @@ import { getCookie } from "cookies-next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TokenType } from "@/lib/constants";
 import { UserDto } from "@/features/auth/config/auth.schema";
-import { 
-  GetMeApi, 
-  UpdateMeApi, 
-  GetAllUsersApi, 
-  UpdateUserApi, 
-  DeleteUserApi, 
+import {
+  GetMeApi,
+  UpdateMeApi,
+  GetAllUsersApi,
+  UpdateUserApi,
+  DeleteUserApi,
   AssignVendorApi,
-  UserPageDto
 } from "./user.api";
 
 export const userKeys = {
     all: ['user'] as const,
     details: () => [...userKeys.all, 'details'] as const,
     me: () => [...userKeys.details(), 'me'] as const,
-    list: (params: any) => [...userKeys.all, 'list', params] as const,
+    list: (params: { search?: string; role?: string; status?: string; page?: number; size?: number }) => [...userKeys.all, 'list', params] as const,
 }
 
 export const useGetMe = (enabled: boolean = true) => { 
@@ -30,7 +29,7 @@ export const useGetMe = (enabled: boolean = true) => {
         try {
           const data = await GetMeApi();
           return data;
-        } catch (error: unknown) {
+        } catch {
           return null;
         }
       },

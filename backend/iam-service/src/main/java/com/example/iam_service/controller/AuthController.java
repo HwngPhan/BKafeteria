@@ -10,7 +10,6 @@ import com.example.iam_service.dtos.AuthDtos.Response.TokenResponse;
 import com.example.iam_service.dtos.UserDtos.CreateUserRequest;
 import com.example.iam_service.dtos.UserDtos.UserDto;
 import com.example.iam_service.dtos.UserDtos.UserDtoConverter;
-import com.example.iam_service.model.User;
 import com.example.iam_service.service.*;
 import com.example.shared.dtos.ApiResponse;
 import com.example.shared.config.CustomUserDetails;
@@ -30,9 +29,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -116,7 +113,7 @@ public class AuthController {
 
             String cookieValue = "refresh_token=" + refreshToken
                     + "; HttpOnly; Secure; Path=/; Max-Age=" + Duration.ofDays(7).getSeconds()
-                    + "; SameSite=Strict";
+                    + "; SameSite=None";
             response.setHeader("Set-Cookie", cookieValue);
 
             return ResponseEntity.ok(
@@ -176,13 +173,11 @@ public class AuthController {
 
             redisTokenService.storeRefreshToken(email, newJti, newRefreshToken, Duration.ofDays(7));
 
-            // ✅ Send refresh token via cookie
-            Cookie cookie = new Cookie("refresh_token", newRefreshToken);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge((int) Duration.ofDays(7).getSeconds());
-            response.addCookie(cookie);
+            // ✅ Send refresh token via cookie (manual header for SameSite=None support)
+            String newCookieValue = "refresh_token=" + newRefreshToken
+                    + "; HttpOnly; Secure; Path=/; Max-Age=" + Duration.ofDays(7).getSeconds()
+                    + "; SameSite=None";
+            response.setHeader("Set-Cookie", newCookieValue);
 
             // ✅ Load UserDetails to get role
 //            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
@@ -256,12 +251,8 @@ public class AuthController {
             }
 
             // Xóa cookie khỏi client
-            Cookie expiredCookie = new Cookie("refresh_token", null);
-            expiredCookie.setHttpOnly(true);
-            expiredCookie.setSecure(true);
-            expiredCookie.setPath("/");
-            expiredCookie.setMaxAge(0);
-            response.addCookie(expiredCookie);
+            String expiryCookie = "refresh_token=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None";
+            response.setHeader("Set-Cookie", expiryCookie);
 
             return ResponseEntity.ok(
                     new ApiResponse<>(200, "Logout successfully", null));

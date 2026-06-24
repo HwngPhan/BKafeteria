@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, use, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle, Loader2, Utensils, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -10,41 +10,30 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { useAccountActivation } from '@/features/auth/data-access/auth.queries'
-import { toast } from 'sonner'
+import { useLanguage } from '@/providers/LanguageProvider'
 
-export default function AccountActivationPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
-  const router = useRouter()
-  const params = use(searchParams)
-  const token = params.token
+export default function AccountActivationPage() {
+  const { t } = useLanguage()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') ?? undefined
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const { mutateAsync: activate } = useAccountActivation()
-  const activated = useRef(false)
 
   useEffect(() => {
-    if (!token || activated.current) {
-      if (!token) setStatus('error')
+    if (!token) {
+      console.error('No activation token provided')
       return
     }
-
-    const handleActivation = async () => {
-      activated.current = true
-      try {
-        await activate(token)
-        setStatus('success')
-        toast.success('Kích hoạt tài khoản thành công!')
-      } catch (err) {
-        setStatus('error')
-        toast.error('Kích hoạt thất bại. Liên kết có thể đã hết hạn hoặc không hợp lệ.')
-      }
-    }
-
-    handleActivation()
-  }, [token, activate])
+    console.log('Activating account with token:', token)
+    activate(token)
+      .then(() => setStatus('success'))
+      .catch(() => setStatus('error'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">
@@ -69,7 +58,7 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   className="flex flex-col items-center gap-4"
                 >
                   <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                  <CardTitle className="text-2xl font-bold">Đang kích hoạt tài khoản...</CardTitle>
+                  <CardTitle className="text-2xl font-bold">{t('activation.activating')}</CardTitle>
                 </motion.div>
               )}
 
@@ -83,9 +72,9 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   <div className="bg-green-100 p-4 rounded-full">
                     <CheckCircle2 className="h-16 w-16 text-green-600" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-green-600">Hoàn tất!</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-green-600">{t('activation.done')}</CardTitle>
                   <CardDescription className="text-base">
-                    Tài khoản của bạn đã được kích hoạt và sẵn sàng sử dụng.
+                    {t('activation.success_desc')}
                   </CardDescription>
                 </motion.div>
               )}
@@ -100,9 +89,9 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
                   <div className="bg-red-100 p-4 rounded-full">
                     <XCircle className="h-16 w-16 text-red-600" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-red-600">Kích hoạt thất bại</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-red-600">{t('activation.failed')}</CardTitle>
                   <CardDescription className="text-base">
-                    Mã xác thực không hợp lệ hoặc đã hết hạn.
+                    {t('activation.failed_desc')}
                   </CardDescription>
                 </motion.div>
               )}
@@ -113,16 +102,16 @@ export default function AccountActivationPage({ searchParams }: { searchParams: 
             {status === 'success' ? (
               <Button asChild className="h-14 w-full rounded-xl bg-primary text-lg font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-[1.01]">
                 <Link href="/login">
-                  Đăng nhập ngay <ArrowRight className="ml-2 h-5 w-5" />
+                  {t('activation.login')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             ) : status === 'error' ? (
               <div className="space-y-4">
                 <Button asChild variant="outline" className="h-14 w-full rounded-xl border-secondary/20 hover:bg-secondary/5 transition-all">
-                  <Link href="/register">Thử đăng ký lại</Link>
+                  <Link href="/register">{t('activation.retry')}</Link>
                 </Button>
                 <Button asChild variant="ghost" className="w-full text-muted-foreground hover:text-primary">
-                  <Link href="/login">Quay lại đăng nhập</Link>
+                  <Link href="/login">{t('activation.back_login')}</Link>
                 </Button>
               </div>
             ) : null}

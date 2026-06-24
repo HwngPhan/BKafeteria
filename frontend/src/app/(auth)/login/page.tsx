@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { useLanguage } from '@/providers/LanguageProvider'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -28,13 +29,6 @@ import { Input } from '@/components/ui/input'
 import { useLogin } from '@/features/auth/data-access/auth.queries'
 import { toast } from 'sonner'
 
-/* ---------------- SCHEMA ---------------- */
-
-const formSchema = z.object({
-  email: z.email('Email không hợp lệ'),
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
-})
-
 /* ---------------- HELPERS ---------------- */
 
 // Helper component cho dấu sao đỏ
@@ -51,9 +45,15 @@ function AbsoluteFormMessage() {
 /* ---------------- PAGE ---------------- */
 
 export default function LoginPage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const {mutateAsync: Login} = useLogin()  // Giả sử bạn có hook useLogin để gọi API đăng nhập
+
+  const formSchema = z.object({
+    email: z.string().email(t('login.email_invalid')),
+    password: z.string().min(1, t('login.password_required')),
+  })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,9 +75,10 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       await Login(apiData);
-      toast.success("Đăng nhập thành công");
+      toast.success(t('login.success'));
+      router.push('/dashboard');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Đăng nhập thất bại";
+      const errorMessage = err instanceof Error ? err.message : t('login.failed');
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -99,10 +100,10 @@ export default function LoginPage() {
               <Utensils className="h-10 w-10 text-secondary" />
             </div>
             <CardTitle className="text-3xl font-bold text-primary">
-              Đăng nhập
+              {t('login.title')}
             </CardTitle>
             <CardDescription className="mt-2 text-base">
-              Chào mừng trở lại{' '}
+              {t('login.welcome')}{' '}
               <span className="font-semibold text-secondary">
                 BKAFETERIA
               </span>
@@ -123,7 +124,7 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem className="w-full relative"> {/* relative neo lỗi */}
-                      <FormLabel>Email <RequiredMark /></FormLabel>
+                      <FormLabel>{t('login.email')} <RequiredMark /></FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -144,14 +145,14 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem className="w-full relative"> {/* relative neo lỗi */}
                       <div className="flex items-center justify-between">
-                        <FormLabel>Mật khẩu <RequiredMark /></FormLabel>
+                        <FormLabel>{t('login.password')} <RequiredMark /></FormLabel>
                         <Button 
                             variant="link" 
                             className="p-0 h-auto text-xs font-normal text-muted-foreground hover:text-primary"
                             type="button"
                             onClick={() => router.push('/forgot-password')}
                         >
-                            Quên mật khẩu?
+                            {t('login.forgot')}
                         </Button>
                       </div>
                       <FormControl>
@@ -176,19 +177,19 @@ export default function LoginPage() {
                   {isLoading && (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   )}
-                  Đăng nhập
+                  {t('login.submit')}
                 </Button>
 
                 {/* Footer */}
                 <div className="text-center text-sm text-muted-foreground">
-                  Chưa có tài khoản?{' '}
+                  {t('login.no_account')}{' '}
                   <Button
                     type="button"
                     variant="link"
                     className="px-1 font-bold text-secondary text-base"
                     onClick={() => router.push('/register')}
                   >
-                    Đăng ký ngay
+                    {t('login.register')}
                   </Button>
                 </div>
               </form>

@@ -1,6 +1,8 @@
 package com.example.vendor_service;
 
 import com.example.vendor_service.config.jwt.JwtProvider;
+import com.example.vendor_service.dtos.UserInfoDto;
+import static org.mockito.Mockito.when;
 import com.example.vendor_service.helper.IamClient;
 import com.example.vendor_service.helper.producer.KafkaProducerService;
 import com.example.vendor_service.model.Vendor;
@@ -35,7 +37,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.kafka.bootstrap-servers=localhost:9092",
         "spring.data.redis.host=localhost",
-        "spring.data.redis.port=6379"
+        "spring.data.redis.port=6379",
+        "server.port=0",
+        "jwt.secret=test-secret-key-for-integration-testing-only-minimum-256-bits",
+        "jwt.access.expiration=86400000",
+        "jwt.refresh.expiration=604800000",
+        "jwt.otp.expiration=300000",
+        "jwt.account.expiration=86400000",
+        "internal-token.service-name=vendor-service",
+        "internal-token.api-key=test-secret-key-for-integration-testing-only-minimum-256-bits",
+        "internal-token.auth-url=http://localhost:0/iam/internal/auth/token"
 })
 @AutoConfigureMockMvc
 class VendorControllerIntegrationTest {
@@ -95,6 +106,10 @@ class VendorControllerIntegrationTest {
         managerToken = jwtProvider.generateAccessToken("manager1", "manager@test.com", "MANAGER");
         adminToken = jwtProvider.generateAccessToken("admin1", "admin@test.com", "ADMIN");
         userToken = jwtProvider.generateAccessToken("user1", "user@test.com", "USER");
+
+        // Stub IamClient so VendorOrderController can resolve vendorId for manager1
+        UserInfoDto managerInfo = new UserInfoDto("manager1", "Manager", null, "manager@test.com", "MANAGER", "vendor1");
+        when(iamClient.getUserInfo("manager1")).thenReturn(managerInfo);
     }
 
     // ==================== Authentication Tests ====================

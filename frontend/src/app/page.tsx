@@ -7,6 +7,8 @@ import { Clock, ShoppingBag, Smile, Soup, Utensils } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/providers/LanguageProvider"
 
+import { LanguageSwitcher } from "@/components/layout/language-switcher"
+
 export default function LandingPage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -19,7 +21,10 @@ export default function LandingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative">
+      <div className="absolute top-4 right-6 z-50">
+        <LanguageSwitcher />
+      </div>
       {/* Hero */}
       <section className="relative overflow-hidden px-6 py-20">
         <motion.div

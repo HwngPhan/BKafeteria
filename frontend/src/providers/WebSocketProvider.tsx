@@ -1,16 +1,22 @@
-'use client'
+"use client";
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Client } from '@stomp/stompjs'
-import SockJS from 'sockjs-client'
-import { getCookie } from 'cookies-next'
-import { API_GATEWAY_BASE_URL, TokenType, USE_WEBSOCKET } from '@/lib/constants'
+import {
+  ORDER_WS_URL,
+  TokenType,
+  USE_WEBSOCKET,
+  VENDOR_WS_URL,
+} from "@/lib/constants";
+import { Client } from "@stomp/stompjs";
+import { getCookie } from "cookies-next";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import SockJS from "sockjs-client";
+import { useAuth } from "./AuthProvider";
 
 interface WebSocketContextType {
-  orderClient: Client | null
-  vendorClient: Client | null
-  isOrderConnected: boolean
-  isVendorConnected: boolean
+  orderClient: Client | null;
+  vendorClient: Client | null;
+  isOrderConnected: boolean;
+  isVendorConnected: boolean;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -18,71 +24,122 @@ const WebSocketContext = createContext<WebSocketContextType>({
   vendorClient: null,
   isOrderConnected: false,
   isVendorConnected: false,
-})
+});
 
-export const useWebSocket = () => useContext(WebSocketContext)
+export const useWebSocket = () => useContext(WebSocketContext);
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
-  const [orderClient, setOrderClient] = useState<Client | null>(null)
-  const [vendorClient, setVendorClient] = useState<Client | null>(null)
-  const [isOrderConnected, setIsOrderConnected] = useState(false)
-  const [isVendorConnected, setIsVendorConnected] = useState(false)
+  const { user, isLoading: isUserLoading } = useAuth();
+  // State is set from async callbacks (onConnect/onWebSocketClose), never synchronously
+  // in the effect body — avoids the react-hooks/set-state-in-effect rule.
+  const [orderClient, setOrderClient] = useState<Client | null>(null);
+  const [vendorClient, setVendorClient] = useState<Client | null>(null);
+  const [isOrderConnected, setIsOrderConnected] = useState(false);
+  const [isVendorConnected, setIsVendorConnected] = useState(false);
+  // Refs hold the instances only for cleanup; never read during render.
+  const orderClientRef = useRef<Client | null>(null);
+  const vendorClientRef = useRef<Client | null>(null);
 
   useEffect(() => {
-    if (!USE_WEBSOCKET) return
+    if (!USE_WEBSOCKET) return;
 
-    const token = getCookie(TokenType.authToken)
-    if (!token) return
+    const token = getCookie(TokenType.authToken);
+    if (isUserLoading || !user || !token) return;
 
-    // 1. Order Service WebSocket
-    const oClient = new Client({
-      webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/order/ws`),
-      // webSocketFactory: () => new SockJS(`https://api.bkafeteria.site/api/order/ws`),
-      connectHeaders: { Authorization: `Bearer ${token}` },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    })
+    const orderWebsocketUrl = ORDER_WS_URL;
+    const vendorWebsocketUrl = VENDOR_WS_URL;
+    if (!orderWebsocketUrl || !vendorWebsocketUrl) return;
 
-    oClient.onConnect = () => {
-      console.log('Connected to Order WebSocket')
-      setIsOrderConnected(true)
+    const userRole = user.role;
+
+    if (userRole === "CUSTOMER") {
+      const oClient = new Client({
+        webSocketFactory: () => new SockJS(orderWebsocketUrl),
+        connectHeaders: { Authorization: `Bearer ${token}` },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        // debug: (str) => console.log('[Order STOMP]', str),
+      });
+
+      oClient.onConnect = () => {
+        setOrderClient(oClient);
+        setIsOrderConnected(true);
+      };
+      oClient.onWebSocketClose = () => {
+        setOrderClient(null);
+        setIsOrderConnected(false);
+      };
+      oClient.activate();
+      orderClientRef.current = oClient;
+    } else if (userRole === "MANAGER" || userRole === "STAFF") {
+      const vClient = new Client({
+        webSocketFactory: () => new SockJS(vendorWebsocketUrl),
+        connectHeaders: { Authorization: `Bearer ${token}` },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        // debug: (str) => console.log('[Vendor STOMP]', str),
+      });
+
+      vClient.onConnect = () => {
+        setVendorClient(vClient);
+        setIsVendorConnected(true);
+      };
+      vClient.onWebSocketClose = () => {
+        setVendorClient(null);
+        setIsVendorConnected(false);
+      };
+      vClient.activate();
+      vendorClientRef.current = vClient;
     }
-    oClient.onWebSocketClose = () => setIsOrderConnected(false)
-    oClient.activate()
-    setOrderClient(oClient)
-
-    // 2. Vendor Service WebSocket
-    const vClient = new Client({
-      webSocketFactory: () => new SockJS(`${API_GATEWAY_BASE_URL}/vendor/ws`),
-      connectHeaders: { Authorization: `Bearer ${token}` },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-    })
-
-    vClient.onConnect = () => {
-      console.log('Connected to Vendor WebSocket')
-      setIsVendorConnected(true)
-    }
-    vClient.onWebSocketClose = () => setIsVendorConnected(false)
-    vClient.activate()
-    setVendorClient(vClient)
 
     return () => {
-      oClient.deactivate()
-      vClient.deactivate()
-    }
-  }, [])
+      if (orderClientRef.current) {
+        orderClientRef.current.deactivate();
+        orderClientRef.current = null;
+      }
+      if (vendorClientRef.current) {
+        vendorClientRef.current.deactivate();
+        vendorClientRef.current = null;
+      }
+    };
+  }, [user, isUserLoading]);
+
+  // Audio Unlock mechanism for notification sounds
+  useEffect(() => {
+    const unlockAudio = () => {
+      const audio = new Audio("/assets/sounds/notification.mp3");
+      audio.volume = 0;
+      audio
+        .play()
+        .then(() => {
+          console.log("Audio unlocked for notifications");
+          window.removeEventListener("click", unlockAudio);
+          window.removeEventListener("keydown", unlockAudio);
+          window.removeEventListener("touchstart", unlockAudio);
+        })
+        .catch((err) => {
+          console.log("Audio unlock failed, waiting for interaction...", err);
+        });
+    };
+
+    window.addEventListener("click", unlockAudio);
+    window.addEventListener("keydown", unlockAudio);
+    window.addEventListener("touchstart", unlockAudio);
+
+    return () => {
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+      window.removeEventListener("touchstart", unlockAudio);
+    };
+  }, []);
 
   return (
-    <WebSocketContext.Provider value={{ 
-      orderClient, 
-      vendorClient, 
-      isOrderConnected, 
-      isVendorConnected 
-    }}>
+    <WebSocketContext.Provider
+      value={{ orderClient, vendorClient, isOrderConnected, isVendorConnected }}
+    >
       {children}
     </WebSocketContext.Provider>
-  )
+  );
 }

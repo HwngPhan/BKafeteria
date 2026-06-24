@@ -3,7 +3,6 @@ package com.example.order_service.controller;
 import com.example.order_service.dtos.OrderDto;
 import com.example.order_service.dtos.OrderDtoConverter;
 import com.example.order_service.dtos.Request.OrderRequest;
-import com.example.order_service.dtos.VendorOrderDto;
 import com.example.order_service.dtos.VendorOrderDtoConverter;
 import com.example.order_service.model.Order;
 import com.example.order_service.model.VendorOrder;
@@ -11,16 +10,19 @@ import com.example.order_service.service.OrderService;
 import com.example.order_service.service.VendorOrderService;
 import com.example.shared.config.CustomUserDetails;
 import com.example.shared.dtos.ApiResponse;
+import com.example.shared.dtos.PageDtos.PageDto;
+import com.example.shared.dtos.PageDtos.PageDtoConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +40,8 @@ public class OrderControllerTest {
     private VendorOrderService vendorOrderService;
     @Mock
     private VendorOrderDtoConverter vendorOrderDtoConverter;
+    @Mock
+    private PageDtoConverter pageDtoConverter;
 
     @InjectMocks
     private OrderController orderController;
@@ -81,7 +85,7 @@ public class OrderControllerTest {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("user1");
 
-        doNothing().when(orderService).makePayment("order1", "user1");
+        doNothing().when(orderService).makePayment("order1", "user1", null);
 
         VendorOrder vendorOrder = new VendorOrder();
         
@@ -92,13 +96,14 @@ public class OrderControllerTest {
         when(orderService.getOrderById("order1")).thenReturn(order);
         when(orderDtoConverter.convert(eq(order), anyList())).thenReturn(null);
 
-        ResponseEntity<ApiResponse<OrderDto>> response = orderController.makePayment("order1", userDetails);
+        ResponseEntity<ApiResponse<OrderDto>> response = orderController.makePayment("order1", null, userDetails);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Order paid successfully", response.getBody().getMessage());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getOrders_Success() {
         CustomUserDetails userDetails = mock(CustomUserDetails.class);
         when(userDetails.getId()).thenReturn("user1");
@@ -106,16 +111,16 @@ public class OrderControllerTest {
         Order order = new Order();
         order.setOrderId("order1");
 
-        VendorOrder vendorOrder = new VendorOrder();
+        when(orderService.getOrders(eq("user1"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(order)));
+        PageDto<OrderDto> pageDto = new PageDto<>(
+                Collections.singletonList(null), 0, 10, 1, 1, true, false, false);
+        doReturn(pageDto).when(pageDtoConverter).convert(any(PageImpl.class), any());
 
-        when(orderService.getOrders("user1")).thenReturn(Collections.singletonList(order));
-        when(vendorOrderService.getVendorOrdersByOrderId("order1")).thenReturn(Collections.singletonList(vendorOrder));
-        when(vendorOrderDtoConverter.convert(vendorOrder)).thenReturn(null);
-        when(orderDtoConverter.convert(eq(order), anyList())).thenReturn(null);
-
-        ResponseEntity<ApiResponse<List<OrderDto>>> response = orderController.getOrders(userDetails);
+        ResponseEntity<ApiResponse<PageDto<OrderDto>>> response =
+                orderController.getOrders(userDetails, 0, 10, "createdAt", "desc");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, response.getBody().getData().size());
+        assertEquals(1, response.getBody().getData().content().size());
     }
 }

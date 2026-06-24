@@ -64,6 +64,7 @@ public class VendorService {
         vendor.setWorkingHourTo(request.getWorkingHourTo());
         vendor.setCertification(request.getCertification());
         vendor.setApprovedBy(null);
+        vendor.setImgUrl(null);
         return vendorRepository.save(vendor);
     }
 
@@ -97,6 +98,20 @@ public class VendorService {
         vendor.setCertification(request.getCertification());
         vendor.setUpdatedAt(LocalDateTime.now());
 
+        return vendorRepository.save(vendor);
+    }
+
+    @Transactional
+    public Vendor updateVendorImage(String vendorId, String imgUrl, String managerId) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with ID: " + vendorId));
+
+        if (!vendor.getManagerId().equals(managerId)) {
+            throw new IllegalArgumentException("You are not authorized to update this vendor");
+        }
+
+        vendor.setImgUrl(imgUrl);
+        vendor.setUpdatedAt(LocalDateTime.now());
         return vendorRepository.save(vendor);
     }
 

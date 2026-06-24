@@ -30,6 +30,10 @@ public class CustomIdGenerator {
         return "BC-" + randomShortUUID();
     }
 
+    public static String generateVoucherId() {
+        return "VC-" + randomShortUUID();
+    }
+
     private static String randomShortUUID() {
         return UUID.randomUUID().toString().split("-")[0].toUpperCase();
     }

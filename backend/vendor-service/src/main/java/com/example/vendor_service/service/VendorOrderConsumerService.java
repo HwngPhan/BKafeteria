@@ -1,5 +1,6 @@
 package com.example.vendor_service.service;
 
+import com.example.shared.enums.OrderStatus;
 import com.example.vendor_service.dtos.KafkaMessage.VendorNotificationMessage;
 import com.example.vendor_service.model.VendorOrderNotification;
 import com.example.vendor_service.repository.VendorOrderNotificationRepository;
@@ -44,15 +45,25 @@ public class VendorOrderConsumerService {
                 return;
             }
 
-            VendorOrderNotification row = new VendorOrderNotification();
-            row.setVendorOrderId(notification.getVendorOrderId());
-            row.setOrderId(notification.getOrderId());
-            row.setVendorId(notification.getVendorId());
-            row.setCustomerId(notification.getCustomerId());
-            row.setStatus(notification.getStatus());
-            row.setMenuItems(notification.getMenuItems());
-            row.setCreatedAt(LocalDateTime.now());
-            notificationRepository.save(row);
+            if (notification.getStatus() == OrderStatus.CANCELED) {
+                String vendorOrderId = notification.getVendorOrderId();
+                if (vendorOrderId == null) return;
+                notificationRepository.findById(vendorOrderId).ifPresent(existing -> {
+                    existing.setStatus(OrderStatus.CANCELED);
+                    notificationRepository.save(existing);
+                    logger.info("Marked VendorOrderNotification as CANCELED: {}", existing.getVendorOrderId());
+                });
+            } else {
+                VendorOrderNotification row = new VendorOrderNotification();
+                row.setVendorOrderId(notification.getVendorOrderId());
+                row.setOrderId(notification.getOrderId());
+                row.setVendorId(notification.getVendorId());
+                row.setCustomerId(notification.getCustomerId());
+                row.setStatus(notification.getStatus());
+                row.setMenuItems(notification.getMenuItems());
+                row.setCreatedAt(LocalDateTime.now());
+                notificationRepository.save(row);
+            }
 
             messagingTemplate.convertAndSend(
                     "/topic/vendor/" + notification.getVendorId(),
