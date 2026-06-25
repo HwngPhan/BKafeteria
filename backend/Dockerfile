@@ -1,6 +1,6 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-ARG SERVICE_DIR=iam-service
+ARG SERVICE_DIR=vendor-service
 
 WORKDIR /build
 
