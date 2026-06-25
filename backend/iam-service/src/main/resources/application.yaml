@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8000}
+  port: ${IAM_SERVICE}
   servlet:
     context-path: /iam
 spring:

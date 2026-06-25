@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8001}
+  port: ${VENDOR_SERVICE}
   servlet:
     context-path: /vendor
 spring:

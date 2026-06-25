@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8002}
+  port: ${MENU_SERVICE}
   servlet:
     context-path: /menu
 spring:
