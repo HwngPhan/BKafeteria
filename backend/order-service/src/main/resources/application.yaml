@@ -1,5 +1,5 @@
 server:
-  port: ${ORDER_SERVICE}
+  port: ${PORT:8003}
   servlet:
     context-path: /order
 spring:

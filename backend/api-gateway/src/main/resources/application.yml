@@ -1,5 +1,5 @@
 server:
-  port: ${API_GATEWAY}
+  port: ${PORT:8080}
 
 spring:
 # JWT Configuration
